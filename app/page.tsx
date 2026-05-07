@@ -2,27 +2,41 @@ import { redirect } from "next/navigation";
 import { Resend } from "resend";
 import ApplyLink from "./components/ApplyLink";
 
+// Airtable identifiers for the Manhattanite Applications base/table.
+// These are not secrets (the API key is the secret); keeping them as constants
+// here makes the integration easier to read.
+const AIRTABLE_BASE_ID = "applBwtxAzzYfFELQ";
+const AIRTABLE_TABLE_ID = "tblL1TAgU4LaNBZ7H";
+
 export default function Home() {
   async function submitApplication(formData: FormData) {
     "use server";
 
-    const data = Object.fromEntries(formData) as Record<string, string>;
+    // Pluck fields explicitly. Next.js injects internal $ACTION_* keys into
+    // formData, so we avoid Object.fromEntries when we plan to forward this
+    // payload to a third-party API like Airtable.
+    const name = String(formData.get("name") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
+    const referee = String(formData.get("referee") ?? "").trim();
 
-    // Always log to server console as a backup, in case email delivery fails.
-    console.log("New application:", data);
+    // Always log to the server console as a backup, in case both delivery
+    // channels (email + Airtable) fail.
+    console.log("New application:", { name, email, neighborhood, referee });
 
+    // ============ 1. Send notification email via Resend ============
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { data: emailData, error: emailError } = await resend.emails.send({
         from: "Manhattanite <applications@manhattanite.com>",
         to: "info@manhattanite.com",
-        subject: `New Manhattanite Application: ${data.name}`,
+        subject: `New Manhattanite Application: ${name}`,
         html: `
           <h2>New Manhattanite Application</h2>
-          <p><strong>Name:</strong> ${data.name}</p>
-          <p><strong>Email:</strong> ${data.email}</p>
-          <p><strong>Neighborhood:</strong> ${data.neighborhood}</p>
-          <p><strong>Referred By:</strong> ${data.referee || "—"}</p>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Neighborhood:</strong> ${neighborhood}</p>
+          <p><strong>Referred By:</strong> ${referee || "—"}</p>
         `,
       });
 
@@ -34,6 +48,53 @@ export default function Home() {
     } catch (error) {
       // Catches network failures and other unexpected issues.
       console.error("Unexpected error sending email:", error);
+    }
+
+    // ============ 2. Save the application to Airtable ============
+    // Independent try/catch so that an Airtable failure doesn't break the
+    // email path (and vice versa). Either channel surviving means we don't
+    // lose the application.
+    try {
+      const fields: Record<string, unknown> = {
+        Name: name,
+        Email: email,
+        Neighborhood: neighborhood,
+        Status: "New",
+      };
+
+      // Only set Referred By if the applicant provided one. With
+      // typecast: true (below), Airtable will match this string against
+      // existing applicants by name; if no match exists, it creates a stub
+      // record so the link is preserved.
+      if (referee) {
+        fields["Referred By"] = [referee];
+      }
+
+      const airtableResponse = await fetch(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fields, typecast: true }),
+        }
+      );
+
+      if (!airtableResponse.ok) {
+        const errText = await airtableResponse.text();
+        console.error(
+          "Airtable rejected the record:",
+          airtableResponse.status,
+          errText
+        );
+      } else {
+        const airtableData = await airtableResponse.json();
+        console.log("Airtable record created:", airtableData.id);
+      }
+    } catch (error) {
+      console.error("Unexpected error saving to Airtable:", error);
     }
 
     redirect("/thank-you");
