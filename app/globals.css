@@ -125,11 +125,11 @@ body {
   bottom: 0;
   height: 1px;
   background-color: currentColor;
+  transform: scaleX(0);
   transform-origin: left center;
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mh-link:hover::after {
-  transform: scaleX(0);
-  transform-origin: right center;
+  transform: scaleX(1);
 }
