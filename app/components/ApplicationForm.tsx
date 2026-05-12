@@ -62,6 +62,19 @@ const USE_CASES = [
   "Just looking around",
 ];
 
+// Shared classnames for our underline-style inputs. Tightened tracking, ink
+// focus border, and subtle 200ms transition.
+const FIELD_BASE =
+  "w-full bg-transparent border-b border-ink/20 pb-3 text-base text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
+
+// Editorial label style — tracked-out, slightly larger than the default
+// uppercase eyebrow. As size goes up, tracking comes down a touch so it
+// doesn't read as overly precious.
+const LABEL = "block text-[13px] tracking-[0.22em] uppercase text-slate mb-5";
+
+// "(optional)" / "(pick any)" hints rendered in serif italic for a print-mag feel.
+const HINT = "font-serif italic normal-case tracking-normal text-slate/70 ml-1";
+
 export default function ApplicationForm({
   submitAction,
 }: {
@@ -74,47 +87,26 @@ export default function ApplicationForm({
   const showOther = neighborhood === "Other";
 
   return (
-    <form action={submitAction} className="space-y-10">
+    <form action={submitAction} className="space-y-12">
       {/* ---------- Name ---------- */}
       <div>
-        <label
-          htmlFor="name"
-          className="block text-xs tracking-widest uppercase text-slate mb-3"
-        >
+        <label htmlFor="name" className={LABEL}>
           Full Name
         </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          required
-          className="w-full bg-transparent border-b border-ink/20 pb-3 text-base focus:border-ink focus:outline-none transition-colors"
-        />
+        <input type="text" id="name" name="name" required className={FIELD_BASE} />
       </div>
 
       {/* ---------- Email ---------- */}
       <div>
-        <label
-          htmlFor="email"
-          className="block text-xs tracking-widest uppercase text-slate mb-3"
-        >
+        <label htmlFor="email" className={LABEL}>
           Email
         </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          className="w-full bg-transparent border-b border-ink/20 pb-3 text-base focus:border-ink focus:outline-none transition-colors"
-        />
+        <input type="email" id="email" name="email" required className={FIELD_BASE} />
       </div>
 
       {/* ---------- Neighborhood ---------- */}
       <div>
-        <label
-          htmlFor="neighborhood"
-          className="block text-xs tracking-widest uppercase text-slate mb-3"
-        >
+        <label htmlFor="neighborhood" className={LABEL}>
           Neighborhood
         </label>
         <select
@@ -123,7 +115,7 @@ export default function ApplicationForm({
           required
           value={neighborhood}
           onChange={(e) => setNeighborhood(e.target.value)}
-          className="w-full bg-transparent border-b border-ink/20 pb-3 text-base focus:border-ink focus:outline-none transition-colors appearance-none cursor-pointer"
+          className={`${FIELD_BASE} mh-select appearance-none cursor-pointer`}
         >
           <option value="" disabled>
             Select a neighborhood
@@ -143,10 +135,7 @@ export default function ApplicationForm({
       {/* ---------- Other neighborhood (conditional) ---------- */}
       {showOther && (
         <div>
-          <label
-            htmlFor="otherNeighborhood"
-            className="block text-xs tracking-widest uppercase text-slate mb-3"
-          >
+          <label htmlFor="otherNeighborhood" className={LABEL}>
             Where, then?
           </label>
           <input
@@ -155,17 +144,14 @@ export default function ApplicationForm({
             name="otherNeighborhood"
             required
             placeholder="e.g. Williamsburg, Cobble Hill"
-            className="w-full bg-transparent border-b border-ink/20 pb-3 text-base placeholder:text-slate/40 focus:border-ink focus:outline-none transition-colors"
+            className={FIELD_BASE}
           />
         </div>
       )}
 
       {/* ---------- Instagram or LinkedIn ---------- */}
       <div>
-        <label
-          htmlFor="social"
-          className="block text-xs tracking-widest uppercase text-slate mb-3"
-        >
+        <label htmlFor="social" className={LABEL}>
           Instagram or LinkedIn
         </label>
         <input
@@ -173,32 +159,30 @@ export default function ApplicationForm({
           id="social"
           name="social"
           required
-          placeholder="@you on Instagram or linkedin.com/in/you"
-          className="w-full bg-transparent border-b border-ink/20 pb-3 text-base placeholder:text-slate/40 focus:border-ink focus:outline-none transition-colors"
+          placeholder="A profile link."
+          className={FIELD_BASE}
         />
       </div>
 
       {/* ---------- Use Cases ---------- */}
       <div>
-        <p className="block text-xs tracking-widest uppercase text-slate mb-4">
-          What might you use it for?{" "}
-          <span className="normal-case tracking-normal text-slate/60">
-            (pick any)
-          </span>
+        <p className={LABEL}>
+          What might you use it for?
+          <span className={HINT}>(pick any)</span>
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5">
           {USE_CASES.map((useCase) => (
             <label
               key={useCase}
-              className="flex items-center gap-3 text-sm text-ink cursor-pointer group"
+              className="flex items-center gap-3 text-[15px] text-ink cursor-pointer group"
             >
               <input
                 type="checkbox"
                 name="useCases"
                 value={useCase}
-                className="h-4 w-4 border border-ink/30 rounded-none accent-park cursor-pointer"
+                className="mh-checkbox"
               />
-              <span className="group-hover:text-ink transition-colors">
+              <span className="transition-colors group-hover:text-ink/80">
                 {useCase}
               </span>
             </label>
@@ -208,49 +192,39 @@ export default function ApplicationForm({
 
       {/* ---------- About ---------- */}
       <div>
-        <label
-          htmlFor="about"
-          className="block text-xs tracking-widest uppercase text-slate mb-3"
-        >
-          A little about you{" "}
-          <span className="normal-case tracking-normal text-slate/60">
-            (optional)
-          </span>
+        <label htmlFor="about" className={LABEL}>
+          A little about you
+          <span className={HINT}>(optional)</span>
         </label>
         <textarea
           id="about"
           name="about"
           rows={3}
           placeholder="Two sentences is plenty."
-          className="w-full bg-transparent border-b border-ink/20 pb-3 text-base placeholder:text-slate/40 focus:border-ink focus:outline-none transition-colors resize-none"
+          className={`${FIELD_BASE} resize-none`}
         />
       </div>
 
       {/* ---------- Referred By ---------- */}
       <div>
-        <label
-          htmlFor="referee"
-          className="block text-xs tracking-widest uppercase text-slate mb-3"
-        >
-          Referred By{" "}
-          <span className="normal-case tracking-normal text-slate/60">
-            (optional)
-          </span>
+        <label htmlFor="referee" className={LABEL}>
+          Referred By
+          <span className={HINT}>(optional)</span>
         </label>
         <input
           type="text"
           id="referee"
           name="referee"
           placeholder="If a member sent you, who?"
-          className="w-full bg-transparent border-b border-ink/20 pb-3 text-base placeholder:text-slate/40 focus:border-ink focus:outline-none transition-colors"
+          className={FIELD_BASE}
         />
       </div>
 
       {/* ---------- Submit ---------- */}
-      <div className="pt-4 text-center">
+      <div className="pt-8 text-center">
         <button
           type="submit"
-          className="inline-block bg-park text-bone px-10 py-4 rounded text-sm tracking-widest uppercase hover:opacity-90 transition-opacity"
+          className="group inline-block bg-park text-bone px-12 py-4 text-[11px] tracking-[0.32em] uppercase transition-colors duration-300 hover:bg-ink"
         >
           Submit Application
         </button>

@@ -159,35 +159,41 @@ export default function Home() {
     <main>
       {/* ============ HERO ============ */}
       <section className="min-h-screen flex flex-col items-center justify-center px-6">
-        <h1 className="font-serif font-light text-7xl md:text-8xl tracking-tight">Manhattan<span className="italic">ite</span></h1>
-        <p className="font-serif italic text-lg md:text-xl text-slate mt-4">Better Listings</p>
-        <ApplyLink className="mt-12 inline-block bg-park text-bone px-8 py-4 rounded text-sm tracking-widest uppercase hover:opacity-90 transition-opacity cursor-pointer">Apply for Membership</ApplyLink>
+        <h1 className="mh-fade-in font-serif font-extralight text-7xl md:text-9xl tracking-tighter leading-none">
+          Manhattan<span className="italic">ite</span>
+        </h1>
+        <p className="mh-fade-in font-serif text-lg md:text-xl text-slate mt-6">
+          Better listings.
+        </p>
+        <ApplyLink className="mh-fade-in-delay mh-link mt-16 text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer">
+          Apply for Membership
+        </ApplyLink>
       </section>
 
-      {/* ============ FOUNDER'S NOTE ============ */}
-      <section className="px-6 py-24 md:py-32 border-t border-ink/10">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs tracking-[0.25em] uppercase text-slate mb-6 text-center">
-            A note from the founder
+      {/* ============ MANIFESTO ============ */}
+      {/* No eyebrow, no signature — same voice, presented as an unsigned
+          editorial statement rather than a founder note. */}
+      <section className="px-6 py-28 md:py-40 border-t border-ink/10">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="font-serif text-2xl md:text-3xl leading-[1.4] text-ink">
+            For the people who actually live in Manhattan. No scams. No junk
+            furniture. No sublets that aren&apos;t real. No photographers who
+            never write back.
           </p>
-          <p className="font-serif text-xl md:text-2xl leading-relaxed text-ink">
-            I&apos;m tired of the same thing everyone in New York is tired of:
-            Marketplace scams, junk furniture, sublets that aren&apos;t real,
-            photographers who never write back. So I made a smaller, better
-            version — for the people who actually live in Manhattan. I read
-            every application by hand. If you&apos;d bring something to it,
-            I&apos;d like to hear from you.
-          </p>
-          <p className="mt-8 font-serif italic text-slate">— George</p>
         </div>
       </section>
 
       {/* ============ APPLICATION FORM ============ */}
-      <section id="apply" className="px-6 py-24 md:py-32 border-t border-ink/10">
+      <section id="apply" className="px-6 py-28 md:py-40 border-t border-ink/10">
         <div className="max-w-xl mx-auto w-full">
-          <div className="text-center mb-16">
-            <p className="text-xs tracking-[0.25em] uppercase text-slate mb-4">Membership</p>
-            <h2 className="font-serif text-3xl md:text-4xl">Apply to join</h2>
+          <div className="text-center mb-20">
+            <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
+              Membership
+            </p>
+            <h2 className="font-serif font-light text-4xl md:text-5xl tracking-tight">
+              Apply to join
+            </h2>
+            <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
           </div>
 
           <ApplicationForm submitAction={submitApplication} />
@@ -196,20 +202,26 @@ export default function Home() {
     </main>
 
     {/* ============ FOOTER ============ */}
-    <footer className="border-t border-ink/10 px-6 py-10 text-center">
+    <footer className="border-t border-ink/10 px-6 py-16 text-center">
       <div className="max-w-5xl mx-auto">
-        <p className="font-serif font-light text-2xl">Manhattan<span className="italic">ite</span></p>
-        <p className="mt-2 text-xs tracking-[0.25em] uppercase text-slate">For New Yorkers</p>
+        <p className="font-serif font-extralight text-3xl tracking-tight">
+          Manhattan<span className="italic">ite</span>
+        </p>
+        <p className="mt-3 text-[10px] tracking-[0.32em] uppercase text-slate">
+          For New Yorkers
+        </p>
 
-        <div className="mt-6 flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 text-xs text-slate">
-          <a href="mailto:info@manhattanite.com" className="hover:text-ink transition-colors">Contact</a>
-          <span className="hidden md:inline opacity-40">·</span>
+        <div className="mt-10 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 text-[11px] tracking-[0.12em] uppercase text-slate">
+          <a href="mailto:info@manhattanite.com" className="hover:text-ink transition-colors">
+            Contact
+          </a>
+          <span className="hidden md:block w-px h-3 bg-ink/15" />
           <span>New York City</span>
-          <span className="hidden md:inline opacity-40">·</span>
-          <span>© 2026 Manhattanite</span>
-          <span className="hidden md:inline opacity-40">·</span>
+          <span className="hidden md:block w-px h-3 bg-ink/15" />
+          <span>© 2026</span>
+          <span className="hidden md:block w-px h-3 bg-ink/15" />
           <a href="/privacy" className="hover:text-ink transition-colors">Privacy</a>
-          <span className="hidden md:inline opacity-40">·</span>
+          <span className="hidden md:block w-px h-3 bg-ink/15" />
           <a href="/terms" className="hover:text-ink transition-colors">Terms</a>
         </div>
       </div>

@@ -1,12 +1,24 @@
 @import "tailwindcss";
 
 @theme {
+  /* A warmer, paper-like off-white. Reads like uncoated stock, not screen white. */
   --color-bone: #F5F0E8;
-  --color-ink: #0A0A0A;
+
+  /* Softened from pure black to a warm near-black. Less harsh, more printed-page. */
+  --color-ink: #0F0E0C;
+
+  /* Mid-tone neutral for body copy and subdued labels. */
   --color-slate: #5A5A5A;
-  --color-park: #1F3A2E;
+
+  /* Park-green deepened from a forest tone toward an almost-black-with-green-undertone.
+     Reads as a couture / jewelry-box green rather than a Brooklyn-cafe forest. */
+  --color-park: #13241B;
+
+  /* Pure paper, used sparingly for inverted surfaces. */
   --color-paper: #FFFFFF;
 
+  /* Type system — display (Instrument Serif) and body (Inter). Display does
+     the personality lifting; body stays quiet and crisp. */
   --font-serif: var(--font-instrument-serif);
   --font-sans: var(--font-inter);
 }
@@ -19,6 +31,105 @@ body {
   background-color: var(--color-bone);
   color: var(--color-ink);
   font-family: var(--font-sans), system-ui, sans-serif;
+
+  /* Tighten Inter very slightly so it stops reading as the Vercel default.
+     A negative tracking like -0.011em is imperceptible per-character but
+     gives the page a more confident, set-in-print rhythm. */
+  letter-spacing: -0.011em;
+
+  /* Stylistic alternates make Inter feel more humanist and less defaulty:
+     cv11 = single-storey 'a', ss03 = single-storey 'g', ss01 = open digits. */
+  font-feature-settings: "cv11", "ss01", "ss03";
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Slow, restrained entrance for the hero — nothing flashy, just enough to
+   give the page weight on first paint. 700ms ease-out. */
+@keyframes mh-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mh-fade-in {
+  animation: mh-fade-in 0.9s ease-out both;
+}
+
+.mh-fade-in-delay {
+  animation: mh-fade-in 0.9s ease-out 0.25s both;
+}
+
+/* Custom select arrow — replaces the OS-default chevron with a hairline
+   downward caret in the ink color. Applied via a class on the <select>. */
+.mh-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%230F0E0C' stroke-width='1' stroke-linecap='square'%3E%3Cpath d='M1 1.5 L6 6.5 L11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.25rem center;
+  background-size: 0.75rem 0.5rem;
+  padding-right: 1.75rem;
+}
+
+/* Custom checkbox — square, hairline border, fills with park on :checked.
+   Native checkbox is hidden via appearance-none in the markup. */
+.mh-checkbox {
+  appearance: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 1px solid rgba(15, 14, 12, 0.35);
+  background-color: transparent;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.mh-checkbox:hover {
+  border-color: var(--color-ink);
+}
+
+.mh-checkbox:checked {
+  background-color: var(--color-park);
+  border-color: var(--color-park);
+}
+
+.mh-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none' stroke='%23F5F0E8' stroke-width='1.4' stroke-linecap='square'%3E%3Cpath d='M2 5 L4.5 7.5 L8 3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 0.7rem 0.7rem;
+}
+
+.mh-checkbox:focus-visible {
+  outline: 1px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Animated hairline underline for editorial-style text links.
+   Renders as a 1px line under the text that grows from left on hover. */
+.mh-link {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.25rem;
+}
+
+.mh-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: currentColor;
+  transform-origin: left center;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mh-link:hover::after {
+  transform: scaleX(0);
+  transform-origin: right center;
 }
