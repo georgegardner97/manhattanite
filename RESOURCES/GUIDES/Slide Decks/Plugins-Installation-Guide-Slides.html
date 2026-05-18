@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugins Installation Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f5f0eb;
+            --text-primary: #1a1a1a;
+            --text-secondary: #3d3d3d;
+            --accent-warm: #b8860b;
+            --accent-pink: #c9a84c;
+            --accent-gold: #b8860b;
+            --accent-terracotta: #8a8580;
+            --font-display: 'Instrument Sans', sans-serif;
+            --font-body: 'Instrument Sans', sans-serif;
+            --title-size: clamp(2rem, 5.5vw, 4.2rem);
+            --h2-size: clamp(1.4rem, 3.5vw, 2.6rem);
+            --h3-size: clamp(1rem, 2.2vw, 1.5rem);
+            --body-size: clamp(0.8rem, 1.4vw, 1.1rem);
+            --small-size: clamp(0.65rem, 1vw, 0.85rem);
+            --label-size: clamp(0.6rem, 0.9vw, 0.75rem);
+            --slide-padding: clamp(1.5rem, 5vw, 5rem);
+            --content-gap: clamp(0.5rem, 2vw, 2rem);
+            --element-gap: clamp(0.25rem, 1vw, 1rem);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.7s;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden; scroll-snap-align: start;
+            display: flex; flex-direction: column; position: relative;
+        }
+        .slide-content {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; padding: var(--slide-padding);
+            z-index: 1; position: relative;
+        }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-body); font-weight: 400; }
+        .slide::before, .slide::after { content: ''; position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.08; pointer-events: none; z-index: 0; }
+        .slide::before { width: clamp(200px, 30vw, 400px); height: clamp(200px, 30vw, 400px); background: radial-gradient(circle, var(--accent-pink) 0%, transparent 70%); top: -10%; right: -5%; }
+        .slide::after { width: clamp(150px, 25vw, 350px); height: clamp(150px, 25vw, 350px); background: radial-gradient(circle, var(--accent-warm) 0%, transparent 70%); bottom: -10%; left: -5%; }
+        .slide:nth-child(even)::before { left: -5%; right: auto; top: auto; bottom: -8%; background: radial-gradient(circle, var(--accent-gold) 0%, transparent 70%); }
+        .slide:nth-child(even)::after { right: -5%; left: auto; top: -8%; background: radial-gradient(circle, var(--accent-pink) 0%, transparent 70%); }
+        .slide:nth-child(3n)::before { background: radial-gradient(circle, var(--accent-terracotta) 0%, transparent 70%); opacity: 0.06; }
+        .slide-content { position: relative; z-index: 1; }
+        .accent-line { position: absolute; width: 1px; height: clamp(40px, 8vh, 80px); background: linear-gradient(to bottom, transparent, var(--accent-warm), transparent); opacity: 0.4; z-index: 1; }
+
+        h1 { font-family: var(--font-display); font-size: var(--title-size); font-weight: 700; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.02em; }
+        h2 { font-family: var(--font-display); font-size: var(--h2-size); font-weight: 600; color: var(--text-primary); line-height: 1.15; letter-spacing: -0.01em; }
+        h3 { font-family: var(--font-display); font-size: var(--h3-size); font-weight: 600; color: var(--accent-warm); line-height: 1.2; }
+        p { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.6; max-width: 680px; }
+        .step-label { font-size: var(--label-size); font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent-warm); margin-bottom: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .subtitle { font-size: clamp(0.9rem, 1.8vw, 1.3rem); color: #8a8580; font-weight: 400; font-style: italic; }
+
+        .title-slide .slide-content { align-items: center; text-align: center; gap: clamp(0.8rem, 2vh, 1.5rem); }
+        .title-slide h1 { max-width: 900px; }
+        .content-slide .slide-content { gap: var(--content-gap); max-width: 900px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: clamp(0.6rem, 1.2vw, 1rem); margin-top: clamp(0.4rem, 1vh, 0.8rem); }
+        .feature-card { background: #ede8e1; border: 1px solid #ddd5cc; border-radius: 12px; padding: clamp(0.8rem, 1.5vw, 1.2rem); }
+        .feature-card h3 { font-size: var(--small-size); margin-bottom: clamp(0.2rem, 0.5vh, 0.4rem); }
+        .feature-card p { font-size: var(--small-size); line-height: 1.4; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 3vw, 3rem); align-items: start; }
+        @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+        .points { list-style: none; display: flex; flex-direction: column; gap: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .points li { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.5; padding-left: 1.2em; position: relative; }
+        .points li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-warm); }
+        .highlight-box { background: #ede8e1; border-left: 2px solid var(--accent-warm); padding: clamp(0.6rem, 1.2vw, 1rem) clamp(0.8rem, 1.5vw, 1.2rem); border-radius: 0 8px 8px 0; margin-top: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .highlight-box p { font-size: var(--small-size); color: var(--text-primary); font-style: italic; }
+
+        /* FLOW DIAGRAM */
+        .flow-container { display: flex; align-items: center; justify-content: center; gap: clamp(0.3rem, 0.8vw, 0.6rem); margin: clamp(0.5rem, 1.5vh, 1rem) 0; }
+        .flow-box { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: clamp(0.5rem, 1vw, 0.8rem) clamp(0.6rem, 1.2vw, 1rem); text-align: center; font-size: var(--small-size); font-weight: 600; color: var(--text-primary); flex: 1; max-width: 160px; }
+        .flow-arrow { color: var(--accent-warm); font-size: clamp(1rem, 2vw, 1.4rem); font-weight: 700; flex-shrink: 0; }
+
+        /* CODE BLOCK STYLING */
+        .code-block { background: #2a2a2a; color: #e8e8e8; border-radius: 8px; padding: clamp(0.8rem, 1.5vw, 1.2rem); font-family: 'Courier New', monospace; font-size: var(--small-size); line-height: 1.5; overflow-x: auto; margin-top: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .code-block p { color: #e8e8e8; max-width: none; }
+
+        .reveal { opacity: 0; transform: translateY(25px); transition: opacity var(--duration-normal) var(--ease-out-expo), transform var(--duration-normal) var(--ease-out-expo); }
+        .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+        .reveal:nth-child(1) { transition-delay: 0.1s; } .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3) { transition-delay: 0.3s; } .reveal:nth-child(4) { transition-delay: 0.4s; }
+        .reveal:nth-child(5) { transition-delay: 0.5s; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent-warm), var(--accent-pink)); z-index: 1000; transition: width 0.3s ease; }
+        .nav-dots { position: fixed; right: clamp(1rem, 2vw, 2rem); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
+        .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(26, 26, 26, 0.2); cursor: pointer; transition: all 0.3s ease; border: none; }
+        .nav-dot.active { background: var(--accent-warm); transform: scale(1.4); }
+        .slide-counter { position: fixed; bottom: clamp(1rem, 2vw, 2rem); right: clamp(1rem, 2vw, 2rem); font-size: var(--small-size); color: var(--text-secondary); opacity: 0.5; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+    <div class="slide-counter" id="slideCounter"></div>
+
+    <!-- SLIDE 1: TITLE -->
+    <section class="slide title-slide">
+        <div class="accent-line" style="top: 15%; left: 8%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">CoWork OS Guide</p>
+            <h1 class="reveal">Plugins Installation</h1>
+            <p class="subtitle reveal">Install plugins from the Better Creating marketplace</p>
+            <p class="reveal" style="transition-delay: 0.35s; font-size: var(--body-size); max-width: 700px;">A quick visual walkthrough to get your CoWork OS plugins installed and ready to use.</p>
+        </div>
+    </section>
+
+    <!-- SLIDE 2: ADD THE BETTER CREATING MARKETPLACE -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="bottom: 20%; right: 6%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Getting set up</p>
+            <h2 class="reveal">Add the Better Creating Marketplace</h2>
+            <p class="reveal">CoWork OS plugins install from the Better Creating marketplace. The marketplace will always have the latest plugins available for your system — here's how to set it up.</p>
+            <ul class="points reveal" style="transition-delay: 0.3s;">
+                <li><strong>Step 1.</strong> Open Customise (sliders icon) > Plugins > click + next to "Personal plugins" > Add marketplace</li>
+                <li><strong>Step 2.</strong> Type <code style="background: #f0f0f0; padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace;">bettercreating/cowork-os-plugins</code> in the URL field > click Sync</li>
+                <li><strong>Step 3.</strong> Click Browse plugins > go to Personal tab > click + on each plugin you want</li>
+            </ul>
+            <div class="highlight-box reveal" style="transition-delay: 0.45s;">
+                <p><strong>About the safety warning:</strong> Anthropic shows this for every third-party plugin — it's not specific to CoWork OS. These plugins were built by Simon at Better Creating and only contain text-based instructions and connections to your own tools. Nothing risky.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 3: WHAT YOU'RE INSTALLING -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="top: 12%; left: 5%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Available plugins</p>
+            <h2 class="reveal">What You're Installing</h2>
+            <div class="card-grid reveal" style="transition-delay: 0.3s;">
+                <div class="feature-card">
+                    <h3>Specialist Sub-Agent Builder</h3>
+                    <p>Build custom AI specialist sub-agents with searchable knowledge bases. Turn your expertise into a ready-to-use plugin.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Personal Assistant</h3>
+                    <p>Turns your Admin PA area into an active personal assistant. Tracks tasks, logs your day, remembers contacts, and gives you daily briefings.</p>
+                </div>
+            </div>
+            <div class="highlight-box reveal" style="transition-delay: 0.4s;">
+                <p>Check back in the marketplace any time — new plugins and updates will appear as they're released.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 4: CLAUDE CODE + TROUBLESHOOTING -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="bottom: 25%; right: 4%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Using Claude Code?</p>
+            <h2 class="reveal">Same Process, Different Tab</h2>
+            <p class="reveal">If you're using CoWork OS in the Claude Code tab instead of CoWork, the process is the same — open <strong>Customise &gt; Plugins</strong>, add the Better Creating marketplace, and install your plugins from there.</p>
+            <h3 class="reveal" style="transition-delay: 0.3s; font-size: var(--h3-size); margin-top: clamp(0.8rem, 2vh, 1.5rem);">Troubleshooting</h3>
+            <div class="card-grid reveal" style="transition-delay: 0.35s; grid-template-columns: 1fr;">
+                <div class="feature-card">
+                    <h3>Plugins don't appear?</h3>
+                    <p>Double-check the marketplace URL is exactly <code style="background: #f0f0f0; padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace;">bettercreating/cowork-os-plugins</code>. If they installed but skills don't show, close and reopen the Claude app. Still stuck? Email <code style="background: #f0f0f0; padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace;">notion@bettercreating.com</code>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 5: CTA -->
+    <section class="slide title-slide">
+        <div class="accent-line" style="bottom: 25%; left: 8%;"></div>
+        <div class="slide-content">
+            <h1 class="reveal" style="font-size: clamp(1.5rem, 4vw, 3rem);">You're All Set</h1>
+            <p class="subtitle reveal">Your plugins are installed and ready to use.</p>
+            <p class="reveal" style="transition-delay: 0.35s;"><a href="https://separate-pressure-d28.notion.site/68531cf2262144ef884fabe3964c801d?pvs=105" style="color: var(--accent-warm); font-size: clamp(0.85rem, 1.5vw, 1.1rem); font-weight: 600; text-decoration: none; border: 2px solid var(--accent-warm); padding: 0.5em 1.2em; border-radius: 6px; display: inline-block;">Click here to share your feedback</a></p>
+            <p class="reveal" style="transition-delay: 0.45s; color: var(--accent-warm); font-size: clamp(1rem, 2vw, 1.4rem); font-weight: 600;">bettercreating.com</p>
+            <p class="reveal" style="transition-delay: 0.55s; font-size: var(--small-size); max-width: 400px;">Better Creating | Systems Made Better<br>#buildinpublic</p>
+        </div>
+    </section>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupTouchNav();
+                this.setupProgressBar();
+                this.setupNavDots();
+                this.updateCounter();
+            }
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const index = Array.from(this.slides).indexOf(entry.target);
+                            this.currentSlide = index;
+                            this.updateNavDots(); this.updateProgressBar(); this.updateCounter();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (['ArrowDown','ArrowRight',' ','PageDown'].includes(e.key)) { e.preventDefault(); this.goToSlide(Math.min(this.currentSlide + 1, this.slides.length - 1)); }
+                    else if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); this.goToSlide(Math.max(this.currentSlide - 1, 0)); }
+                    else if (e.key === 'Home') { e.preventDefault(); this.goToSlide(0); }
+                    else if (e.key === 'End') { e.preventDefault(); this.goToSlide(this.slides.length - 1); }
+                });
+            }
+            setupTouchNav() {
+                let startY = 0;
+                document.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+                document.addEventListener('touchend', (e) => {
+                    const diff = startY - e.changedTouches[0].clientY;
+                    if (Math.abs(diff) > 50) { diff > 0 ? this.goToSlide(Math.min(this.currentSlide + 1, this.slides.length - 1)) : this.goToSlide(Math.max(this.currentSlide - 1, 0)); }
+                }, { passive: true });
+            }
+            setupProgressBar() { this.progressBar = document.getElementById('progressBar'); this.updateProgressBar(); }
+            updateProgressBar() { if (this.progressBar) this.progressBar.style.width = ((this.currentSlide + 1) / this.slides.length * 100) + '%'; }
+            setupNavDots() {
+                const c = document.getElementById('navDots');
+                this.slides.forEach((_, i) => { const d = document.createElement('button'); d.className = 'nav-dot' + (i === 0 ? ' active' : ''); d.setAttribute('aria-label', `Slide ${i+1}`); d.addEventListener('click', () => this.goToSlide(i)); c.appendChild(d); });
+                this.dots = c.querySelectorAll('.nav-dot');
+            }
+            updateNavDots() { if (this.dots) this.dots.forEach((d, i) => d.classList.toggle('active', i === this.currentSlide)); }
+            updateCounter() { const c = document.getElementById('slideCounter'); if (c) c.textContent = `${this.currentSlide + 1} / ${this.slides.length}`; }
+            goToSlide(i) { this.slides[i].scrollIntoView({ behavior: 'smooth' }); }
+        }
+        new SlidePresentation();
+    </script>
+</body>
+</html>

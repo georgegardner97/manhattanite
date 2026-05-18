@@ -1,0 +1,8 @@
+{
+  "name": "{{PLUGIN_SLUG}}",
+  "version": "0.1.0",
+  "description": "{{PLUGIN_DESCRIPTION}}",
+  "author": {
+    "name": "{{AUTHOR_NAME}}"
+  }
+}

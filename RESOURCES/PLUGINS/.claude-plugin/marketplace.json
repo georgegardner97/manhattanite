@@ -1,0 +1,35 @@
+{
+  "name": "better-creating",
+  "owner": {
+    "name": "Better Creating",
+    "email": "notion@bettercreating.com"
+  },
+  "metadata": {
+    "description": "Official plugins for CoWork OS by Better Creating",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "specialist-sub-agent-builder",
+      "source": "./plugins/specialist-sub-agent-builder",
+      "description": "Build custom AI specialist sub-agents with searchable knowledge bases. Turn your expertise into a ready-to-install plugin — no code required.",
+      "version": "0.8.0",
+      "author": {
+        "name": "Better Creating"
+      },
+      "category": "agent-building",
+      "tags": ["specialist", "sub-agent", "knowledge-base", "builder"]
+    },
+    {
+      "name": "personal-assistant",
+      "source": "./plugins/personal-assistant",
+      "description": "Turns your Admin-PA area into an active personal assistant. Tracks tasks, logs your day, remembers contacts, and briefs you each morning.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Better Creating"
+      },
+      "category": "productivity",
+      "tags": ["personal-assistant", "task-tracking", "daily-briefing"]
+    }
+  ]
+}

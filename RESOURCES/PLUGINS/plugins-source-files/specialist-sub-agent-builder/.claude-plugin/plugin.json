@@ -1,0 +1,15 @@
+{
+  "name": "specialist-sub-agent-builder",
+  "version": "0.8.0",
+  "description": "Build custom AI specialist sub-agents with searchable knowledge bases. Turn your expertise into a ready-to-install plugin — no code required.",
+  "author": {
+    "name": "Better Creating"
+  },
+  "keywords": [
+    "specialist",
+    "sub-agent",
+    "knowledge-base",
+    "builder",
+    "plugin-factory"
+  ]
+}

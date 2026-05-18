@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin PA Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f5f0eb;
+            --text-primary: #1a1a1a;
+            --text-secondary: #3d3d3d;
+            --accent-warm: #b8860b;
+            --accent-pink: #c9a84c;
+            --accent-gold: #b8860b;
+            --accent-terracotta: #8a8580;
+            --font-display: 'Instrument Sans', sans-serif;
+            --font-body: 'Instrument Sans', sans-serif;
+            --title-size: clamp(2rem, 5.5vw, 4.2rem);
+            --h2-size: clamp(1.4rem, 3.5vw, 2.6rem);
+            --h3-size: clamp(1rem, 2.2vw, 1.5rem);
+            --body-size: clamp(0.8rem, 1.4vw, 1.1rem);
+            --small-size: clamp(0.65rem, 1vw, 0.85rem);
+            --label-size: clamp(0.6rem, 0.9vw, 0.75rem);
+            --slide-padding: clamp(1.5rem, 5vw, 5rem);
+            --content-gap: clamp(0.5rem, 2vw, 2rem);
+            --element-gap: clamp(0.25rem, 1vw, 1rem);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.7s;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-x: hidden; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden; scroll-snap-align: start;
+            display: flex; flex-direction: column; position: relative;
+        }
+        .slide-content {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; max-height: 100%;
+            overflow: hidden; padding: var(--slide-padding);
+        }
+        .card, .container, .content-box { max-width: min(90vw, 1000px); max-height: min(80vh, 700px); }
+        .feature-list, .bullet-list { gap: clamp(0.4rem, 1vh, 1rem); }
+        .feature-list li, .bullet-list li { font-size: var(--body-size); line-height: 1.4; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: clamp(0.5rem, 1.5vw, 1rem); }
+        img, .image-container { max-width: 100%; max-height: min(50vh, 400px); object-fit: contain; }
+
+        @media (max-height: 700px) { :root { --slide-padding: clamp(0.75rem, 3vw, 2rem); --content-gap: clamp(0.4rem, 1.5vw, 1rem); --title-size: clamp(1.25rem, 4.5vw, 2.5rem); --h2-size: clamp(1rem, 3vw, 1.75rem); } }
+        @media (max-height: 600px) { :root { --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem); --content-gap: clamp(0.3rem, 1vw, 0.75rem); --title-size: clamp(1.1rem, 4vw, 2rem); --body-size: clamp(0.7rem, 1.2vw, 0.95rem); } .nav-dots, .keyboard-hint, .decorative { display: none; } }
+        @media (max-height: 500px) { :root { --slide-padding: clamp(0.4rem, 2vw, 1rem); --title-size: clamp(1rem, 3.5vw, 1.5rem); --h2-size: clamp(0.9rem, 2.5vw, 1.25rem); --body-size: clamp(0.65rem, 1vw, 0.85rem); } }
+        @media (max-width: 600px) { :root { --title-size: clamp(1.25rem, 7vw, 2.5rem); } .grid { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr; } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; } html { scroll-behavior: auto; } }
+
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-body); font-weight: 400; }
+        .slide::before, .slide::after { content: ''; position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.08; pointer-events: none; z-index: 0; }
+        .slide::before { width: clamp(200px, 30vw, 400px); height: clamp(200px, 30vw, 400px); background: radial-gradient(circle, var(--accent-pink) 0%, transparent 70%); top: -10%; right: -5%; }
+        .slide::after { width: clamp(150px, 25vw, 350px); height: clamp(150px, 25vw, 350px); background: radial-gradient(circle, var(--accent-warm) 0%, transparent 70%); bottom: -10%; left: -5%; }
+        .slide:nth-child(even)::before { left: -5%; right: auto; top: auto; bottom: -8%; background: radial-gradient(circle, var(--accent-gold) 0%, transparent 70%); }
+        .slide:nth-child(even)::after { right: -5%; left: auto; top: -8%; background: radial-gradient(circle, var(--accent-pink) 0%, transparent 70%); }
+        .slide:nth-child(3n)::before { background: radial-gradient(circle, var(--accent-terracotta) 0%, transparent 70%); opacity: 0.06; }
+        .slide-content { position: relative; z-index: 1; }
+        .accent-line { position: absolute; width: 1px; height: clamp(40px, 8vh, 80px); background: linear-gradient(to bottom, transparent, var(--accent-warm), transparent); opacity: 0.4; z-index: 1; }
+
+        h1 { font-family: var(--font-display); font-size: var(--title-size); font-weight: 700; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.02em; }
+        h2 { font-family: var(--font-display); font-size: var(--h2-size); font-weight: 600; color: var(--text-primary); line-height: 1.15; letter-spacing: -0.01em; }
+        h3 { font-family: var(--font-display); font-size: var(--h3-size); font-weight: 600; color: var(--accent-warm); line-height: 1.2; }
+        p { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.6; max-width: 680px; }
+        .step-label { font-size: var(--label-size); font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent-warm); margin-bottom: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .subtitle { font-size: clamp(0.9rem, 1.8vw, 1.3rem); color: #8a8580; font-weight: 400; font-style: italic; }
+
+        .title-slide .slide-content { align-items: center; text-align: center; gap: clamp(0.8rem, 2vh, 1.5rem); }
+        .title-slide h1 { max-width: 900px; }
+        .content-slide .slide-content { gap: var(--content-gap); max-width: 900px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: clamp(0.6rem, 1.2vw, 1rem); margin-top: clamp(0.4rem, 1vh, 0.8rem); }
+        .card-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: clamp(0.6rem, 1.2vw, 1rem); margin-top: clamp(0.4rem, 1vh, 0.8rem); }
+        .feature-card { background: #ede8e1; border: 1px solid #ddd5cc; border-radius: 12px; padding: clamp(0.8rem, 1.5vw, 1.2rem); }
+        .feature-card h3 { font-size: var(--small-size); margin-bottom: clamp(0.2rem, 0.5vh, 0.4rem); }
+        .feature-card p { font-size: var(--small-size); line-height: 1.4; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 3vw, 3rem); align-items: start; }
+        @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+        .points { list-style: none; display: flex; flex-direction: column; gap: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .points li { font-size: var(--body-size); color: var(--text-secondary); line-height: 1.5; padding-left: 1.2em; position: relative; }
+        .points li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-warm); }
+        .highlight-box { background: #ede8e1; border-left: 2px solid var(--accent-warm); padding: clamp(0.6rem, 1.2vw, 1rem) clamp(0.8rem, 1.5vw, 1.2rem); border-radius: 0 8px 8px 0; margin-top: clamp(0.3rem, 0.8vh, 0.6rem); }
+        .highlight-box p { font-size: var(--small-size); color: var(--text-primary); font-style: italic; }
+
+        /* FLOW DIAGRAM */
+        .flow-container { display: flex; align-items: center; justify-content: center; gap: clamp(0.3rem, 0.8vw, 0.6rem); margin: clamp(0.5rem, 1.5vh, 1rem) 0; flex-wrap: wrap; }
+        .flow-box { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: clamp(0.5rem, 1vw, 0.8rem) clamp(0.6rem, 1.2vw, 1rem); text-align: center; font-size: var(--small-size); font-weight: 600; color: var(--text-primary); flex: 1; max-width: 160px; }
+        .flow-arrow { color: var(--accent-warm); font-size: clamp(1rem, 2vw, 1.4rem); font-weight: 700; flex-shrink: 0; }
+
+        .reveal { opacity: 0; transform: translateY(25px); transition: opacity var(--duration-normal) var(--ease-out-expo), transform var(--duration-normal) var(--ease-out-expo); }
+        .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+        .reveal:nth-child(1) { transition-delay: 0.1s; } .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3) { transition-delay: 0.3s; } .reveal:nth-child(4) { transition-delay: 0.4s; }
+        .reveal:nth-child(5) { transition-delay: 0.5s; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--accent-warm), var(--accent-pink)); z-index: 1000; transition: width 0.3s ease; }
+        .nav-dots { position: fixed; right: clamp(1rem, 2vw, 2rem); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
+        .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(26, 26, 26, 0.2); cursor: pointer; transition: all 0.3s ease; border: none; }
+        .nav-dot.active { background: var(--accent-warm); transform: scale(1.4); }
+        .slide-counter { position: fixed; bottom: clamp(1rem, 2vw, 2rem); right: clamp(1rem, 2vw, 2rem); font-size: var(--small-size); color: var(--text-secondary); opacity: 0.5; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+    <div class="slide-counter" id="slideCounter"></div>
+
+    <!-- SLIDE 1: TITLE -->
+    <section class="slide title-slide">
+        <div class="accent-line" style="top: 15%; left: 8%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">CoWork OS Guide</p>
+            <h1 class="reveal">Admin PA</h1>
+            <p class="subtitle reveal">Your personal assistant's home base<br>From catch-all inbox to conversational second brain. No code required.</p>
+        </div>
+    </section>
+
+    <!-- SLIDE 2: WHAT IS ADMIN PA -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="bottom: 20%; right: 6%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">The foundation</p>
+            <h2 class="reveal">What Is Admin PA?</h2>
+            <p class="reveal">Admin PA is two things working together. First, a dedicated work area inside CoWork OS — folders where general tasks, system reviews, and day-to-day admin live. Second, an optional Personal Assistant plugin — a dedicated instruction set that turns this area into a conversational personal assistant. The folders work on their own from day one. The plugin activates when you're ready.</p>
+            <div class="highlight-box reveal" style="transition-delay: 0.35s;">
+                <p>Admin PA lives at WORK AREAS/Admin-PA/. When you ask Claude for something that doesn't clearly belong elsewhere, it goes here.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 3: WHAT IT DOES -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="top: 12%; left: 5%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Right now</p>
+            <h2 class="reveal">What It Does Right Now</h2>
+            <div class="card-grid reveal" style="transition-delay: 0.3s;">
+                <div class="feature-card"><h3>Quick Tasks</h3><p>One-offs that don't fit in a project. Change a password, find a file, draft an email.</p></div>
+                <div class="feature-card"><h3>System Reviews</h3><p>Your folder structure, automation health, what's working and what's not.</p></div>
+                <div class="feature-card"><h3>First Week Guide Outputs</h3><p>Your onboarding documents, setup checklists, and reference materials.</p></div>
+                <div class="feature-card"><h3>General Admin</h3><p>Files, notes, and catch-all documents that don't belong in a specific project.</p></div>
+            </div>
+            <p class="reveal" style="transition-delay: 0.45s; font-size: var(--small-size); margin-top: 1rem;">Folders are automatically named using kebab-case. The system adapts as you work.</p>
+        </div>
+    </section>
+
+    <!-- SLIDE 4: THE PERSONAL ASSISTANT PLUGIN -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="bottom: 25%; right: 4%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Optional activation</p>
+            <h2 class="reveal">The Personal Assistant Plugin</h2>
+            <p class="reveal">The optional instruction set. Once installed, you narrate your day and it organises. The core idea: your assistant knows what matters — your projects, priorities, people — and surfaces what you need when you need it.</p>
+            <p class="reveal" style="transition-delay: 0.25s; font-size: var(--small-size); font-style: italic;">Example: Sarah starts a meeting recap as "Had call with acme about roadmap." The plugin pulls the Acme project, checks recent updates, flags action items, and files the note automatically.</p>
+            <div class="card-grid-3 reveal" style="transition-delay: 0.35s;">
+                <div class="feature-card"><h3>Captain's Log</h3><p>Daily narration in your own words. The system structures it.</p></div>
+                <div class="feature-card"><h3>Task Tracking</h3><p>Extract and organise what you need to do from loose notes.</p></div>
+                <div class="feature-card"><h3>Contact CRM</h3><p>People, their context, and your history. Always searchable.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 5: MORE PLUGIN FEATURES -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="top: 18%; left: 6%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Conversation features</p>
+            <h2 class="reveal">What the Plugin Does</h2>
+            <div class="card-grid-3 reveal" style="transition-delay: 0.25s;">
+                <div class="feature-card"><h3>Daily Briefing</h3><p>Context for your day: priorities, calendar, reminders.</p></div>
+                <div class="feature-card"><h3>End-of-Day Summary</h3><p>What happened, what's due, what to carry forward.</p></div>
+                <div class="feature-card"><h3>Slash Commands</h3><p>Quick actions: /remind, /log, /schedule, and more.</p></div>
+            </div>
+            <p class="reveal" style="transition-delay: 0.35s;"><strong>Storage That Adapts to You</strong> — Plain text files. Zero dependencies. You own everything.</p>
+            <div class="highlight-box reveal" style="transition-delay: 0.45s;">
+                <p>You don't manage the system — it manages itself. The more you use it, the smarter it gets.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 6: HOW IT FITS -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="bottom: 15%; right: 5%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">In your ecosystem</p>
+            <h2 class="reveal">How It Fits Into CoWork OS</h2>
+            <div class="card-grid reveal" style="transition-delay: 0.25s;">
+                <div class="feature-card"><h3>Identity Layer</h3><p>Inherits your About Me — your beliefs, voice, and context.</p></div>
+                <div class="feature-card"><h3>System Review</h3><p>Keeps your CoWork OS health in check. Flags what needs attention.</p></div>
+                <div class="feature-card"><h3>Scheduled Tasks</h3><p>Runs briefings and summaries on your schedule.</p></div>
+                <div class="feature-card"><h3>Connectors</h3><p>Reads from Gmail, Notion, Google Drive. Can do things on your behalf.</p></div>
+            </div>
+            <div class="highlight-box reveal" style="transition-delay: 0.4s;">
+                <p>The plugin is opt-in. The Admin PA folders work from day one as your catch-all workspace.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 7: GETTING STARTED -->
+    <section class="slide content-slide">
+        <div class="accent-line" style="top: 20%; left: 7%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Three simple steps</p>
+            <h2 class="reveal">Getting Started</h2>
+            <div class="flow-container reveal" style="transition-delay: 0.25s;">
+                <div class="flow-box"><strong>1</strong><br>Use as catch-all</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box"><strong>2</strong><br>Run System Reviews</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box"><strong>3</strong><br>Activate Plugin</div>
+            </div>
+            <ul class="points reveal" style="transition-delay: 0.35s;">
+                <li><strong>Use it as your catch-all.</strong> Any task that doesn't fit a project goes into WORK AREAS/Admin-PA/Quick-Tasks or General-Admin. Start here.</li>
+                <li><strong>Run System Reviews from here.</strong> Check your CoWork OS health. Identify what's working. Spot what needs refining.</li>
+                <li><strong>Activate the PA plugin from the Better Creating marketplace.</strong> Install it once. Start narrating. It organises from there.</li>
+            </ul>
+            <div class="highlight-box reveal" style="transition-delay: 0.5s;">
+                <p>See the Plugins Installation Guide for detailed setup. Start with the folders today — the plugin is there when you're ready.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 8: CTA -->
+    <section class="slide title-slide">
+        <div class="accent-line" style="bottom: 25%; left: 8%;"></div>
+        <div class="slide-content">
+            <p class="step-label reveal">Part of CoWork OS</p>
+            <h1 class="reveal" style="font-size: clamp(1.5rem, 4vw, 3rem);">Your Second Brain Starts Here</h1>
+            <p class="subtitle reveal">Admin PA is the catch-all workspace. The foundation for everything else.</p>
+            <p class="reveal" style="transition-delay: 0.35s;"><a href="https://separate-pressure-d28.notion.site/68531cf2262144ef884fabe3964c801d?pvs=105" style="color: var(--accent-warm); font-size: clamp(0.85rem, 1.5vw, 1.1rem); font-weight: 600; text-decoration: none; border: 2px solid var(--accent-warm); padding: 0.5em 1.2em; border-radius: 6px; display: inline-block;">Share your feedback</a></p>
+            <p class="reveal" style="transition-delay: 0.45s; color: var(--accent-warm); font-size: clamp(1rem, 2vw, 1.4rem); font-weight: 600;">bettercreating.com</p>
+            <p class="reveal" style="transition-delay: 0.55s; font-size: var(--small-size); max-width: 400px;">Better Creating | Systems Made Better<br>#buildinpublic</p>
+        </div>
+    </section>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupTouchNav();
+                this.setupProgressBar();
+                this.setupNavDots();
+                this.updateCounter();
+            }
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const index = Array.from(this.slides).indexOf(entry.target);
+                            this.currentSlide = index;
+                            this.updateNavDots(); this.updateProgressBar(); this.updateCounter();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (['ArrowDown','ArrowRight',' ','PageDown'].includes(e.key)) { e.preventDefault(); this.goToSlide(Math.min(this.currentSlide + 1, this.slides.length - 1)); }
+                    else if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); this.goToSlide(Math.max(this.currentSlide - 1, 0)); }
+                    else if (e.key === 'Home') { e.preventDefault(); this.goToSlide(0); }
+                    else if (e.key === 'End') { e.preventDefault(); this.goToSlide(this.slides.length - 1); }
+                });
+            }
+            setupTouchNav() {
+                let startY = 0;
+                document.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+                document.addEventListener('touchend', (e) => {
+                    const diff = startY - e.changedTouches[0].clientY;
+                    if (Math.abs(diff) > 50) { diff > 0 ? this.goToSlide(Math.min(this.currentSlide + 1, this.slides.length - 1)) : this.goToSlide(Math.max(this.currentSlide - 1, 0)); }
+                }, { passive: true });
+            }
+            setupProgressBar() { this.progressBar = document.getElementById('progressBar'); this.updateProgressBar(); }
+            updateProgressBar() { if (this.progressBar) this.progressBar.style.width = ((this.currentSlide + 1) / this.slides.length * 100) + '%'; }
+            setupNavDots() {
+                const c = document.getElementById('navDots');
+                this.slides.forEach((_, i) => { const d = document.createElement('button'); d.className = 'nav-dot' + (i === 0 ? ' active' : ''); d.setAttribute('aria-label', `Slide ${i+1}`); d.addEventListener('click', () => this.goToSlide(i)); c.appendChild(d); });
+                this.dots = c.querySelectorAll('.nav-dot');
+            }
+            updateNavDots() { if (this.dots) this.dots.forEach((d, i) => d.classList.toggle('active', i === this.currentSlide)); }
+            updateCounter() { const c = document.getElementById('slideCounter'); if (c) c.textContent = `${this.currentSlide + 1} / ${this.slides.length}`; }
+            goToSlide(i) { this.slides[i].scrollIntoView({ behavior: 'smooth' }); }
+        }
+        new SlidePresentation();
+    </script>
+</body>
+</html>
