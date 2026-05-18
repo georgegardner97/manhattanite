@@ -2,10 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-@AGENTS.md
-
-`AGENTS.md` flags that this is Next.js 16, not Next 15 — APIs, conventions, and file structure have breaking changes from earlier versions, so check `node_modules/next/dist/docs/` before writing code rather than relying on muscle memory.
-
 ## What this repo is right now
 
 **A real, working Next.js 16 project with a waitlist landing page + Airtable + Resend integrations**, being migrated forward into the full Manhattanite MVP. This repository was originally scaffolded on 2026-04-26 to run the manhattanite.com waitlist and is being repurposed as the production build for the marketplace itself. The Phase 1 build is just beginning. Strategy and reference docs live under `docs/COMPANY/` and project tracking under `docs/work-areas/`.

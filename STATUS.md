@@ -1,3 +1,5 @@
+[2026-05-17] STATUS.md is being superseded by docs/work-areas/Product/mvp-build-project/memory.md, which is the active project tracking file going forward. Content below is retained for historical reference only.
+
 # Manhattanite — Project Status
 
 A living snapshot of where the project is. Read this first to get oriented quickly. Update whenever a milestone is hit or a decision is made.
