@@ -6,6 +6,47 @@ Newest entries at the top.
 
 ---
 
+## 2026-05-18 · Personal Assistant fully configured for Manhattanite
+
+**Worked on:**
+- Activated and scoped the Personal Assistant inside the Manhattanite workspace. PA plugin was installed back on 2026-05-15 but never properly switched on.
+- Built the missing Admin-PA scaffolding: `captains-log/2026-05-captains-log.md`, `contacts.md`, `preferences.md`, `output-log.md`. Until now only `tasks.md` existed.
+- Wrote `WORK AREAS/Admin-PA/manhattanite-pa-config.md` — the master operational config for the PA. Covers email/calendar account map, calendar permissions (Personal Google Calendar read+write, Outlook read+write, Danbro read-filtered), cross-folder access pattern for George's other Cowork workspaces, proactive surfacing rules, ADHD defaults, logging behaviours, and what the PA explicitly does NOT do.
+- Upgraded the existing scheduled tasks `pa-morning-briefing` (7am daily) and `pa-end-of-day-summary` (8pm daily). Both now read Manhattanite project memory (`COMPANY/memory.md` + `WORK AREAS/Product/mvp-build-project/memory.md`), scan Outlook for business email, and have a hook to read other Cowork workspaces when mounted. Morning briefing now produces a dedicated "Manhattanite build state" section and includes a Monday-only "Week ahead" view.
+
+**Decided:**
+- **Outlook = Manhattanite business, Gmail = personal, never cross.** Already in `pa-rules.md`; reinforced in the PA config and both briefing prompts.
+- **Anticipate aggressively.** Daily 7am briefing + 8pm EOD + meeting prep before meetings + decision surfacing — drafts everything, sends nothing without George's per-message approval.
+- **Cross-folder pattern: on-demand mounting.** Scheduled tasks request other Cowork workspaces via `request_cowork_directory` when needed. Cowork persists approved mounts so subsequent runs come up silently.
+- **Calendar autonomy:** PA may create, move, and respond to events on Personal Google Calendar and Outlook for George's own time. Still surfaces a decision before booking external attendees.
+
+**Blockers / open threads:**
+- **Other Cowork folder paths pending.** George needs to share the exact paths of his other Cowork workspaces (e.g. music, personal life) so they can be listed in `manhattanite-pa-config.md` Section 3 and mounted on first request.
+- The 8pm EOD summary will fire later today and should now reflect this richer setup. Worth a Run Now from George to pre-approve the new connectors the prompts reference.
+
+**Next:**
+- George shares paths to other Cowork folders → add them to the cross-folder map.
+- Optional: George triggers Run Now on `pa-morning-briefing` and `pa-end-of-day-summary` to pre-approve Outlook/Gmail/Calendar tool access so future scheduled runs don't pause on permission prompts.
+
+---
+
+## 2026-05-17 · Phase 0 collapse migration complete
+
+**Worked on:**
+- Executed and verified the Phase 0 collapse migration on the night of 2026-05-17.
+- Unified the previously split Cowork workspace and Claude Code repo into a single folder at `~/Developer/manhattanite`.
+
+**Decided:**
+- Single folder at `~/Developer/manhattanite` is now the source of truth for both the CoWork upper layer (ABOUT ME, COMPANY, RESOURCES, WORK AREAS) and the Claude Code lower layer (Next.js codebase). No more drift between two folders.
+
+**Blockers / open threads:**
+- None from the migration itself.
+
+**Next:**
+- Resume Phase 1 build work against the unified folder.
+
+---
+
 ## 2026-05-16 · Tech stack locked
 
 **Worked on:**

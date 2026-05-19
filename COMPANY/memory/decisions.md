@@ -106,6 +106,18 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 - **Cowork's mounted workspace switched from `~/Desktop/Manhattanite/` to `~/Developer/manhattanite/`.** (2026-05-17, confirmed)
 - **`~/Desktop/Manhattanite/` archived to Trash** once the new unified folder is verified working in both Cowork and Claude Code. (2026-05-17, confirmed)
 
+## Landing-page direction (2026-05-18)
+
+- **Current waitlist page (`app/page.tsx`) is misaligned with the trust-first / utility-leading direction.** Its structural hierarchy (membership-first hero, manifesto second, no visible utility) reads Raya, not Gens de Confiance. The copy itself ("No scams. No junk furniture...") is on-direction; the structure is what needs reordering. (2026-05-18)
+- **Decision: replace the current landing page** with a trust-first / utility-leading homepage. Swap target is NOT the gating page from `voice-and-copy.md` as literally written; it's a homepage that (a) shows what Manhattanite *does* before asking for commitment, (b) frames Account (Tier 1) as the default entry — "see what's here" — rather than "Apply for Membership," (c) surfaces the membership mechanism contextually (interaction gates) when a visitor tries to act, (d) keeps the cultivated aesthetic but serves utility, not exclusivity. (2026-05-18)
+- **Sequencing: current waitlist page stays live** until Phase 1 (Tier 1 / accounts / browse) is built AND Phase 2 (example apartment listings) provides something real to show on the homepage. The replacement is the *visible deliverable* of the seed-phase MVP, not a parallel workstream that has to ship on its own track. (2026-05-18)
+- **Form test on the existing waitlist page is dropped.** We are not testing the product we are replacing. Production env vars were restored for hygiene; that's sufficient. (2026-05-18)
+
+## Design workstream
+
+- **Begin design conversations around Phase 1 week 2–3** (~7–14 days from 2026-05-18). Decisions land in hand before Phase 2 listing UI work starts; not rushed, not over-baked before the backend can absorb them. Scope: brand application as real pages (including wordmark + palette finalization), trust-first homepage layout, listing card patterns, browse feed, listing detail, application form UI, member profile, admin review queue. (2026-05-18)
+- **Claude is a design collaborator, not a substitute for a senior product designer.** Can generate options, apply brand guide rigorously, build HTML/CSS prototypes, structure the conversation. Whether to bring in a human designer later is a separate decision deferred to post-MVP. (2026-05-18)
+
 ## Personal Assistant
 
 - **Email accounts:** Outlook = Manhattanite work. Gmail = personal. Never cross. (2026-05-16)

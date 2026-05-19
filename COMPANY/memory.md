@@ -11,7 +11,7 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state — as of 2026-05-16
+## Quick state — as of 2026-05-17 (night)
 
 ### What Manhattanite is
 
@@ -35,18 +35,19 @@ Wall between Tier 1 and Tier 2 is the trust gate. Account holders see the value.
 - **Member contact:** Contact form on each listing forwards to email. No in-product inbox until v2.
 - **Out of v1:** In-platform messaging, jobs, search filters, payments, native apps, sponsorship request flow.
 
-### Build environment (as of 2026-05-17, post-reconciliation)
+### Build environment (as of 2026-05-17 night, post-folder-collapse)
 
-- **Build repo:** **~/Developer/manhattanite** on George's Mac. This is the *existing* project (originally scaffolded 2026-04-26) with working code: Next.js 16 landing page + form + Resend email pipeline + Airtable integration. It will be migrated forward to become the MVP build, with COMPANY/ docs added under docs/.
-- **GitHub:** github.com/georgegardner97/manhattanite (private). Synchronized with ~/Developer/manhattanite as of commit 2c8d597 (2026-05-17, "Migrate from waitlist project to MVP build foundation"). Seven commits total: six historical (April–May) plus the migration commit.
-- **Build tool:** **Claude Code via the desktop app's Code tab.**
-- **Worktree mode:** OFF (simpler for a non-technical user).
-- **Working folder for Code sessions:** ~/Developer/manhattanite, branch `main`, mode `Local`.
-- **Hosting:** Vercel project `manhattanite`, manhattanite.com is the primary URL, www.manhattanite.com 308-redirects to non-www.
+- **Unified folder:** **~/Developer/manhattanite** on George's Mac is now the single source of truth for both the CoWork upper layer (ABOUT ME, COMPANY, RESOURCES, WORK AREAS) and the Claude Code lower layer (the Next.js codebase). The previous two-folder split (Cowork on ~/Desktop, build repo in ~/Developer) was collapsed on 2026-05-17 night.
+- **Working code in repo:** Next.js 16 landing page + application form + Resend email pipeline + Airtable integration. Originally scaffolded 2026-04-26. Being migrated forward into the full MVP build.
+- **GitHub:** github.com/georgegardner97/manhattanite (private). Synchronized with ~/Developer/manhattanite as of commit 2c8d597 (2026-05-17, "Migrate from waitlist project to MVP build foundation"). ABOUT ME/ is gitignored (personal); the rest of the Cowork folders are committed.
+- **Build tool:** **Claude Code via the desktop app's Code tab.** Worktree mode OFF. Branch `main`, mode `Local`.
+- **Hosting:** Vercel project `manhattanite`. manhattanite.com is the primary URL (308 redirect from www → non-www). Site is live, serving the existing waitlist landing page. Framework Preset was fixed from "Other" → "Next.js" earlier on 2026-05-17.
 - **Email DNS:** Resend already verified for manhattanite.com from prior setup.
 - **Application review tool:** Airtable (existing base, retained during seed phase as George's manual review queue). Sunset planned for v1.5 or v2 once the in-product admin UI exists.
-- **Cowork workspace** (the folder with this file) stays on ~/Desktop/Manhattanite for strategic + planning work. Drift between this folder's COMPANY/ and the build repo's docs/COMPANY/ is a known issue, managed manually until it becomes annoying.
-- **Archived:** ~/Projects/manhattanite was deleted (in Trash as of 2026-05-17 evening) — it was a clean scratch space from setup work that became redundant once we discovered ~/Developer/manhattanite already had a working project.
+- **Open admin items before Phase 1 build slice 1:**
+  - Restore `RESEND_API_KEY` and `AIRTABLE_API_KEY` to the new Vercel project from `~/Developer/manhattanite/.env.local` — without this, the live form submission 500s.
+  - Decide: keep the existing waitlist landing page or replace it with the gating page from `voice-and-copy.md` as the first Phase 1 chunk.
+- **Archived:** ~/Projects/manhattanite was deleted on 2026-05-17 evening (Trash). ~/Desktop/Manhattanite is scheduled for archive after final verification of the collapsed folder.
 
 ### Voice + brand
 
@@ -62,10 +63,14 @@ Wall between Tier 1 and Tier 2 is the trust gate. Account holders see the value.
 
 ### Folder layout
 
-- `ABOUT ME/` — read-only founder identity.
+Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattanite/`:
+
+- `ABOUT ME/` — read-only founder identity (gitignored, lives only on George's Mac).
 - `COMPANY/` — all Manhattanite business reference (this folder).
 - `COMPANY/memory/` — the deep memory files.
-- `WORK AREAS/` — active project work (none built yet).
+- `RESOURCES/` — CoWork OS templates, guides, and skills.
+- `WORK AREAS/` — active project work. Live: `Product/mvp-build-project/` (the build), `Admin-PA/` (personal-assistant tracking).
+- `app/`, `lib/`, `public/`, etc. — the Next.js codebase (Claude-Code-side).
 
 ---
 
@@ -99,4 +104,4 @@ Wall between Tier 1 and Tier 2 is the trust gate. Account holders see the value.
 
 ---
 
-*Last updated: 2026-05-16.*
+*Last updated: 2026-05-17 (night).*

@@ -4,6 +4,31 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-05-17 (late evening) · Env-var restore in progress, COMPANY/memory.md refreshed, landing-page decision framed
+
+**Worked on:**
+- Refreshed the stale `COMPANY/memory.md` "Quick state" snapshot to reflect the post-folder-collapse reality (single unified folder at `~/Developer/manhattanite`, live site, open admin items).
+- Walked George through the env-var restore in Vercel for the live waitlist form. Took longer than expected because of TextEdit not opening the hidden `.env.local`; pivoted to a Terminal `cat` command, which worked.
+- Both `RESEND_API_KEY` and `AIRTABLE_API_KEY` got added to the new Vercel project, but **scoped to Production only**. The Vercel Edit dialog wouldn't let George expand the Environments selector to add Preview and Development scope (likely because the variables were created on the Production-specific environment page, which locks scope at creation). Skipped the multi-env scoping fight for tonight.
+- Drafted a 3-option framing for the landing-page question (keep current waitlist / replace with gating page / hybrid). Recommended Option C (keep current page; build Phase 1 behind it; swap once auth is live). Decision not yet locked.
+
+**Decided:**
+- Skip Preview/Development env-var scope for tonight. Production is what runs manhattanite.com; that's what matters for the live form. Preview/Dev becomes a v-low-effort follow-up once we know the right Vercel workaround (probably delete + re-create via the Shared tab, or via each environment's page individually).
+- Side flag: the AIRTABLE_API_KEY value in `.env.local` starts with `sk_live_` rather than the usual Airtable `pat...` prefix. Working theory: it's an older key format Airtable still honors, since the live site worked previously. If the form fails after redeploy, regenerate the Airtable key as the first fix.
+
+**Blockers / open threads:**
+- **Redeploy:** George confirmed he hit Redeploy before signing off. Keys should be live on Production.
+- **Untested:** the form has not been tested yet. Test plan: open manhattanite.com in incognito, submit application with George's own email as the test value, watch for email at info@manhattanite.com + new row in Airtable. First-thing-tomorrow task.
+- Landing-page keep-vs-replace decision still open. Option C (hybrid) is recommended but not locked.
+
+**Next (locked priorities for tomorrow):**
+1. **First thing — no questions asked:** Add `RESEND_API_KEY` and `AIRTABLE_API_KEY` to Preview and Development environments in Vercel. George explicitly asked for this to be tomorrow's first task.
+2. Test the live application form (Redeploy already happened tonight).
+3. Lock the landing-page decision (Option A / B / C from tonight's framing).
+4. Then: begin Phase 1 build slice 1 (Supabase + magic-link auth scaffold).
+
+---
+
 ## 2026-05-17 (evening) · Discovered existing project, reconciled strategy, synthesized position
 
 **Worked on:**
