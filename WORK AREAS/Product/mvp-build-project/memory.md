@@ -4,6 +4,71 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-01 · Phase 1 Slice 3.5 complete — two-tier gating page replaces the waitlist form
+
+**Worked on:**
+- **Closed the front-door / side-door mismatch.** The landing page (`app/page.tsx`) was still the waitlist Airtable application form, while `/signup` (shipped in Slice 2) quietly created real accounts behind the scenes. Visitors hit the wrong door. `app/page.tsx` is now the Tier 1 gating page: the locked "Public-facing gating page" + "Two-tier explainer" copy from `voice-and-copy.md`, verbatim. American spelling throughout. Kept the existing visual treatment (giant serif wordmark, color, layout container, footer) — only the content region changed.
+- **Server-side gate.** Page is now an async Server Component. It calls `supabase.auth.getUser()` before rendering; a logged-in visitor is `redirect()`-ed to `/profile` (the exact reverse of the guard `/profile` runs for logged-out visitors). Logged-out visitors see the pitch.
+- **CTAs.** Primary `Create an account →` links to `/signup`. Secondary `I have an invite →` is commented out (dead-link rule — no invite flow exists yet; a later block wires `/invite`).
+- **Preserved the application pipeline as dormant code.** Extracted the old `submitApplication` server action (Resend notification + Airtable write) out of `page.tsx` into `lib/applications/submit.ts`, untouched and unwired. `app/components/ApplicationForm.tsx` and `app/components/ApplyLink.tsx` left exactly as they were. The `/apply` slice will revive and refactor these — not rebuild them. Airtable + Resend env vars in Vercel left in place, dormant.
+- **Verified.** tsc + eslint clean. Locally and on prod confirmed: logged-out `/` shows the gating copy + both tiers, `Create an account →` points at `/signup`, the invite CTA is absent (commented out, not a 404), and no Airtable form / `submitApplication` is wired to the homepage. Commit `e85ed9d` (`feat(landing): …`), pushed, Vercel live ~40s later.
+
+**Decided:**
+- **ApplicationForm + submitApplication preserved as dormant — `/apply` reuses, not rebuilds.** This is the big one. The whole pipeline survives the landing-page swap; the next slice lifts it back into a real `/apply` route.
+- **Extraction (option b) over dormant-in-page (option a).** Leaving `submitApplication` unrendered inside `page.tsx` would have left unused imports + an unused function tripping eslint. The clean lift to `lib/applications/submit.ts` was the smaller, lint-clean diff.
+
+**Blockers / open threads:**
+- **`voice-and-copy.md` CTA library is stale.** Its table still lists "Join the network" as the create-account CTA (and "Create account" in the don't-use column). This slice ships "Create an account →" — the current truth. Flagged here, **not edited** in `voice-and-copy.md` this slice per the build plan. Reconcile the CTA library in a later copy pass.
+- **Logged-in redirect + full signup→profile click-through not click-tested by Claude.** There are zero accounts in the project right now (the Slice 3 test user was deleted), and fabricating one needs a signup George should drive. The redirect logic is code-identical-in-reverse to the proven `/profile` guard. Both are part of George's prod verification loop (the six-step test in the build plan).
+
+**Next session:**
+1. Run the six-step gating-page loop on prod (logged-out gate → Create an account → /signup → complete signup → /profile → revisit / while logged in → 307 to /profile → sign out → gate again).
+2. Reconcile the stale "Join the network" CTA row in `voice-and-copy.md`.
+
+---
+
+## 2026-06-01 · Phase 1 Slice 3 complete — forgot-password reset flow shipped to prod
+
+**Worked on:**
+- **Next 16 `middleware.ts` → `proxy.ts` rename.** Cleared the deprecation warning that printed on every dev boot since Slice 1. Same matcher config, same session-refresh behavior, renamed function. Verified the warning is gone and the session cookie still refreshes on each request.
+- **Built the forgot-password reset flow (Block 4).** `/reset-request` (email-only form → `resetPasswordForEmail`, with a generic no-leak success message so the page can't probe who's in the network). Reused the existing `/auth/callback` route for the code exchange. `/reset-password` (session-gated — a cold visit with no recovery session bounces to `/reset-request`; 8-char minimum; `updateUser({ password })` → `/login`). Uncommented the "Forgot password?" link on `/login`.
+- **Fixed the Supabase Auth URL config — this was the real blocker.** The redirect-URL allowlist was **empty** and the Site URL was a dev value (`http://localhost:3000`) on a production project, so recovery links had nowhere valid to land. With George's go-ahead: set Site URL to `https://manhattanite.com`, and added both `http://localhost:3000/auth/callback` and `https://manhattanite.com/auth/callback` to the redirect allowlist.
+- **Housekeeping.** Deleted the `/supabase-test` smoke-test route. Deleted the Slice 2 test user `claude-test-1780015807648@example.com` from `auth.users` (cascades to `public.accounts`) — project now has zero accounts.
+- **Shipped.** tsc + eslint clean, routes render 200. Commit `c36b7ef` (`feat(auth): …`), pushed, Vercel deployed; `manhattanite.com/reset-request` confirmed live with the correct copy.
+
+**Decided:**
+- **`redirectTo` uses `window.location.origin`, not an env var.** The build plan referenced `process.env.NEXT_PUBLIC_SITE_URL`, which doesn't exist in `.env.local`. `window.location.origin` is host-adaptive (localhost in dev, manhattanite.com in prod) and avoids an undefined value — both origins are now in the Supabase allowlist.
+
+**Blockers / open threads:**
+- **Live email round-trip not tested by Claude.** Sending a real recovery email and clicking the link needs an inbox Claude can read and a registered account (there are none now). Verified everything else (compile, render, session gate, config). George's 4-step manual test: create an account with a real inbox → Forgot password? → click the email link → set a new password → log in.
+- **Pre-existing lint error in `app/thank-you/page.tsx`** (`<a>` to `/` instead of `<Link>`). Predates this work; flagged as a separate spawned task, not bundled into the auth commit.
+
+---
+
+## 2026-06-01 · Parallel content lanes — homepage copy v2 + seed listings drafted while Slice 2 ran
+
+**Worked on:**
+- While Claude Code was executing Phase 1 Slice 2, ran two parallel content lanes (parallel-safe with the code build — no overlap on app/, lib/, supabase/, or middleware).
+- Drafted `outputs/Manhattanite_Homepage-Copy_v2.md` — the trust-first replacement landing page in the locked voice. Hero, three-pillar promise (better stuff / trust the people / you're in or you're not), two-tier mechanic explainer, what's listed, sponsorship paragraph, founding cohort honesty block, footer. American spelling throughout. Single CTA pair ("Apply for membership" / "I have an invite") repeated, no other CTA verbs. Build notes attached. Five-point test passed inline.
+- Drafted `outputs/Manhattanite_Seed-Listings_v1.md` — 12 apartments + 15 furniture listings, each tagged `[EXAMPLE]` per spec. Real streets (Bank, Greene, East 78th, Orchard, Vandam), real brands (Ceccotti, BDDW, Knoll, Carl Hansen, Flos, Ligne Roset), honest flaws named (chip, scratch, repaired chair, sun-fade). Sponsor defaults to George with six rows showing cross-member sponsorship (Anna, Max, Lila) for design preview. Photos are placeholder counts only — real images to be sourced before any non-founder sees the network. Five-point test passed inline.
+
+**Decided:**
+- Homepage v2 stays parked in `outputs/` until Phase 1 + early Phase 2 give the page real proof to point to. The "what's on the network right now" section needs a live count from the `listings` table before ship.
+- Seed listings ship into the database the same week the `listings` table lands in Phase 2. `is_example = true` on all 27 rows. Tag stripped automatically once flag flips.
+- Kept scope tight to copy work that wouldn't compete with Slice 2 for attention. Legal and founding-member acquisition lanes remain unstarted — flagged for a later parallel session.
+
+**Blockers / open threads:**
+- Both files are draft v1 / v2. Want a George read-through before either is treated as final. Homepage hero phrasing ("A private marketplace for New Yorkers") is a working line, not a locked headline.
+- Six non-George sponsor names in the seed listings are a display call — database can hold either; swap to George before launch if preferred.
+- Founding-member acquisition + NY attorney outreach still unstarted.
+
+**Next session:**
+1. Review homepage copy v2 against the live page; decide whether the founder-cohort honesty section reads right or feels too soft.
+2. Decide on the six non-George sponsor names in seed listings (keep for variety, or normalize to George).
+3. Pick up one of the still-open lanes: founding-member acquisition list, or attorney outreach brief.
+
+---
+
 ## 2026-06-01 · Phase 1 Slice 2 complete — email + password auth shipped to prod
 
 **Worked on:**
