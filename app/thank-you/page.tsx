@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ThankYou() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
@@ -14,12 +16,12 @@ export default function ThankYou() {
         I read every application by hand. You&apos;ll hear from me.
       </p>
 
-      <a
+      <Link
         href="/"
         className="mh-fade-in-delay mh-link mt-16 text-[11px] tracking-[0.28em] uppercase text-ink"
       >
         Back to Manhattanite
-      </a>
+      </Link>
     </main>
   );
 }
