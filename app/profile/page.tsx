@@ -104,6 +104,27 @@ export default async function ProfilePage() {
           />
         </dl>
 
+        {/* Member view — the in-product door to the posting form. Without
+            this CTA, members have no entry point to /listings/new. */}
+        {account.is_member && (
+          <div className="mt-20 border-t border-ink/10 pt-12 text-center">
+            <Link
+              href="/listings/new"
+              className="mh-link inline-block text-[14px] tracking-[0.22em] uppercase text-ink"
+            >
+              Post a listing &rarr;
+            </Link>
+            <div className="mt-8">
+              <Link
+                href="/listings"
+                className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+              >
+                Browse listings &rarr;
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Tier-1 nudge — visible only to account holders, not full members.
             The "Apply for membership" CTA is commented out until /apply
             ships in a later slice. The nudge text stands on its own for now. */}
