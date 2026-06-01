@@ -4,6 +4,38 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-01 · Phase 3 Slice 5 complete — listing creation (posting flow) shipped + founder seeded as member
+
+**Worked on:**
+- **Seeded the founder as a member.** Flipped `is_member = true` on `info@manhattanite.com` (uuid `85ce5315-…`, role stays `account`) via the Supabase SQL Editor (postgres role, bypasses RLS), driven through claude-in-chrome MCP. Verified before (false) and after (true). This account is now the test subject for every member-only flow and the default sponsor during seed phase.
+- **Built `/listings/new` — the member-gated posting form.** New route `app/listings/new/page.tsx` (Server Component): `getUser()` → null redirects `/login`; reads `accounts.is_member` → false redirects `/profile`; member renders the form. Defense in depth over the Slice 4 RLS write policy.
+- **`lib/listings/create.ts` — the server action.** Validates shared fields (title ≤80, description ≤2000, price ≥0) + builds the type-specific `details` JSONB, inserts `author_id = auth.uid()`, `status='published'`. Returns `{error}` for inline display (via `useActionState`); on an RLS rejection (Postgres `42501`) routes to `/profile`; on success `redirect('/listings/[id]')`. Mirrors the dormant `lib/applications/submit.ts` server-action pattern.
+- **`app/components/NewListingForm.tsx` — the client form.** Apartment/furniture radio drives a conditional field render: apartment → neighborhood / bedrooms / bathrooms / available_from; furniture → condition (select) / dimensions / brand. Price label switches "Monthly rent ($)" ↔ "Asking price ($)". "Photos coming soon" placeholder note (image upload is Slice 6). Submit copy **"Post a listing"** per the CTA library (never Submit/Create/Publish). American spelling throughout.
+- **`/profile` member-branching.** Members now see a primary **"Post a listing →"** + secondary **"Browse listings →"**; non-members keep the existing Tier-1 nudge (the `/apply` CTA stays commented — still no route). Without this, members had no in-product door to the form.
+- **Full end-to-end test on prod (steps 1–7).** Posted a real apartment ("Sunny one-bedroom in the West Village", $4,200/mo, West Village, 1bd/1ba, available 2026-07-01) and a real furniture listing ("Ceccotti Collezioni walnut dining table", $1,200, good, 72×38×30, brand Ceccotti). Both redirect to their detail page with all JSONB fields rendered and both appear on `/listings` (empty state gone). Price formats correct ($X/mo vs $X). Logged-out `/listings/new` → 307 `/login`. Type-switch verified live. tsc + eslint clean. Commit `28891b4` (`feat(listings): …`), pushed, Vercel deploy verified live.
+- **Verified the member gate holds for an authenticated non-member.** Couldn't create a second account (account creation / password entry is outside what Claude does), so tested by temporarily flipping `is_member=false`, confirming `/listings/new` → `/profile` redirect + the Tier-1 nudge reappears + the "Post a listing" CTA disappears, then flipping back to `true` and confirming the member view returns. The gate is intact at both the route and the profile-branch.
+
+**Decided:**
+- **Founder is permanently a member** — `info@manhattanite.com` stays `is_member=true`. George is a member of his own product and the seed-phase default sponsor.
+- **Image upload deferred to Slice 6** (needs Supabase Storage). Listings are text-only for now; the detail page renders fine without images.
+- **`status` defaults to `'published'` on submit** — no user-facing draft/archived control this slice. Draft workflow is a later slice.
+- **Tested directly on prod, skipped a separate local browser pass.** Local dev has **no local Supabase** — `.env.local` points `NEXT_PUBLIC_SUPABASE_URL` at the prod project (`tjelmwbbyqfbtwnewadt`). So a "local" listing IS a prod row; local testing has zero isolation benefit. Logged-out redirect was confirmed locally via curl (307); the authenticated happy path was driven on prod using George's existing prod session (no password entry needed).
+- **Auth is email+password, not magic link.** Confirmed in code (`signInWithPassword`). CLAUDE.md still says "magic link only" under architectural anchors — that's stale; the Slice 2 override to email+password is the truth. Flagged for a CLAUDE.md correction.
+- **Condition `<select>` set via injected JS during the test** (native OS dropdowns are awkward to drive by pixel). The field itself works normally for real users.
+
+**Blockers / open threads:**
+- **Two real listings now live in prod** (apartment + furniture, both `is_example=false`, authored by `85ce5315-…`). Intentional — gives `/listings` visible content. Clear them when the seed-listings load slice runs, or keep as founder listings.
+- **Still no `/apply` route.** Non-founder members can only be created by manually flipping `is_member` via SQL — the same seed-phase workaround as today. Real apply/approve flow is Phase 2 work, still deferred. The `/apply` CTA stays commented out (dead-link rule).
+- **Author name renders "a member" on cards/detail** — `name` is null on the account (never collected at signup; Slice 2 thread) AND the accounts read-own RLS hides other members' names (Slice 4 thread). Both persist. A public-profile read policy or denormalized `author_name` is still owed.
+- **Sponsor still renders "—"** (Slice 4 thread) — every listing inherits the author's `sponsor_id` but the sponsor-name display isn't wired.
+
+**Next session:**
+1. **Slice 6** — image upload (Supabase Storage): bucket + RLS, upload UI on `/listings/new`, render on cards + detail.
+2. Optionally load the 27 seed listings (`outputs/Manhattanite_Seed-Listings_v1.md`, `is_example=true`) — decide whether to keep or clear the two founder test listings first.
+3. Correct the stale "magic link only" line in CLAUDE.md.
+
+---
+
 ## 2026-06-01 · Phase 2 Slice 4 complete — listings schema + RLS + read-only browse shipped
 
 **Worked on:**
