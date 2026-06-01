@@ -118,7 +118,7 @@ Manhattanite reconciles two strategy streams: an earlier deep analysis (`COMPANY
 - **One canonical sponsor per member**, foreign-keyed on `accounts.sponsor_id`. During seed phase, sponsor defaults to George. Sponsorships also get their own row in `sponsorships` for queryability.
 - **Applications are rows with status**, not a separate approval table. Approval flips `is_member` and writes the sponsor FK in one transaction.
 - **Contact = form → Resend email.** No in-product inbox, no real-time messaging in v1. A `listing_contacts` row is logged for moderation history.
-- **Auth = magic link only.** No passwords, no reset flow. Matches the editorial feel.
+- **Auth = email + password.** Signup, login, and a forgot-password reset flow (`/reset-request` → `/reset-password`). Magic-link-only was the earlier plan but was overridden in Phase 1 Slice 2 (see the 2026-05-27 decisions-log entry).
 - **Airtable is transitional, not permanent.** During seed phase, applications flow into both Airtable (for George's manual review UI) and Supabase (for the member record). Sunset Airtable when the in-product admin review UI is built (v1.5 or v2).
 
 ## Scope discipline
