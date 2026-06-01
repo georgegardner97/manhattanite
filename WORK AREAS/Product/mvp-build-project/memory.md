@@ -4,6 +4,47 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-01 · Phase 2 Slice 4 complete — listings schema + RLS + read-only browse shipped
+
+**Worked on:**
+- **Migration `0003_listings.sql` — the single listings table + RLS, applied to production.** One table for every category (`type` enum: apartment/furniture, extensible to job/service later); shared fields are real columns, category-specific fields live in a `details` jsonb. Columns per the locked mvp-spec: `id`, `author_id` (FK → accounts, cascade), `type`, `title`, `description`, `price_cents` (CHECK >= 0), `details` jsonb, `status` enum (draft/published/archived, default draft), `is_example` flag, timestamps. Indexes on `author_id`, `(status, type)`, `created_at desc`. `updated_at` auto-bump reuses `touch_updated_at()` from 0001. Both migrations now versioned in the repo.
+- **RLS — the Tier wall, enforced at the database.** SELECT policy `listings_read_published_for_accounts`: `status = 'published' AND auth.uid() IS NOT NULL` (Tier 0 → Tier 1 browse gate, no anonymous read, no draft/archived read). Three write policies `listings_write_member_own_{insert,update,delete}`: `author_id = auth.uid() AND is_member()` (Tier 1 → Tier 2 post gate). Posting UI is a later slice; the wall is in place now so it's real the moment posting ships.
+- **`is_member()` SECURITY DEFINER helper.** Same pattern as `is_admin()` from 0002 — single lookup against `public.accounts`, bypasses RLS for the inner query, avoids the Slice 2 recursion bug. Never subquery accounts directly inside an accounts-joined policy.
+- **Smoke-tested the RLS wall before building any UI, all four assertions passed:** (1) authenticated Tier 1 reads the published row; (2) `anon` role read → 0 rows; (3) **live REST call with the public anon key and no session → `[]`** (the real attack surface, sealed); (4) Tier 1 insert → `ERROR 42501: new row violates row-level security policy`. Inserted one `is_example` published row as service_role for the test, then deleted it — table is back to 0 rows.
+- **Built `/listings` (browse) and `/listings/[id]` (detail), both read-only Server Components.** Browse: published rows, newest-first, limit 50, locked card copy + empty state from voice-and-copy.md, links to detail. Detail: single published row or `notFound()`, full description + jsonb details as key/value pairs, contact CTA commented out (dead-link rule). Both redirect logged-out visitors to `/login` (defense in depth, not relying on RLS alone). American spelling. No filters/search/sort (own slice later).
+- **Verified:** tsc + eslint clean; locally both routes 307 → `/login` when logged out, no 500s. Commit `feat(listings): …`, pushed, Vercel deploy.
+
+**Decided:**
+- **`is_member()` SECURITY DEFINER pattern matches `is_admin()`** — the recursion lesson from Slice 2 carried forward.
+- **`is_example` column added to the schema** for seed/example-listing tracking; will be stripped from public views before launch.
+- **Sponsor display deferred — renders "—" for now.** The card/detail byline is "Listed by [name] · sponsored by —" until the sponsor slice wires `accounts.sponsor_id` → sponsor name.
+- **Smoke test run via SQL-editor role impersonation + a live anon REST fetch, not a deployed `/rls-test` route.** Faster, no throwaway route on prod, and the impersonation reproduces exactly how PostgREST evaluates RLS for `authenticated`/`anon`. The plan's `/rls-test` route was never created and there's nothing to clean up there.
+- **Corrected the stale memory:** prod has **one** Tier 1 account — `info@manhattanite.com`, uuid `85ce5315-2c38-4dc6-b3f3-48f224f26dba`, role `account`, `is_member = false` — created during the Slice 3 reset verification. Earlier entries said "zero accounts"; that was written before the reset test.
+
+**Blockers / open threads:**
+- **Zero published listings in prod, so `/listings/[id]` detail can't be visually verified** until either (a) the Slice 5 seed-data load runs or (b) a real member posts a listing. Browse shows the empty state, which is correct for now.
+- **`accounts` RLS (read-own) blocks listing cards from showing OTHER members' author names.** The author-name embed only resolves for the viewer's own listings; everyone else's renders "a member". Needs a later slice to either add a public-profile read policy (expose `name`/`neighborhood` to authenticated users) or denormalize `author_name` onto listings. Flagged, not fixed this slice.
+- **Stale saved query in the Supabase SQL Editor:** "Schema and RLS Drift Sanity Check" hardcodes uuid `e64bb21b-6051-45d1-a927-47f588deec98`, which does **not** exist in `accounts`. The real account is `85ce5315-…`. Update or delete that snippet before reusing it.
+
+**Next session:**
+1. **Slice 5** — load the 27 example listings from `outputs/Manhattanite_Seed-Listings_v1.md` into the table (`is_example = true`), OR build the post-listing flow. Either unblocks visual verification of the detail page.
+2. End-to-end prod verification of the gated browse with George logged in (sees empty state; logged out → 307 to `/login`).
+
+---
+
+## 2026-06-01 · Landing page (Slice 3.5) reviewed live — copy + design both flagged for Phase 1.5 rework
+
+**Decided:**
+- Slice 3.5 page is functional — gate closes, two-tier model is named, `Create an account →` routes correctly, logged-in redirect verified. But after seeing it live, George flagged that **neither the copy nor the design lands well**, equal weight. The page is doing its Phase 1 job (closing the funnel mismatch) but is not the marketing surface Manhattanite needs longer term.
+- Hold all iteration until **Phase 1.5 (Design Foundation slot)** per `Manhattanite_MVP-Timeline_v2.md`. Treat copy refresh as a co-deliverable of Phase 1.5, not a separate pass — visual treatment and the words move together.
+- `COMPANY/voice-and-copy.md` is the source of truth, not the page. If Phase 1.5 changes what's on the page, the doc updates downstream to match — not the other way around.
+
+**Blockers / open threads:**
+- Specifics of the dislike deferred. "Both equally" is the only diagnosis on file today. Phase 1.5 kickoff should start with a 10–15 minute live walkthrough where George names what specifically grates — copy line by line, design element by element — so the rework has a real brief instead of "do better."
+- No action between now and Phase 1.5. Phase 1 continues to ship on the current page.
+
+---
+
 ## 2026-06-01 · Phase 1 Slice 3.5 complete — two-tier gating page replaces the waitlist form
 
 **Worked on:**
