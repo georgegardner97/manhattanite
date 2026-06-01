@@ -62,6 +62,15 @@ export default async function Home() {
               Create an account →
             </Link>
 
+            {/* Quiet return path for existing users — links to /login. Locked
+                "Log in" phrasing; slate weight so it sits under the primary CTA. */}
+            <Link
+              href="/login"
+              className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
+            >
+              Log in →
+            </Link>
+
             {/* "I have an invite →" — no invite flow exists yet, so this stays
                 commented out per the dead-link rule. A later block (5+) will
                 wire it to the invite route. */}
@@ -80,9 +89,9 @@ export default async function Home() {
               listing in the network. No application needed.
             </p>
             <p className="font-serif text-lg leading-relaxed text-slate">
-              <span className="text-ink">Member.</span> Required to post,
-              contact, or sponsor. Apply when you&apos;re ready, or ask a current
-              member to bring you in.
+              <span className="text-ink">Member.</span>{" "}
+              Required to post, contact, or sponsor. Apply when you&apos;re ready,
+              or ask a current member to bring you in.
             </p>
           </div>
         </section>
