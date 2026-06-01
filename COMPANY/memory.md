@@ -11,7 +11,7 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state — as of 2026-05-17 (night)
+## Quick state — as of 2026-05-18 (morning)
 
 ### What Manhattanite is
 
@@ -44,9 +44,10 @@ Wall between Tier 1 and Tier 2 is the trust gate. Account holders see the value.
 - **Hosting:** Vercel project `manhattanite`. manhattanite.com is the primary URL (308 redirect from www → non-www). Site is live, serving the existing waitlist landing page. Framework Preset was fixed from "Other" → "Next.js" earlier on 2026-05-17.
 - **Email DNS:** Resend already verified for manhattanite.com from prior setup.
 - **Application review tool:** Airtable (existing base, retained during seed phase as George's manual review queue). Sunset planned for v1.5 or v2 once the in-product admin UI exists.
-- **Open admin items before Phase 1 build slice 1:**
-  - Restore `RESEND_API_KEY` and `AIRTABLE_API_KEY` to the new Vercel project from `~/Developer/manhattanite/.env.local` — without this, the live form submission 500s.
-  - Decide: keep the existing waitlist landing page or replace it with the gating page from `voice-and-copy.md` as the first Phase 1 chunk.
+- **Phase 1 Slice 1 (stack setup) — DONE 2026-05-18 morning.** Supabase wired end-to-end. Smoke test at `manhattanite.com/supabase-test` confirms the deployed app can talk to Supabase. Commit `9d14752` on `origin/main`. See project memory for the full slice log.
+- **Landing-page direction — LOCKED 2026-05-18.** Current waitlist page stays live until Phase 1 + early Phase 2 give us something real to show; then it gets replaced by a trust-first / utility-leading homepage. Form test on the existing waitlist was dropped (testing the wrong product). Full reasoning in `memory/decisions.md`.
+- **Design workstream — scheduled for Phase 1 week 2–3** (~7–14 days out). Decisions land before Phase 2 listing UI work.
+- **Claude-in-Chrome browser automation is now part of the workflow.** Lets Cowork drive Vercel/Supabase/etc directly without dictating clicks back to George.
 - **Archived:** ~/Projects/manhattanite was deleted on 2026-05-17 evening (Trash). ~/Desktop/Manhattanite is scheduled for archive after final verification of the collapsed folder.
 
 ### Voice + brand
@@ -104,4 +105,4 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 
 ---
 
-*Last updated: 2026-05-17 (night).*
+*Last updated: 2026-05-18 (morning).*

@@ -4,6 +4,87 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-01 · Phase 1 Slice 2 complete — email + password auth shipped to prod
+
+**Worked on:**
+- **Auth method override executed.** Per the 2026-05-27 decisions-log update, swapped the locked magic-link plan for email + password (with reset flow planned). Reset flow itself deferred to next session per the build-plan cut-order; everything else delivered in one slice.
+- **Database (Block 1) — accounts table + RLS + triggers, applied to production.** Migration `0001_accounts.sql` (175 lines) creates the table per the locked schema (`id`, `email` unique, `name`, `neighborhood`, `bio`, `role` enum, `is_member`, `sponsor_id` self-FK, timestamps), wires the `auth.users → public.accounts` AFTER INSERT trigger so signUp auto-creates the profile row, and enables RLS with read-own / update-own / admin-read-all / admin-update-all policies. Protected `role` / `is_member` / `sponsor_id` / `email` via a `BEFORE UPDATE` trigger so non-admins can't escalate themselves on their own row (simpler than self-referencing subqueries inside `WITH CHECK`).
+- **Caught and fixed an RLS infinite-recursion bug during end-to-end testing.** The original admin policies subqueried `public.accounts` from inside policies on `public.accounts` itself, error `42P17`. The recursion short-circuits all RLS evaluation on the table — meaning even the "read own row" policy never gets a chance, so logged-in users saw "Setting up your account…" forever. Migration `0002_fix_admin_rls_recursion.sql` (93 lines) wraps the admin check in an `is_admin()` `SECURITY DEFINER` helper that bypasses RLS for the inner lookup; applies the same fix to `protect_account_columns`. Standard Supabase gotcha, easy fix once diagnosed. **Both migrations now versioned in `supabase/migrations/`** — the database is reproducible from the repo.
+- **UI (Block 2) — /signup, /login (password), session middleware.** `/signup` is a Client Component (~163 lines) with the gating-page copy from `voice-and-copy.md` lifted verbatim; CTA is "Create an account" (never "Sign up") per the CTA library. Replaced the prior session's magic-link `/login` with email + password + a "Forgot password?" link (commented out until Block 4 ships next session). Friendly error mapping for invalid-credentials (rewrites Supabase's "Invalid login credentials" into Manhattanite voice). `middleware.ts` refreshes the Supabase session cookie on every matched request.
+- **Profile (Block 3) — /profile reads own row, redirects logged-out.** Server Component that calls `getUser()`, redirects to `/login` if null, then reads the user's own row via RLS. The "Apply for membership" CTA is commented out until `/apply` exists in a later slice; the Tier-1 nudge text stands on its own.
+- **End-to-end test loop verified locally then live in production.** Drove a full signup → /profile → sign out → /profile (307 to /login) → wrong password (friendly error) → correct password → /profile loop in Chrome via the claude-in-chrome MCP, both at `localhost:3000` and at `https://manhattanite.com`. Vercel deploy was live 11 seconds after `git push`.
+- **Workflow note.** Drove the Supabase SQL Editor and the localhost dev server programmatically via Chrome MCP + JavaScript-into-Monaco to apply migrations and run end-to-end tests, instead of asking George to copy-paste SQL. Faster, repeatable, and George stayed watching the screen.
+
+**Decided:**
+- **Commit message convention adjusted.** Original plan said `feat(auth): email+password login, signup, reset + accounts table + RLS (Phase 1 Slice 2)`. Since reset is deferred, the actual commit is `feat(auth): email+password login, signup + accounts table + RLS (Phase 1 Slice 2)` (no `reset`). The detailed bullet body still ends with a "reset flow deferred to next session" note for the audit trail.
+- **Dead links hidden, not deleted.** `/reset-request` (Forgot password?) and `/apply` (Apply for membership) both 404 today. Both are commented out in the UI rather than removed entirely, so Block 4 (and the future apply slice) just need to uncomment.
+- **Memory + planning docs split into a separate commit.** Code lands as `feat(auth):…`; memory and `WORK AREAS/` updates land as a follow-up `docs:` commit so each is reviewable in isolation.
+- **Test account left in production for now.** `claude-test-1780015807648@example.com` is a real row in `auth.users` + `public.accounts`. Useful as a known-good test account for the next session's reset-flow work; can be deleted from Supabase at any time.
+
+**Blockers / open threads:**
+- **Block 4 — reset flow — deferred.** Build `/reset-request` (calls `resetPasswordForEmail` with `redirectTo` → `/auth/callback?next=/reset-password`), reuse `/auth/callback` for the code exchange, build `/reset-password` (calls `updateUser` → redirect to `/login`). Uncomment the "Forgot password?" link on `/login`. End-to-end test the email round-trip on the live site (test inbox needed).
+- **Next 16 `middleware.ts` → `proxy.ts` rename.** Dev server prints `⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.` on every boot. Pre-existing from Slice 1, not introduced today. Small rename + matcher copy. Bundle with Block 4 so the deploy log stays clean from that point forward.
+- **`/supabase-test` route still live in production.** Per the rules of engagement, leave it alone until Block 4 ships and a final smoke test confirms the auth pages survive the reset-flow additions. Then delete and `feat: …` commit.
+- **`name` not collected at signup.** Today's `/signup` only collects email + password; `name`, `neighborhood`, `bio` on the `accounts` row stay null until profile editing ships (probably alongside the application flow). `/profile` falls back to email when name is null, which reads OK for now but is the obvious next polish.
+- **Email confirmation is OFF in Supabase Auth settings.** Per the build plan, this was the intentional choice for the build loop. Decide before real members arrive whether to turn it back on (one toggle in Supabase + a follow-up "check your inbox" UI state).
+
+**Next session (Block 4 — forgot-password reset flow + housekeeping):**
+1. Rename `middleware.ts` → `proxy.ts` (Next 16) — first thing, clears the deprecation warning before the rest of the work.
+2. Build `/reset-request` (email-only form → `resetPasswordForEmail`).
+3. Build `/reset-password` (new-password form → `updateUser` → redirect to `/login`).
+4. Uncomment the "Forgot password?" link on `/login`.
+5. End-to-end test with a real inbox: request reset → click email link → set new password → log in with new password.
+6. Decide on `/supabase-test` removal (probably yes by end of slice).
+7. Commit + push + verify on prod.
+
+Estimated effort: ~60–90 minutes if the reset email lands cleanly the first try; longer if Supabase's redirect-URL allowlist needs tweaking.
+
+---
+
+## 2026-05-18 (morning) · Phase 1 Slice 1 complete — Supabase wired in
+
+**Worked on:**
+- Finished the env-var restore from last night: added `RESEND_API_KEY` and `AIRTABLE_API_KEY` to Preview and Development environments in Vercel (had been Production-only because of how the variables were created on the Production-specific page).
+- Strategic alignment conversation: George flagged that the existing waitlist page reads Raya (exclusivity-first hero, no visible utility), which contradicts the trust-first / utility-leading direction we've reconciled to. Confirmed alignment.
+- Locked the landing-page decision (Option C): current waitlist page stays until Phase 1 + early Phase 2 give us something real to put on a trust-first homepage; then the replacement ships as the visible deliverable of the seed MVP. Form test on the existing waitlist was dropped (testing the wrong product).
+- Logged a future task: design workstream begins ~Phase 1 week 2-3, before Phase 2 listing UI work needs design decisions.
+- **Phase 1 Slice 1 (stack setup) executed end-to-end:**
+  - Verified the Supabase project already exists (`info@manhattanite.com's Project`, region us-west-2 Oregon, Free plan, healthy). Acknowledged Oregon adds ~70ms latency vs an east-coast region; not a deal-breaker at MVP scale; deferred any migration.
+  - Retrieved the publishable key from Supabase Settings → API Keys (new naming; replaces the old "anon" key).
+  - Appended `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to `.env.local`.
+  - Installed `@supabase/supabase-js` (^2.106.0) and `@supabase/ssr` (^0.10.3) into the project.
+  - Wrote `lib/supabase/client.ts` (browser client) and `lib/supabase/server.ts` (server client with cookie adapter ready for slice 2 auth) following the Next.js 16 App Router SSR pattern.
+  - Added a temporary `/supabase-test` smoke-test route (Server Component that calls `supabase.auth.getUser()` and renders the result).
+  - TypeScript + ESLint pass clean locally. Local `npm run build` aborted on Google Fonts fetch (sandbox network restriction); not a real failure.
+  - Added Supabase env vars to all three Vercel environments via the Claude-in-Chrome browser automation (Production, Preview, Development).
+  - Committed everything to git as `9d14752` ("feat(supabase): wire Supabase client + smoke test (Phase 1 Slice 1)") and pushed to `origin/main`. Vercel auto-deployed in 22s.
+  - **Smoke test passed in production:** `manhattanite.com/supabase-test` renders showing URL set, Anon key set, and Connection: Connected (no active session — expected for anonymous visitors). Real proof that the deployed app can talk to Supabase.
+
+**Decided:**
+- Skip Sensitive flag for Supabase variables in Vercel (default left ON for Production, OFF for Development per Vercel's restriction). NEXT_PUBLIC_* vars end up in the client bundle anyway, so masking adds nothing functional.
+- Use the new Supabase "publishable" key naming (sb_publishable_…) rather than legacy "anon" JWT keys. Same role, current Supabase recommendation.
+- `.claude/` added to `.gitignore` — it's Claude Code per-machine settings, not project state.
+- `WORK AREAS/Product/mvp-build-project/outputs/.gitkeep` is an accidental file from an early session-start mistake; left untracked. Harmless. Operating rules say never delete.
+- Claude-in-Chrome browser automation is officially part of the workflow going forward — saved ~10 minutes of manual Vercel clicking. Worth the small one-time pairing setup.
+
+**Blockers / open threads:**
+- Slice 1 leaves `/supabase-test` live in production. Anyone visiting `manhattanite.com/supabase-test` sees a small "yes Supabase is wired" page. No secrets leak (URL is already public via NEXT_PUBLIC_, anon key is by design safe). Delete it when slice 2 ships real auth pages.
+- Founding-member acquisition project still unstarted.
+- NY startup attorney outreach still unstarted. Tier 1 legal items (entity, TOS, privacy, founder identity) block go-live.
+
+**Next session (Phase 1 Slice 2 — magic-link auth):**
+1. Create the `accounts` table in Supabase with RLS policies (account / member / admin roles, `is_member` flag, sponsor FK).
+2. Wire Supabase Auth + Resend for magic-link emails (custom SMTP setup so emails come from a manhattanite.com address).
+3. Build `/login` page (email input, magic-link request).
+4. Build `/auth/callback` route handler (token exchange, session set).
+5. Build a minimal authenticated `/profile` page (Server Component that reads the signed-in account row, displays name/neighborhood/bio).
+6. Add Next.js middleware to refresh sessions on every request.
+7. End state: a real visitor can enter their email on `/login`, receive a magic link, click it, land logged in. The two-tier wall starts to be real.
+
+Estimated effort: ~2 focused hours. Best done fresh.
+
+---
+
 ## 2026-05-17 (late evening) · Env-var restore in progress, COMPANY/memory.md refreshed, landing-page decision framed
 
 **Worked on:**

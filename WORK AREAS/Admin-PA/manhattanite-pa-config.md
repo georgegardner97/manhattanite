@@ -35,7 +35,7 @@ Before booking with someone George doesn't already know, surface the request and
 George has multiple Cowork workspaces on his Mac. The Manhattanite folder is one of several. When the PA needs to give George "the full picture of his life," it should also read from:
 
 - **Manhattanite (this folder):** `~/Developer/manhattanite/` — the business build
-- **Life (primary Cowork workspace):** `/Users/georgegardner/Documents/Claude/Claude Cowork USE THIS/` — everything outside Manhattanite (music, personal admin, Callaholic if/when it lives there, other ongoing projects). In briefings, label cross-life items as **[Life]** so they're scannable.
+- **Life (primary Cowork workspace):** `/Users/georgegardner/Documents/Claude/Claude Cowork USE THIS/CoWork-OS-Beta-1.4/` — everything outside Manhattanite (music, personal admin, Callaholic if/when it lives there, other ongoing projects). In briefings, label cross-life items as **[Life]** so they're scannable. **Read-only always** — never write, edit, append, or delete inside this folder.
 
 **Cross-folder access pattern:**
 1. Scheduled tasks run as fresh sessions. They start with only the Manhattanite folder mounted.

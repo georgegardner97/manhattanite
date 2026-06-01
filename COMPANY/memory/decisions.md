@@ -32,7 +32,7 @@ Read this at the start of every Manhattanite conversation.
 
 - **Direction:** Coded MVP, not no-code. Built with Claude Code. (2026-05-16)
 - **Stack confirmed:** Next.js (App Router) + Vercel + Supabase + Resend + Cloudflare (DNS + registrar) + Plausible + Sentry + GitHub. Stripe in v2 only. (2026-05-16, confirmed)
-- **Auth:** Email + magic link via Supabase Auth. No passwords. (2026-05-16, confirmed)
+- **Auth:** ~~Email + magic link via Supabase Auth. No passwords. (2026-05-16, confirmed)~~ **Revised 2026-05-27 → Email + password** (with forgot-password reset flow), via Supabase Auth. George's call, framed as "for now" / revisitable. Trade-off acknowledged: passwords add a reset flow to build + ongoing lockout-support burden that magic link avoided. To be implemented in Phase 1 Slice 2.
 - **Listings schema:** Single `listings` table with `type` enum + JSON `details` column for type-specific fields. Simpler than two tables, more flexible than rigid columns. (2026-05-16, confirmed)
 - **Sponsorships are their own table** (not just an FK on accounts) so accountability state and history can be queried cleanly. (2026-05-16, confirmed)
 - **Row-Level Security on every member-only table** is the security primitive of the two-tier model. Non-negotiable. (2026-05-16, confirmed)
