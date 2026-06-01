@@ -1,7 +1,9 @@
-// Next.js middleware — runs on every matched request before the route loads.
+// Next.js proxy — runs on every matched request before the route loads.
+// (Renamed from middleware.ts in Next 16; the "middleware" file convention is
+// deprecated. Same behavior, new file + function name.)
 //
-// Purpose: refresh the Supabase Auth session. Magic-link tokens expire after
-// a while; without a refresh on each request, a logged-in user would silently
+// Purpose: refresh the Supabase Auth session. Session tokens expire after a
+// while; without a refresh on each request, a logged-in user would silently
 // be logged out partway through a session. The @supabase/ssr cookie adapter
 // reads the auth cookie on the request, calls Supabase Auth to refresh if
 // needed, and writes the new cookie onto the response.
@@ -11,7 +13,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Start with a response that mirrors the incoming request. We'll attach
   // any new auth cookies to this response below.
   let response = NextResponse.next({

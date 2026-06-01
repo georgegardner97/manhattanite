@@ -137,16 +137,15 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Forgot password? link — hidden until /reset-request ships in the
-            next slice (Block 4). Uncomment when the reset flow is live. */}
-        {/* <div className="mt-10 text-center">
+        {/* Forgot password? → /reset-request (the forgot-password flow). */}
+        <div className="mt-10 text-center">
           <Link
             href="/reset-request"
             className="mh-link text-sm text-slate hover:text-ink"
           >
             Forgot password?
           </Link>
-        </div> */}
+        </div>
 
         <p className="mt-16 text-sm text-slate text-center leading-relaxed">
           Don&apos;t have an account?{" "}
