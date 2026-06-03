@@ -9,7 +9,8 @@
 // route-level check is the clean user-facing experience (a redirect rather
 // than a rejected submit). Both layers stay — never weaken either.
 //
-// Image upload is a later slice; the form shows a "Photos coming soon" note.
+// Image upload is wired in Slice 6 (Supabase Storage `listing-images` bucket,
+// RLS scoped to the user's own folder).
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -71,7 +72,7 @@ export default async function NewListingPage() {
           <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
         </div>
 
-        <NewListingForm />
+        <NewListingForm userId={user.id} />
       </div>
     </main>
   );

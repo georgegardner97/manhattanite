@@ -13,8 +13,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signImagePaths } from "@/lib/storage/sign-image-urls";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
+
+type ListingImage = { path: string };
 
 type ListingDetail = {
   id: string;
@@ -23,6 +26,7 @@ type ListingDetail = {
   description: string;
   price_cents: number;
   details: Record<string, unknown>;
+  images: ListingImage[];
   author: { name: string | null } | null;
 };
 
@@ -62,7 +66,7 @@ export default async function ListingDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, details, author:accounts(name)"
+      "id, type, title, description, price_cents, details, images, author:accounts(name)"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -73,6 +77,17 @@ export default async function ListingDetailPage({
   }
 
   const detailEntries = Object.entries(listing.details ?? {});
+
+  // Sign every image path in one round-trip. Map order is preserved by the
+  // paths we pass in; we re-walk listing.images so display order is the
+  // poster's chosen order.
+  const imagePaths = (listing.images ?? [])
+    .map((i) => i.path)
+    .filter((p): p is string => Boolean(p));
+  const urlByPath = await signImagePaths(imagePaths);
+  const imageUrls = imagePaths
+    .map((p) => urlByPath.get(p))
+    .filter((u): u is string => Boolean(u));
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -108,6 +123,24 @@ export default async function ListingDetailPage({
         </p>
 
         <span className="block w-8 h-px bg-ink/30 mt-10 mb-10" />
+
+        {imageUrls.length > 0 && (
+          <div className="mb-12 space-y-3">
+            {imageUrls.map((url, idx) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={url}
+                src={url}
+                alt=""
+                className={
+                  idx === 0
+                    ? "w-full aspect-[4/3] object-cover bg-ink/5"
+                    : "w-full object-cover bg-ink/5"
+                }
+              />
+            ))}
+          </div>
+        )}
 
         <p className="font-serif text-lg text-ink leading-relaxed whitespace-pre-wrap">
           {listing.description}

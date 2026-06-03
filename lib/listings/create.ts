@@ -26,6 +26,7 @@ const RLS_VIOLATION = "42501";
 
 const MAX_TITLE = 80;
 const MAX_DESCRIPTION = 2000;
+const MAX_IMAGES = 6;
 
 export async function createListing(
   _prevState: CreateListingState,
@@ -106,6 +107,34 @@ export async function createListing(
     if (brand) details.brand = brand;
   }
 
+  // ---- Images ----
+  // ImageUpload already uploaded the files to Storage and is sending us the
+  // paths as a JSON-encoded array of strings in the `images` field. Each
+  // path must start with `{user.id}/` so a member can't be tricked into
+  // attaching someone else's uploads to their own listing. (The storage RLS
+  // policy in 0005 enforces this on upload too — this is the second line.)
+  const imagePaths: string[] = [];
+  const imagesRaw = String(formData.get("images") ?? "[]");
+  try {
+    const parsed: unknown = JSON.parse(imagesRaw);
+    if (!Array.isArray(parsed)) {
+      return { error: "Photos didn't upload cleanly. Try again." };
+    }
+    if (parsed.length > MAX_IMAGES) {
+      return { error: `Up to ${MAX_IMAGES} photos, please.` };
+    }
+    const prefix = `${user.id}/`;
+    for (const item of parsed) {
+      if (typeof item !== "string" || !item.startsWith(prefix)) {
+        return { error: "Photos didn't upload cleanly. Try again." };
+      }
+      imagePaths.push(item);
+    }
+  } catch {
+    return { error: "Photos didn't upload cleanly. Try again." };
+  }
+  const images = imagePaths.map((path) => ({ path }));
+
   // ---- Insert. RLS is the final gate. ----
   const { data: inserted, error } = await supabase
     .from("listings")
@@ -116,6 +145,7 @@ export async function createListing(
       description,
       price_cents,
       details,
+      images,
       status: "published",
     })
     .select("id")

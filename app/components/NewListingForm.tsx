@@ -5,6 +5,7 @@ import {
   createListing,
   type CreateListingState,
 } from "@/lib/listings/create";
+import ImageUpload from "@/app/components/ImageUpload";
 
 // The insert runs server-side (createListing, where the Supabase session and
 // RLS live). This client component owns the stateful UI: the apartment/
@@ -23,7 +24,7 @@ const INITIAL: CreateListingState = { error: null };
 
 const CONDITIONS = ["new", "like new", "good", "fair"];
 
-export default function NewListingForm() {
+export default function NewListingForm({ userId }: { userId: string }) {
   const [state, formAction, isPending] = useActionState(
     createListing,
     INITIAL
@@ -229,17 +230,8 @@ export default function NewListingForm() {
         </>
       )}
 
-      {/* ---------- Photos placeholder ---------- */}
-      <div className="border-t border-ink/10 pt-8">
-        <p className="text-[13px] tracking-[0.22em] uppercase text-slate">
-          Photos
-          <span className={HINT}>coming soon</span>
-        </p>
-        <p className="mt-3 text-slate leading-relaxed">
-          You&apos;ll be able to add photos shortly. For now, let the
-          description do the work.
-        </p>
-      </div>
+      {/* ---------- Photos ---------- */}
+      <ImageUpload userId={userId} />
 
       {/* ---------- Error ---------- */}
       {state.error && <p className="text-sm text-red-700">{state.error}</p>}

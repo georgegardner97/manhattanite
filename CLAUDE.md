@@ -94,9 +94,9 @@ If a session involves email/calendar work alongside code:
 
 ## What this repo is right now
 
-A real, working Next.js 16 project with a waitlist landing page + Airtable + Resend integrations, being migrated forward into the full Manhattanite MVP. Originally scaffolded 2026-04-26 to run the manhattanite.com waitlist; now being repurposed as the production build for the marketplace itself. Phase 1 build is just beginning.
+A real, working Next.js 16 project. Originally scaffolded 2026-04-26 to run the manhattanite.com waitlist; now the production build for the marketplace itself. **Through Phase 3 Slice 5 as of 2026-06-01:** auth (email + password, signup, login, forgot-password reset), two-tier gating page at `/`, `/profile`, `listings` table with RLS, `/listings` browse, `/listings/[id]` detail, `/listings/new` member-gated posting flow. Founder is `is_member=true` and two real test listings (apartment + furniture) are live in prod.
 
-The stack is **Next.js (App Router) + Supabase (planned, not yet wired) + Vercel + Resend + Airtable (transitional)**. See `COMPANY/tech-architecture.md` for locked stack decisions. Until Supabase is wired, applications continue to flow into Airtable as today — intentional during seed phase.
+The stack is **Next.js (App Router) + Supabase + Vercel + Resend + Airtable (dormant)**. See `COMPANY/tech-architecture.md` for locked stack decisions. The Airtable application pipeline is preserved as dormant code (`lib/applications/submit.ts`) — the `/apply` slice (Phase 2) will revive it.
 
 @AGENTS.md — Read this for Next 16 breaking-changes warnings. Do not use Next 15 muscle memory.
 
@@ -131,12 +131,15 @@ If a build week slips, scope is cut from later phases — never from the trust l
 
 - **American spelling throughout** product and marketing copy (Manhattanite is a New York brand). `COMPANY/voice-and-copy.md` and `COMPANY/brand-guide.md` are sources of truth for tone — Soho House is the voice anchor.
 - When writing any user-facing string (interaction gates, application copy, system emails), open `COMPANY/voice-and-copy.md` first.
-- The current waitlist landing page (`app/page.tsx`) was written under earlier branding. Future copy refresh should pull from `COMPANY/voice-and-copy.md` for consistency.
+- `app/page.tsx` is the Tier 1 gating page (shipped Slice 3.5, 2026-06-01) using copy lifted verbatim from `COMPANY/voice-and-copy.md`. Flagged for Phase 1.5 rework — both copy and design need revisiting once the Design Foundation slot opens. Until then, the page does its functional job (closing the funnel mismatch) but is not the marketing surface Manhattanite needs longer term.
+- **CTA library is partially stale.** `voice-and-copy.md` still lists "Join the network" as the create-account CTA; the shipped CTA is "Create an account →". Reconcile in a later copy pass.
 
 ## Active migrations and known transitions
 
-This repo is mid-migration. Be aware:
+This repo is mid-build. Be aware:
 
-1. **Airtable → Supabase.** Currently applications go to Airtable. Phase 1 work will add Supabase auth + accounts/members tables, then dual-write, then cut over.
-2. **Waitlist page → gating page.** `app/page.tsx` currently shows a waitlist form. It will be replaced by the proper Account/Member gating flow per `COMPANY/voice-and-copy.md`.
-3. **Legacy STRATEGY.md → COMPANY/strategy-blueprint.md.** The root-level STRATEGY.md is being archived. Read the moved version.
+1. **Airtable application pipeline is dormant, not removed.** Extracted from `app/page.tsx` to `lib/applications/submit.ts` (Slice 3.5). The `/apply` route (Phase 2) will revive and refactor it. Airtable + Resend env vars stay in Vercel.
+2. **No `/apply` route yet.** During seed phase, members are created by manually flipping `is_member=true` via SQL. Real apply/approve flow is deferred Phase 2 work.
+3. **Author name + sponsor name don't render on listings.** The `accounts` RLS read-own policy hides other members' names — cards/detail show "a member" and sponsor renders "—". Needs either a public-profile read policy or denormalized `author_name`/`sponsor_name` on listings.
+4. **Image upload not yet wired.** Listings are text-only; `/listings/new` has a "Photos coming soon" placeholder. Slice 6.
+5. **Landing page flagged for Phase 1.5 rework.** Copy + design both. Functional but not the marketing surface we need.

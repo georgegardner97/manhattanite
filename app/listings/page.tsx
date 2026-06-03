@@ -11,8 +11,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signImagePaths } from "@/lib/storage/sign-image-urls";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
+
+type ListingImage = { path: string };
 
 type ListingCard = {
   id: string;
@@ -20,6 +23,7 @@ type ListingCard = {
   title: string;
   description: string;
   price_cents: number;
+  images: ListingImage[];
   author: { name: string | null } | null;
 };
 
@@ -45,11 +49,20 @@ export default async function ListingsPage() {
   // others until a public-profile read policy lands (see memory, Slice 4).
   const { data: listings } = await supabase
     .from("listings")
-    .select("id, type, title, description, price_cents, author:accounts(name)")
+    .select(
+      "id, type, title, description, price_cents, images, author:accounts(name)"
+    )
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(50)
     .returns<ListingCard[]>();
+
+  // Sign all cover-image paths in one round-trip, then look up per card.
+  const coverPaths =
+    listings
+      ?.map((l) => l.images?.[0]?.path)
+      .filter((p): p is string => Boolean(p)) ?? [];
+  const coverUrlByPath = await signImagePaths(coverPaths);
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -75,11 +88,17 @@ export default async function ListingsPage() {
           <EmptyState />
         ) : (
           <ul className="space-y-px">
-            {listings.map((listing) => (
-              <li key={listing.id}>
-                <ListingCardItem listing={listing} />
-              </li>
-            ))}
+            {listings.map((listing) => {
+              const coverPath = listing.images?.[0]?.path;
+              const coverUrl = coverPath
+                ? coverUrlByPath.get(coverPath) ?? null
+                : null;
+              return (
+                <li key={listing.id}>
+                  <ListingCardItem listing={listing} coverUrl={coverUrl} />
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -87,12 +106,28 @@ export default async function ListingsPage() {
   );
 }
 
-function ListingCardItem({ listing }: { listing: ListingCard }) {
+function ListingCardItem({
+  listing,
+  coverUrl,
+}: {
+  listing: ListingCard;
+  coverUrl: string | null;
+}) {
   return (
     <Link
       href={`/listings/${listing.id}`}
       className="group block border-t border-ink/10 py-10 last:border-b"
     >
+      {coverUrl && (
+        <div className="mb-6 aspect-[4/3] overflow-hidden bg-ink/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverUrl}
+            alt=""
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          />
+        </div>
+      )}
       <div className="flex items-baseline justify-between gap-6">
         <h2 className="font-serif font-light text-2xl md:text-3xl tracking-tight text-ink">
           {listing.title}
