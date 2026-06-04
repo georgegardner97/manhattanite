@@ -114,19 +114,25 @@ export default async function ProfilePage() {
             >
               Post a listing &rarr;
             </Link>
+            {/* Each link wrapped in its own div so the stacking works
+                regardless of how mh-link's display property is defined. */}
             <div className="mt-8 space-y-4">
-              <Link
-                href="/listings"
-                className="mh-link block text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-              >
-                Browse listings &rarr;
-              </Link>
-              <Link
-                href="/profile/edit"
-                className="mh-link block text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-              >
-                Edit profile &rarr;
-              </Link>
+              <div>
+                <Link
+                  href="/listings"
+                  className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+                >
+                  Browse listings &rarr;
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/profile/edit"
+                  className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+                >
+                  Edit profile &rarr;
+                </Link>
+              </div>
             </div>
           </div>
         )}
