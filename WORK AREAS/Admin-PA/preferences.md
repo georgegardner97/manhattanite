@@ -2,6 +2,12 @@
 
 Standing decisions and behaviours George has expressed about how he works. The PA reads this every morning briefing and applies these as background defaults. Append new entries when George states a preference — don't rewrite existing ones.
 
+**Split note (2026-06-02):** This file holds **Manhattanite-specific PA behaviour only** (briefing rules, content/voice defaults, build-task tagging, Manhattanite working preferences). The **canonical source for scheduling templates, calendar conventions, and life rules** is the Life workspace at:
+
+`/Users/georgegardner/Documents/Claude/Claude Cowork USE THIS/CoWork-OS-Beta-1.4/WORK AREAS/Admin-PA/preferences.md`
+
+Both the morning briefing and the evening summary scheduled tasks read both files. Anything to do with the daily weekday template, weekend rules, Perry Street override, NANM, calendar colours, flight banners, or the 80/20 lens lives in the Life file. Don't duplicate those here.
+
 Format:
 
 ```

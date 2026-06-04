@@ -37,7 +37,9 @@ Read this at the start of every Manhattanite conversation.
 - **Sponsorships are their own table** (not just an FK on accounts) so accountability state and history can be queried cleanly. (2026-05-16, confirmed)
 - **Row-Level Security on every member-only table** is the security primitive of the two-tier model. Non-negotiable. (2026-05-16, confirmed)
 - **Roles:** account / member / admin only. No role explosion. (2026-05-16, confirmed)
-- **Listing photo cap:** 8 per listing. Tunable. (2026-05-16, confirmed)
+- **Listing photo cap:** ~~8 per listing. Tunable. (2026-05-16, confirmed)~~ **Revised 2026-06-04 → 6 per listing.** Tight enough to push posters toward their best shots, generous enough for apartment sets. Enforced in three places: client uploader, server action, and a Postgres CHECK on `listings.images`. Shipped in Phase 3 Slice 6.
+- **Listing image storage:** Private Supabase Storage bucket (`listing-images`), 5 MB per file, MIME-restricted to JPEG/PNG/WebP. Images surfaced to the browser via short-lived signed URLs (1h) minted server-side using the viewer's session — so the Tier 0 → Tier 1 read wall is real on pixels the same way it's real on rows. A public bucket would have let anyone with a direct image URL bypass the read gate; trust mechanic is the product, so the wall has to be real everywhere. (2026-06-04, Phase 3 Slice 6)
+- **Image storage RLS:** Upload restricted to members, into a folder whose first segment is the user's own `auth.uid()` (path = `{user_id}/{uuid}.{ext}`). Read open to any signed-in user (mirrors `listings_read_published_for_accounts`). Delete restricted to the uploader. Same `is_member()` SECURITY DEFINER helper as the listings policy — never subquery `public.accounts` from inside a policy. (2026-06-04, Phase 3 Slice 6)
 - **Backups:** Supabase free tier (7-day daily) at MVP, upgrade to Pro ($25/mo, 30-day + PITR) at Cohort 1. (2026-05-16, confirmed)
 - **No staging environment in v1.** Vercel previews + production only. (2026-05-16, confirmed)
 - **v1 OUT (cuts to protect timeline):** In-platform messaging, search filters, payments, native mobile app. Web-first responsive only. (2026-05-16)

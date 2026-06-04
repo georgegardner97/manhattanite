@@ -4,6 +4,50 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-04 · Phase 3 Slice 6 complete — image upload via Supabase Storage shipped + CLAUDE.md housekeeping
+
+**Worked on:**
+- **Housekeeping — CLAUDE.md Part 2 refreshed.** The "What this repo is" paragraph still claimed Phase 1 was beginning and Supabase was "planned, not yet wired"; the Active migrations section still listed the waitlist→gating page transition as in-flight. All stale. Replaced with the current truth: through Phase 3 Slice 5, Supabase wired in Slice 1, gating page shipped Slice 3.5, two real founder listings live in prod. Added a fresh Active-migrations list naming the remaining open threads (no `/apply` yet, author/sponsor name rendering, image upload deferred to this slice, landing page flagged for Phase 1.5). The magic-link → email+password line was already correctly fixed in an earlier session; left intact.
+- **Migration `0004_listings_images.sql` — applied to prod.** Adds `images jsonb NOT NULL DEFAULT '[]'::jsonb` to `public.listings` with CHECK constraint `jsonb_typeof(images) = 'array' AND jsonb_array_length(images) <= 6`. The 6-cap is enforced in three places (client uploader, server action, DB CHECK) — belt + braces + suspenders. Sanity query returned both existing rows with `n = 0`, exactly as expected.
+- **Migration `0005_storage_listing_images.sql` — applied to prod.** Creates a **private** Storage bucket `listing-images` (5 MB file limit, MIME whitelist of `image/jpeg`, `image/png`, `image/webp`). Adds 3 RLS policies on `storage.objects` scoped to that bucket: `listing_images_member_upload` (only members can upload, only into a folder whose first segment is their own `auth.uid()`), `listing_images_authenticated_read` (any signed-in user — mirrors the listings read gate), `listing_images_owner_delete` (only the uploader, on their own files). `is_member()` SECURITY DEFINER helper from 0003 carried forward — same recursion-safety pattern as `is_admin()`.
+- **Three RLS policies verified live via `pg_policy` query** before any UI was built. All three returned with correct `polcmd` (r, a, d). Same smoke-test-first discipline as Slice 4.
+- **`lib/storage/upload-listing-image.ts`** — client helper. Validates MIME + size on the way in, builds the path `{user_id}/{crypto.randomUUID()}.{ext}`, calls `supabase.storage.from('listing-images').upload(...)`, returns `{ok, path}` or `{ok: false, error}`. Path convention is load-bearing for the RLS upload policy — the first folder segment IS the ownership check.
+- **`lib/storage/sign-image-urls.ts`** — server helper. Takes `string[]` of paths, returns `Map<path, signedUrl>` via `createSignedUrls(paths, 3600)`. One round-trip per page render. Missing/failed paths simply don't show up in the map, so callers default cleanly to "no image."
+- **`app/components/ImageUpload.tsx`** — new client component. Upload-on-select (not on-submit): each chosen file uploads immediately, returns a path, the path goes in local state alongside an `URL.createObjectURL(file)` thumbnail. Submit ships the paths as one JSON-encoded hidden `<input name="images">`. Grid of 3 thumbs per row, hover-reveal "Remove" button, "Add photos" / "Add more" label switching, inline error display, "The first photo is the cover." caption. Voice: Manhattanite-cultivated, no "Select photos" / "Choose files" generic language.
+- **`app/components/NewListingForm.tsx`** — wired ImageUpload. Now takes `userId: string` prop, replaces the "Photos coming soon" placeholder.
+- **`app/listings/new/page.tsx`** — passes `user.id` to the form.
+- **`lib/listings/create.ts`** — parses + validates the `images` JSON field. Each path must be a string AND must start with `{user.id}/` so a member can't be tricked into attaching someone else's uploaded files to their own listing (the storage RLS already prevents the upload but the server action backstops the linkage). Stores as `[{path}]` jsonb objects, leaving room for per-image alt text / dimensions / sort-order later.
+- **`app/listings/page.tsx`** — collects every listing's first image path, batch-signs them in one `signImagePaths` call, then maps back per card. Cards with a cover render a 4:3 aspect-locked `<img>` with a hover-scale effect; cards without an image branch cleanly to title+desc+byline.
+- **`app/listings/[id]/page.tsx`** — batch-signs every image path on the listing, then renders the gallery (first image 4:3, subsequent images at natural aspect, all `object-cover bg-ink/5`). Plain `<img>` tags (not Next.js `<Image>`) to avoid configuring `remotePatterns` for the Supabase storage domain — image optimization is a polish slice.
+- **tsc + eslint clean locally.** Commit `feat(listings): image upload via Supabase Storage (Phase 3 Slice 6)` (paths: `supabase/`, `lib/`, `app/`, `CLAUDE.md`). George ran the commit in Claude Code. Vercel deployed automatically.
+- **End-to-end test on prod.** Posted a real listing ("Loft on Greene Street with three big windows", SoHo, $5,400/mo, 1bd/1ba, 3 photos) by driving Chrome via the MCP. Detail page rendered title + price + 4:3 cover + the other two photos at natural size + description + bedrooms/bathrooms/neighborhood. Browse page rendered the new card WITH cover; the two existing founder listings (Ceccotti table, West Village apartment) rendered cleanly WITHOUT cover, proving the `coverUrl &&` conditional works both ways. Author byline still shows "a member" + sponsor "—" (the known stale-display threads from Slices 4/5, unchanged).
+- **Smoke test cleaned up.** Deleted the listing row + 3 storage objects via the Supabase JS client from the browser (RLS owner-delete policies allowed both). Confirmed the table is back to the original two founder listings. Also deleted the local `.test-uploads/` folder I'd briefly created when trying to work around the file_upload MCP tool.
+
+**Decided:**
+- **Private bucket + signed URLs over public bucket.** Costs an extra round-trip per page render but keeps the Tier 0 → Tier 1 read wall real on pixels. A public bucket would have let anyone with a direct image URL bypass the read gate for the image bytes (text was already gated). Trust mechanic is the product; the wall has to be real everywhere.
+- **6-photo cap.** George picked the recommended option. Tight enough to push posters toward their best shots, generous enough for apartments. Enforced in client + server + DB.
+- **Upload-on-select, not on-submit.** Faster perceived submit. Tradeoff: orphan files in Storage if a user abandons the form mid-way. A cleanup job that prunes anything not referenced by a listing is a known future polish — not v1 scope.
+- **Plain `<img>` tags, not Next.js `<Image>`.** Avoids configuring `remotePatterns` for `*.supabase.co`. Image optimization is a polish slice, not Slice 6 scope.
+- **Migrations applied via Cowork → Chrome MCP → Supabase SQL Editor.** First time a slice's migrations were driven from Cowork rather than Claude Code. Worked smoothly; the Monaco-editor `setValue` injection pattern from earlier sessions carried over cleanly.
+- **Commit + push handed off to Claude Code via a self-contained prompt.** Cowork can't easily run `git commit && git push` against George's local repo; a focused prompt for the Code tab containing the expected diff, the tsc/eslint re-check, the stage list, and the commit message kept the handoff small and idempotent.
+- **Smoke test artifacts get cleaned up, not kept.** George explicitly chose "Clear it" rather than keep the picsum-photo'd loft as MVP content. The three picsum photos (Chicago skyline, London street, foggy hilltop) didn't match the SoHo loft narrative; better not to pollute the table.
+
+**Blockers / open threads:**
+- **Three threads from earlier slices still open, unchanged:**
+  1. No `/apply` route yet. New members are still created by manually flipping `is_member=true` via SQL.
+  2. Author name on cards/detail renders "a member" — `accounts` RLS read-own hides other members' names. Needs a public-profile read policy or denormalized `author_name`.
+  3. Sponsor renders "—" everywhere. Sponsor-name display isn't wired.
+- **Storage delete via SQL is blocked by Supabase.** `delete from storage.objects` raises Postgres `42501: Direct deletion from storage tables is not allowed. Use the Storage API instead.` Supabase protects against orphan-object accidents this way. The Storage API (`supabase.storage.from(bucket).remove(paths)`) is the supported route — works from the browser under RLS owner-delete, or from server-side with service_role. Worth knowing for any future bulk-cleanup work.
+- **Cowork's `file_upload` MCP tool wouldn't accept the JPEGs I'd generated locally** — kept rejecting the paths with "paths parameter is required" even though the array was clearly populated. Worked around it by `fetch`-ing 3 random photos from `picsum.photos` (which sets CORS) inside the browser JS context, building `File` objects, populating the `<input type="file">` via `DataTransfer`, and dispatching a `change` event. Useful pattern for future e2e tests; documenting here so the workaround isn't reinvented next time.
+- **Orphan-file cleanup not built.** If a member uploads photos then abandons the new-listing form, those files sit in Storage forever. Acceptable for v1 (small volume, founder-only seed phase). A pruning job (paths-in-storage minus paths-in-listings) is a known future polish.
+- **Next.js `<Image>` not used.** Plain `<img>` tags work but skip optimization. Polish slice candidate.
+
+**Next session:**
+1. Reasonable candidates: load the 27 seed listings from `outputs/Manhattanite_Seed-Listings_v1.md` (with real photos sourced — picsum random would defeat the brand); OR wire the author-name / sponsor-name display (close the two byline gaps); OR start the `/apply` route (Phase 2 proper).
+2. If seed listings: decide whether `is_example=true` rows need real photos before any non-founder sees the network, or whether they ship without photos and the gallery layout only shows for the founder's own posts initially.
+
+---
+
 ## 2026-06-01 · Phase 3 Slice 5 complete — listing creation (posting flow) shipped + founder seeded as member
 
 **Worked on:**

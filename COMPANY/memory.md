@@ -11,7 +11,13 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state — as of 2026-05-18 (morning)
+## Quick state — as of 2026-06-04
+
+**Build progress at a glance.** Through Phase 3 Slice 6: auth (email+password, signup, login, forgot-password reset), two-tier gating page at `/`, `/profile`, `listings` table with RLS, `/listings` browse with covers, `/listings/[id]` detail with gallery, `/listings/new` member-gated posting with image upload. Storage is a private `listing-images` bucket + signed URLs. Founder is `is_member=true`, two real seed listings live in prod (West Village apartment + Ceccotti table — text only for now, photos to be sourced before any non-founder sees them). Three known threads still open from earlier slices: no `/apply` route yet, author-name renders "a member", sponsor renders "—". Full per-slice detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
+## Original quick state — as of 2026-05-18 (morning)
 
 ### What Manhattanite is
 
@@ -105,4 +111,4 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 
 ---
 
-*Last updated: 2026-05-18 (morning).*
+*Last updated: 2026-06-04 (after Slice 6).*

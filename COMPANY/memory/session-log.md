@@ -6,6 +6,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-04 · Phase 3 Slice 6 shipped — image upload via Supabase Storage
+
+**Worked on:**
+- Housekeeping pass on `CLAUDE.md` Part 2 — replaced the "Phase 1 just beginning / Supabase not yet wired / waitlist→gating in transition" framing with the current truth (through Phase 3 Slice 5, Supabase wired, gating page live). Added a fresh Active-migrations list for the genuinely-open threads.
+- Slice 6 in full: two new migrations (`0004` adds `images jsonb` with a ≤6 CHECK; `0005` creates a private `listing-images` Storage bucket + 3 RLS policies), four new code files (`lib/storage/upload-listing-image.ts`, `lib/storage/sign-image-urls.ts`, `app/components/ImageUpload.tsx`, plus updated form / action / browse / detail pages). Migrations driven from Cowork via Chrome → Supabase SQL Editor (first time a slice migration was applied from Cowork rather than Code tab). Commit + push handed to Claude Code via a self-contained prompt. Vercel auto-deployed.
+- End-to-end test on prod: posted a SoHo loft with 3 photos, verified detail-page gallery + browse cover + the conditional render path for image-less listings. Cleaned up the smoke-test row + storage objects via the Supabase JS client in the browser (RLS owner-delete policies allowed both). `.test-uploads/` workaround folder removed locally.
+
+**Decided:**
+- 6-photo cap per listing (revised down from the 2026-05-16 `8`).
+- Private bucket + signed URLs over public bucket — Tier 0 → Tier 1 wall must hold on pixels too.
+- Upload-on-select, plain `<img>` tags (not Next.js `<Image>`), orphan-file cleanup deferred.
+
+**Blockers / open threads:**
+- The three byline / `/apply` threads from Slices 4/5 still open — unchanged.
+- `delete from storage.objects` is blocked by Supabase (`42501: Direct deletion from storage tables is not allowed`); use the Storage API instead.
+- Cowork's `file_upload` MCP rejected my local JPEG paths during the test; worked around by fetching picsum photos in the page JS context and dispatching a synthetic `change` on the file input. Pattern documented in the project memory for reuse.
+
+**Next:**
+- Candidates for the next session: load the 27 seed listings (with real photos sourced first); OR wire the author-name / sponsor-name display; OR start the `/apply` route.
+
+Full session-by-session detail in `WORK AREAS/Product/mvp-build-project/memory.md` (project memory).
+
+---
+
 ## 2026-05-18 · Personal Assistant fully configured for Manhattanite
 
 **Worked on:**

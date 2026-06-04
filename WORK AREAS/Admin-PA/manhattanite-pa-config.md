@@ -129,12 +129,35 @@ The captain's log rotates monthly. Start a new `YYYY-MM-captains-log.md` file on
 
 | Task | When | What it does |
 |---|---|---|
-| `pa-morning-briefing` | Daily 7am | Reads Admin-PA + Manhattanite project memory + both calendars + Outlook headlines. Outputs the structured briefing per the prompt. |
-| `pa-end-of-day-summary` | Daily 8pm | Reads captain's log + tasks + output-log + project memory. Surfaces what got done, what's open, tomorrow's #1, optional reflection. |
+| `pa-morning-briefing` | Daily 7am | Reads Admin-PA + Manhattanite project memory + both calendars + Outlook headlines + Todoist + yesterday's `daily/[yesterday].md`. Outputs the structured briefing per the prompt and writes today's Plan to `daily/[today].md`. |
+| `evening-summary` | Daily 8pm | Reads today's Plan from `daily/[today].md`, runs plan-vs-reality comparison, writes Wrap + Tomorrow's setup + optional Reflection to the same file. Surfaces single most important thing for tomorrow. |
 | `monthly-system-review` | 1st of month, 9am | Cowork's own system health report. |
 
 To change a schedule, ask George then update via the scheduled-tasks tool.
 
+## 10. Daily state files (the bridge)
+
+`WORK AREAS/Admin-PA/daily/YYYY-MM-DD.md` is the shared canonical record both scheduled tasks read from and write to. Morning brief writes the Plan; evening summary writes the Wrap + Tomorrow's setup + optional Reflection. See `daily/_README.md` for the full structure.
+
+**Standing pattern — chat-drafted plans:** when George walks through tomorrow's plan in chat the night before, write it to `daily/[tomorrow].md` immediately as a `## Plan (drafted in chat HH:MM)` section. The morning brief picks it up, refreshes times against the live calendar, preserves George's structural choices.
+
+## 11. Preferences split (canonical vs local)
+
+Per the 2026-06-02 system change, scheduling and life rules live in **ONE place**: the Life workspace.
+
+| File | What lives there |
+|---|---|
+| `WORK AREAS/Admin-PA/preferences.md` (this workspace) | Manhattanite-specific PA behaviour only: briefing structure, format defaults, Claude Code vs Cowork tagging, schedule-check requirement, design-iterative, anticipate-aggressively, Todoist-in-briefings, British vs American spelling rule. |
+| `/Users/georgegardner/Documents/Claude/Claude Cowork USE THIS/CoWork-OS-Beta-1.4/WORK AREAS/Admin-PA/preferences.md` (Life — **canonical** for scheduling) | All scheduling templates and life rules: default weekday template, weekend free + make-up rule, Perry Street 7:30 AA override, NANM gig days, calendar colour scheme, multi-stop flight banner algorithm, brain-dump triage, 80/20 lens, "remind me to X" handling. |
+
+Both scheduled tasks read both files. If the Life mount fails mid-run, the PA falls back to Manhattanite-local preferences only and flags the gap in the Run note — never fails the briefing on this.
+
+When Manhattanite work later starts producing real calendar events (calls, meetings, dinners), they follow the Life canonical colour scheme. Manhattanite work block is currently **Tangerine (colorId 6)**. If a new colour rule is needed (e.g. a separate "Manhattanite external" colour), add it to the Life file as the canonical source — not here.
+
+## 12. Notion mirror — explicitly scrapped
+
+The Notion "Daily Schedule." page mirror that the older Life PA used is **not** part of either PA going forward. Chat output + the `daily/YYYY-MM-DD.md` state file are the canonical surfaces. Do not propose re-adding without an explicit ask.
+
 ---
 
-*Last updated: 2026-05-18. Author: George + Claude.*
+*Last updated: 2026-06-02 (Notion scrapped + preferences split). Author: George + Claude.*
