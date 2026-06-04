@@ -27,8 +27,20 @@ type ListingDetail = {
   price_cents: number;
   details: Record<string, unknown>;
   images: ListingImage[];
-  author: { name: string | null } | null;
+  author_name: string | null;
+  sponsor_name: string | null;
 };
+
+// Byline rules — same as the browse page:
+// - Author always shown ("a member" fallback if null).
+// - Sponsor portion shown only when sponsor_name is present.
+function renderByline(
+  authorName: string | null,
+  sponsorName: string | null
+): string {
+  const author = `Listed by ${authorName ?? "a member"}`;
+  return sponsorName ? `${author} · sponsored by ${sponsorName}` : author;
+}
 
 function formatPrice(cents: number, type: ListingDetail["type"]): string {
   const dollars = Math.round(cents / 100).toLocaleString("en-US");
@@ -66,7 +78,7 @@ export default async function ListingDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, details, images, author:accounts(name)"
+      "id, type, title, description, price_cents, details, images, author_name, sponsor_name"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -162,7 +174,7 @@ export default async function ListingDetailPage({
         )}
 
         <p className="mt-14 text-[11px] tracking-[0.22em] uppercase text-slate">
-          Listed by {listing.author?.name ?? "a member"} · sponsored by &mdash;
+          {renderByline(listing.author_name, listing.sponsor_name)}
         </p>
 
         {/* Contact is a separate member-gated slice — dead-link rule, not built:

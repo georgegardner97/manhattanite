@@ -24,7 +24,8 @@ type ListingCard = {
   description: string;
   price_cents: number;
   images: ListingImage[];
-  author: { name: string | null } | null;
+  author_name: string | null;
+  sponsor_name: string | null;
 };
 
 function formatPrice(cents: number, type: ListingCard["type"]): string {
@@ -50,7 +51,7 @@ export default async function ListingsPage() {
   const { data: listings } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, images, author:accounts(name)"
+      "id, type, title, description, price_cents, images, author_name, sponsor_name"
     )
     .eq("status", "published")
     .order("created_at", { ascending: false })
@@ -138,10 +139,24 @@ function ListingCardItem({
       </div>
       <p className="mt-3 text-slate leading-relaxed">{listing.description}</p>
       <p className="mt-5 text-[11px] tracking-[0.22em] uppercase text-slate">
-        Listed by {listing.author?.name ?? "a member"} · sponsored by &mdash;
+        {renderByline(listing.author_name, listing.sponsor_name)}
       </p>
     </Link>
   );
+}
+
+// Byline rules:
+// - Author always shown. Falls back to "a member" if the denorm is null
+//   (defensive; shouldn't happen post-migration 0006).
+// - Sponsor portion shown only when sponsor_name is present. Founders /
+//   first-cohort members with no sponsor get a clean "Listed by [Name]"
+//   with no trailing em-dash.
+function renderByline(
+  authorName: string | null,
+  sponsorName: string | null
+): string {
+  const author = `Listed by ${authorName ?? "a member"}`;
+  return sponsorName ? `${author} · sponsored by ${sponsorName}` : author;
 }
 
 function EmptyState() {
