@@ -6,6 +6,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-04 · Phase 4 Slice 2 shipped — /profile/edit + cosmetic fix on /profile link stacking
+
+**Worked on:**
+- Closed the "name not collected at signup" thread (open since Slice 2). New `/profile/edit` route + form lets members update their own name, neighborhood, bio. No migration — accounts table already had the columns from 0001, the RLS update-own policy + protect_account_columns trigger already cover the security model.
+- Three new files: `lib/profile/update.ts` (server action, validates + writes), `app/components/ProfileEditForm.tsx` (client form), `app/profile/edit/page.tsx` (route shell). Added "Edit profile →" link to `/profile` in both member and Tier-1 branches.
+- Live test on prod: full round-trip verified (form save → /profile re-render → /listings byline updated via the Slice 1 trigger). Caught + fixed a cosmetic bug where the two secondary links ran together on one line.
+
+**Decided:**
+- Name is optional, not required. Byline has a graceful "a member" fallback.
+- Empty string → null on save (cleaner DB state).
+- Cosmetic link-stacking fix bundled into the slice (caught during live test, fix is 6 lines).
+
+**Blockers / open threads:**
+- Slice ships in two commits — the cosmetic fix needs a small follow-up commit after the main `feat(profile)` push.
+- No /apply route yet — Tier-1 holders can edit profile but can't apply.
+
+**Next:**
+- /apply route (Phase 2 proper, 2-3 sessions).
+- Or: seed listings load (needs real photos).
+- Or: small polish round.
+
+Full session-by-session detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
 ## 2026-06-04 · Phase 4 Slice 1 shipped — author/sponsor byline denormalized
 
 **Worked on:**

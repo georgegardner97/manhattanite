@@ -4,6 +4,37 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-04 · Phase 4 Slice 2 complete — /profile/edit shipped + cosmetic fix on /profile link stacking
+
+**Worked on:**
+- **Closed the "name not collected at signup" thread that's been open since Slice 2.** Members can now edit their own name, neighborhood, and bio via `/profile/edit`. No migration needed — `accounts.name`, `accounts.neighborhood`, `accounts.bio` already exist from migration 0001; the RLS "accounts: update own row" policy from 0001 is the gate; the `protect_account_columns` trigger from 0001 backstops the protected fields (role / is_member / sponsor_id / email).
+- **`lib/profile/update.ts`** — server action. Trims inputs (empty string → null so the column actually reverts rather than storing empty), validates bounds (name 2-80 if provided, neighborhood ≤60, bio ≤500). Only passes `name` / `neighborhood` / `bio` to the UPDATE — even an attempt to pass the protected columns would be rejected by the 0001 trigger. Returns `{error: string | null}` for `useActionState`. On success: `redirect('/profile')` so the new values render and any rename has already propagated.
+- **`app/components/ProfileEditForm.tsx`** — client form. Three fields: name (text, "(first and last)" hint), neighborhood (text, "(optional)" hint), bio (textarea, "(optional, a sentence or two)" hint). Same `FIELD_BASE` / `LABEL` / `HINT` classes as `NewListingForm` / `ApplicationForm` — visual consistency across every form. CTA: "Save changes". `defaultValue` pattern so the form pre-fills without forcing controlled-input boilerplate.
+- **`app/profile/edit/page.tsx`** — Server Component shell. Auth gate (no session → `/login`), reads current row via accounts read-own RLS, passes name/neighborhood/bio to the form. Page title "Who are you?" — matches the interrogative-question voice of `/listings/new`'s "What have you got?".
+- **`app/profile/page.tsx`** — added "Edit profile →" link in BOTH the member CTA block AND the Tier-1 nudge block. Important detail: the link belongs in both branches because tier-1 holders also need to fill out their profile before/during the apply flow.
+- **End-to-end test on prod, full round-trip:** opened `/profile/edit`, changed name from "George Gardner" → "George G. Gardner", saved, verified redirect back to `/profile` with the new name rendering on the header, verified both founder listings on `/listings` now read "LISTED BY GEORGE G. GARDNER · SPONSORED BY JOHN ROBINSON" — the AFTER UPDATE trigger from migration 0006 propagated the rename to both author rows automatically. Then went back through the form and restored "George Gardner". The cross-slice plumbing works exactly as designed.
+- **Caught and fixed a cosmetic bug** during the test: the two secondary links on `/profile` ("Browse listings →" and "Edit profile →") were rendering on the same line ("BROWSE LISTINGS →EDIT PROFILE →") instead of stacked. Root cause: `mh-link` is presumably `display: inline-block` or similar, and the `block` Tailwind class I added wasn't winning the specificity battle. Fix: wrap each Link in its own `<div>` inside the `space-y-4` parent so the stacking comes from the wrapper divs (always block by default), not from the Link itself. Same structural pattern as the original single-link version; just two of them now.
+
+**Decided:**
+- **Name is optional, not required.** Could have enforced name as required to push toward the GdC-style convention from Slice 1. Chose optional because: (a) the byline `renderByline()` already handles null gracefully with "a member" fallback, (b) requiring it on save would block existing signups who don't have a name yet from saving ANY profile change, (c) clearing the name is a valid user choice that the system supports cleanly. Convention is enforced by social pressure + the visible byline, not by validation.
+- **Empty string → null, not stored as empty string.** Cleaner database state. A future query like `SELECT * FROM accounts WHERE name IS NULL` does what you'd expect.
+- **No new SQL trigger.** The Slice 1 trigger (`accounts_propagate_byline_changes`) already handles name + sponsor propagation; this slice just ships the UI that triggers it. Confirms the trigger pattern is the right separation of concerns — UI changes don't require DB changes for downstream effects.
+- **"Edit profile →" link on the Tier-1 (non-member) branch too,** even though no `/apply` route exists yet. Tier-1 holders need to set a name before they apply for membership; the link lives where they'll look for it.
+- **Cosmetic link-stacking fix bundled into the slice, not deferred.** Caught it during the live test; the fix is a 6-line structural change to the same file. Cleaner to ship it now than carry a known visual bug.
+
+**Blockers / open threads:**
+- **Slice ships in two commits, not one.** The first commit (`feat(profile)`) was already pushed before the cosmetic bug was caught. The fix needs a small follow-up commit (`fix(profile): stack member CTAs vertically`). George needs to run a second Claude Code prompt for it.
+- **No `/apply` route yet** — Tier-1 holders can now edit their profile but still can't submit an application; the membership path is the next obvious gap.
+- **Profile-edit doesn't expose email change.** Intentional — changing email touches Supabase Auth and the protect_account_columns trigger blocks it on the public.accounts row. Email change is a separate flow (Supabase Auth's built-in `updateUser({email})` with confirmation), worth its own slice when needed.
+- **Two threads from earlier slices still open, unchanged:** image-upload orphan-file cleanup not built; 'John Robinson' is still fake placeholder data on the founder's bylines (now safer to remove once a real sponsor exists, since other members can have real names of their own).
+
+**Next session:**
+1. **`/apply` route** — Phase 2 proper. The big one. Revives the dormant `lib/applications/submit.ts` into a real apply/approve flow. Multi-slice work: form, application creation, admin review (likely SQL-driven for v1), sponsor assignment on approval, email notifications. ~2-3 sessions total.
+2. **Or: seed listings load** — needs real photos sourced first (external work).
+3. **Or: small polish round** — landing page Phase 1.5 rework, contact form on listing detail, search/filter on browse, image optimization (Next.js `<Image>`).
+
+---
+
 ## 2026-06-04 · Phase 4 Slice 1 complete — author/sponsor byline denormalized + GdC-style full-name convention picked
 
 **Worked on:**

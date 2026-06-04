@@ -13,7 +13,7 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ## Quick state — as of 2026-06-04
 
-**Build progress at a glance.** Through Phase 4 Slice 1: auth (email+password, signup, login, forgot-password reset), two-tier gating page at `/`, `/profile`, `listings` table with RLS, `/listings` browse with covers, `/listings/[id]` detail with gallery, `/listings/new` member-gated posting with image upload, denormalized author/sponsor bylines that read "Listed by George Gardner · sponsored by John Robinson" on the seed data. Storage is a private `listing-images` bucket + signed URLs. Founder is `is_member=true` with `name='George Gardner'`. Two real seed listings live in prod (West Village apartment + Ceccotti table — text only for now, photos to be sourced before any non-founder sees them). **Byline name convention is GdC-style full first + last** (decided 2026-06-04). `sponsor_name='John Robinson'` is fake placeholder data on the founder's listings — must be replaced before any non-founder sees the network. Open threads: no `/apply` route yet (members still created by SQL flip), name not collected at signup (Slice 2), no profile-edit UI yet. Full per-slice detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+**Build progress at a glance.** Through Phase 4 Slice 2: auth (email+password, signup, login, forgot-password reset), two-tier gating page at `/`, `/profile`, **`/profile/edit` for self-editing name/neighborhood/bio**, `listings` table with RLS, `/listings` browse with covers, `/listings/[id]` detail with gallery, `/listings/new` member-gated posting with image upload, denormalized author/sponsor bylines that read "Listed by George Gardner · sponsored by John Robinson" on the seed data. Storage is a private `listing-images` bucket + signed URLs. Founder is `is_member=true` with `name='George Gardner'`. Two real seed listings live in prod (West Village apartment + Ceccotti table — text only for now, photos to be sourced before any non-founder sees them). **Byline name convention is GdC-style full first + last** (decided 2026-06-04). `sponsor_name='John Robinson'` is fake placeholder data on the founder's listings — must be replaced before any non-founder sees the network. Open threads: no `/apply` route yet (members still created by SQL flip), no email-change flow. Full per-slice detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
 
 ---
 
@@ -111,4 +111,4 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 
 ---
 
-*Last updated: 2026-06-04 (after Phase 4 Slice 1).*
+*Last updated: 2026-06-04 (after Phase 4 Slice 2).*
