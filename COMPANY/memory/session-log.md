@@ -6,6 +6,32 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-04 · Phase 4 Slice 1 shipped — author/sponsor byline denormalized
+
+**Worked on:**
+- Closed the "Listed by a member · sponsored by —" byline gap that's been open since Slice 4. Migration `0006_listings_byline_denorm.sql` adds `author_name` + `sponsor_name` text columns to listings with a `BEFORE INSERT` trigger (populates from accounts via SECURITY DEFINER lookup) and an `AFTER UPDATE` trigger on accounts (propagates renames + sponsor changes). Set founder's `accounts.name = 'George Gardner'` (was null since Slice 2). Backfilled both existing founder listings; manually overrode `sponsor_name = 'John Robinson'` as a demo-visibility placeholder.
+- Code: dropped the embedded `author:accounts(name)` select from `/listings` and `/listings/[id]` (it was returning null due to accounts read-own RLS), now reads `author_name` + `sponsor_name` directly. New `renderByline()` helper conditionally appends the sponsor portion only when `sponsor_name` is present.
+- Live test on prod confirmed: full byline on both founder listings; conditional renders cleanly without sponsor when nulled; rename trigger round-trip propagates without error.
+
+**Decided:**
+- **GdC-style full first + last name format** ("George Gardner") over Vinted-style initial ("George G.") — switched after looking up Gens de Confiance's convention. Trust-by-identity, matches the editorial brand voice. Privacy trade-off accepted.
+- **Denormalize over RLS public-profile policy or SECURITY DEFINER view** — RLS is row-level not column-level, and views don't traverse PostgREST embedded selects cleanly. Triggers handle rename propagation.
+- 'John Robinson' is fake placeholder data; replace before any non-founder sees the network.
+
+**Blockers / open threads:**
+- 'John Robinson' is fake — must go before public-facing surface.
+- Name not collected at signup (Slice 2 thread) — real members will render "Listed by a member" until profile-edit UI exists.
+- Two slices' worth of byline-display work now closed: this slice closes the Slice 4 byline gap.
+
+**Next:**
+- Build `/profile/edit` so members can set their own name (unblocks real-name bylines).
+- Or: `/apply` route (Phase 2 proper).
+- Or: seed-data load (with real photos sourced).
+
+Full session-by-session detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
 ## 2026-06-04 · Phase 3 Slice 6 shipped — image upload via Supabase Storage
 
 **Worked on:**
