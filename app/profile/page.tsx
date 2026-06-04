@@ -3,8 +3,8 @@
 // Server Component: reads the signed-in account row from public.accounts via
 // the server Supabase client. If there's no session, redirects to /login.
 //
-// At this stage (Slice 2), profile is read-only. Slice 3+ will add editing
-// (name, neighborhood, bio) and the membership-application path.
+// Phase 4 Slice 2 wires the "Edit profile →" link to /profile/edit.
+// The membership-application path (/apply) is still later work.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -114,12 +114,18 @@ export default async function ProfilePage() {
             >
               Post a listing &rarr;
             </Link>
-            <div className="mt-8">
+            <div className="mt-8 space-y-4">
               <Link
                 href="/listings"
-                className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+                className="mh-link block text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
               >
                 Browse listings &rarr;
+              </Link>
+              <Link
+                href="/profile/edit"
+                className="mh-link block text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+              >
+                Edit profile &rarr;
               </Link>
             </div>
           </div>
@@ -140,6 +146,14 @@ export default async function ProfilePage() {
             >
               Apply for membership
             </Link> */}
+            <div className="mt-10">
+              <Link
+                href="/profile/edit"
+                className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+              >
+                Edit profile &rarr;
+              </Link>
+            </div>
           </div>
         )}
 
