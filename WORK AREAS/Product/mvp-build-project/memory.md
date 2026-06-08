@@ -4,6 +4,42 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-08 · /apply Slice A BUILT — code written, migration 0007 applied to prod, RLS smoke-tested; awaiting commit + deploy, then live test
+
+**Worked on (build):**
+- Greenlit and built Slice A in full. Five files written to the repo: `supabase/migrations/0007_applications.sql` (new), `lib/applications/submit.ts` (rewritten — Airtable dropped, writes to Supabase, useActionState shape, writes name+neighborhood back to accounts then inserts the application, Resend ping to George, maps 23505→"already applied"/42501→/profile), `app/components/ApplicationForm.tsx` (refactored to useActionState; fields name/neighborhood/occupation/about/sponsor_reference, email from session, CTA "Apply for membership"), `app/apply/page.tsx` (new route — gates no-session→/login, member→/profile, pending row→confirmation state, else prefilled form; copy verbatim from voice-and-copy.md), `app/profile/page.tsx` (apply CTA uncommented + pointed at /apply).
+- **tsc + eslint clean** in the sandbox against the changed files (exit 0 both).
+- **Migration 0007 applied to PRODUCTION** via Cowork → Chrome MCP → Supabase SQL editor (postgres role, new untitled snippet so no saved migration overwritten). "Success. No rows returned."
+- **RLS smoke-tested on prod:** structural check returned table_exists=1, policy_count=4, index_count=3. Member-block test (impersonate founder is_member=true inside a `begin…rollback`) correctly raised `42501: new row violates row-level security policy` — the `not is_member()` insert gate fires. Founder state untouched (rolled back). The "non-member CAN apply" half is deferred to the live loop.
+- **Commit handed to Claude Code** via a self-contained prompt (Cowork can't push to the local repo): `feat(apply): membership application form + applications table + RLS (Phase 2 Slice A)` for the 5 code files, plus a `docs:` commit for the two plan docs + memory + output-log.
+
+**Worked on (planning, earlier in session):**
+- Produced two planning docs in `outputs/`:
+  1. **`Apply-Route_Plan_v1.md`** — the three-slice shape. A: form + application row (~1 session). B: approve/decline atomic transaction (~1 session, SQL-driven). C: the three emails (~½–1 session). Total ~2–3 sessions.
+  2. **`Apply-Route_Slice-A-Build-Plan_v1.md`** — full hand-to-Code build plan for Slice A: migration `0007_applications.sql` (applications table, status enum, one-pending-per-account partial unique index, RLS using existing `is_member()`/`is_admin()` helpers), `submit.ts` rewrite (Airtable dropped, writes to Supabase, useActionState shape), `ApplicationForm` refactor (name/neighborhood/occupation/about/sponsor_reference; email from session), new `app/apply/page.tsx` (gates + pending-confirmation state), CTA wiring, prod test loop, commit message. All copy lifted verbatim from `voice-and-copy.md`.
+
+**Decided:**
+- **Supabase-only, drop Airtable** from the apply flow (Airtable formally sunset later per CLAUDE.md).
+- **SQL-driven review for v1** (Slice B), `/admin` page deferred to later polish — at seed volume, approving is a couple of clicks in the Supabase dashboard against people George knows.
+- **Application is account-bound** — applicant is already logged in; email from session, name/neighborhood prefilled from accounts and written back on submit. Design win: applying sets the byline `name`, closing the Slice 2 "name not collected" gap for real members.
+- **`name` required at apply time** (stricter than `/profile/edit` where it's optional) — pending George's final confirm.
+
+**Decided during build:**
+- **`name` required at apply time** — confirmed and implemented (server + client). Stricter than `/profile/edit`. They can still edit/clear on the profile later.
+- **Neighborhood is a plain text input** on the apply form (prefilled from accounts), not the old curated waitlist `optgroup` select — keeps the write-back to `accounts.neighborhood` simple and matches `/profile/edit`. Noted as a deliberate simplification of the build-plan, which had floated keeping the select.
+
+**Blockers / open threads:**
+- **Awaiting George: run the Claude Code commit prompt → Vercel deploy.** `/apply` will 404 in prod until then. Once deployed, the live test loop runs (apply as founder with is_member flipped false; verify confirmation state + applications row + accounts name/neighborhood updated + ping email; revisit; clean up row + restore is_member=true).
+- **Read-own RLS isolation not independently tested** (only one account exists) — same limitation as prior slices; policy shape is identical to proven tables.
+- A scratch SQL snippet "Membership Applications with RLS Controls" was left in George's Supabase SQL editor (contains the verification query, not a migration). Harmless; delete if tidying.
+- Legal Tier-1 items (entity/TOS/privacy/founder identity) still open and still gate any *public* go-live — apply flow collects real personal data; fine for seed/demo only.
+
+**Next:**
+1. George runs the commit prompt → says "deployed" → Claude drives the live test loop.
+2. Then Slice B (approve/decline atomic transaction, migration 0008), then Slice C (emails).
+
+---
+
 ## 2026-06-04 · Phase 4 Slice 2 complete — /profile/edit shipped + cosmetic fix on /profile link stacking
 
 **Worked on:**
