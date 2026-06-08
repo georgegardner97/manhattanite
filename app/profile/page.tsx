@@ -138,21 +138,20 @@ export default async function ProfilePage() {
         )}
 
         {/* Tier-1 nudge — visible only to account holders, not full members.
-            The "Apply for membership" CTA is commented out until /apply
-            ships in a later slice. The nudge text stands on its own for now. */}
+            The "Apply for membership" CTA went live in Phase 2 Slice A. */}
         {!account.is_member && (
           <div className="mt-20 border-t border-ink/10 pt-12 text-center">
             <p className="font-serif text-xl leading-relaxed text-ink">
               You have an account. To post a listing, contact a member, or
               sponsor someone, you&apos;ll need to be approved as a member.
             </p>
-            {/* <Link
+            <Link
               href="/apply"
               className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
             >
-              Apply for membership
-            </Link> */}
-            <div className="mt-10">
+              Apply for membership &rarr;
+            </Link>
+            <div className="mt-8">
               <Link
                 href="/profile/edit"
                 className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"

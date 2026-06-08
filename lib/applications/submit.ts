@@ -1,161 +1,179 @@
-// Dormant — preserved for the /apply slice.
+// Server action for submitting a membership application — Phase 2 Slice A.
 //
-// The membership application pipeline (Resend notification email + Airtable
-// record), lifted out of app/page.tsx when the waitlist landing was replaced
-// by the two-tier gating page in Slice 3.5. Not wired to any route yet — the
-// /apply slice will revive and refactor this alongside
-// app/components/ApplicationForm.tsx. The Airtable + Resend env vars stay in
-// place for that revival.
+// Rewritten from the dormant waitlist version. The old code collected name +
+// email from an anonymous visitor and wrote to Airtable + Resend. The new model
+// is account-bound: the applicant is already a signed-in Tier 1 account, so:
+//   - email comes from the session, never typed;
+//   - name + neighborhood are written back to the accounts row (so the byline
+//     name gets set as a side effect of applying — closes the Slice 2 "name not
+//     collected" gap for real members);
+//   - occupation, the paragraph, and the sponsor reference live only on the
+//     new applications row.
+//
+// Airtable is gone (Supabase is the source of truth). Resend stays as a
+// best-effort heads-up to the reviewer (info@manhattanite.com). The applicant's
+// own confirmation email is Slice C; this slice only shows them the on-page
+// confirmation state (rendered by app/apply/page.tsx when a pending row exists).
+//
+// Returns a { error } state for inline display via useActionState in the client
+// form. On a clean insert it redirect()s to /apply, where the pending-row guard
+// renders the confirmation copy instead of the form.
 
 "use server";
 
 import { redirect } from "next/navigation";
 import { Resend } from "resend";
+import { createClient } from "@/lib/supabase/server";
 
-// Airtable identifiers for the Manhattanite Applications base/table.
-// These are not secrets (the API key is the secret); keeping them as constants
-// here makes the integration easier to read.
-const AIRTABLE_BASE_ID = "applBwtxAzzYfFELQ";
-const AIRTABLE_TABLE_ID = "tblL1TAgU4LaNBZ7H";
+export type SubmitApplicationState = { error: string | null };
 
-export async function submitApplication(formData: FormData) {
-  // Pluck fields explicitly. Next.js injects internal $ACTION_* keys into
-  // formData, so we avoid Object.fromEntries when we plan to forward this
-  // payload to a third-party API like Airtable.
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const neighborhood = String(formData.get("neighborhood") ?? "").trim();
-  const otherNeighborhood = String(
-    formData.get("otherNeighborhood") ?? ""
-  ).trim();
-  const social = String(formData.get("social") ?? "").trim();
-  const about = String(formData.get("about") ?? "").trim();
-  const referee = String(formData.get("referee") ?? "").trim();
+// Postgres error codes we care about.
+const RLS_VIOLATION = "42501"; // is_member() gate fired (already a member)
+const UNIQUE_VIOLATION = "23505"; // a pending application already exists
 
-  // Multi-select checkboxes share the same `name` attribute, so we use
-  // getAll() to collect them as an array. Each value is the human-readable
-  // label that matches an Airtable multi-select option.
-  const useCases = formData
-    .getAll("useCases")
-    .map((v) => String(v).trim())
-    .filter(Boolean);
+const MAX_NAME = 80;
+const MAX_NEIGHBORHOOD = 60;
+const MAX_OCCUPATION = 120;
+const MAX_ABOUT = 1500;
+const MAX_SPONSOR_REF = 200;
 
-  // Always log to the server console as a backup, in case both delivery
-  // channels (email + Airtable) fail.
-  console.log("New application:", {
-    name,
-    email,
-    neighborhood,
-    otherNeighborhood,
-    social,
-    useCases,
+// Pull a string from FormData, trim, and treat empty as null.
+function pluck(formData: FormData, key: string): string | null {
+  const raw = formData.get(key);
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
+export async function submitApplication(
+  _prevState: SubmitApplicationState,
+  formData: FormData
+): Promise<SubmitApplicationState> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // ---- Pluck + validate ----
+  const name = pluck(formData, "name");
+  const neighborhood = pluck(formData, "neighborhood");
+  const occupation = pluck(formData, "occupation");
+  const about = pluck(formData, "about");
+  const sponsorReference = pluck(formData, "sponsor_reference");
+
+  // Name is required at apply time — you're vouching for a real person, and the
+  // byline convention (decisions.md, 2026-06-04) wants a real name. They can
+  // still edit or clear it later on /profile/edit.
+  if (!name) {
+    return { error: "Tell us your name — first and last." };
+  }
+  if (name.length < 2) {
+    return { error: "Add a few more letters to your name." };
+  }
+  if (name.length > MAX_NAME) {
+    return { error: `Keep your name to ${MAX_NAME} characters or fewer.` };
+  }
+  if (!neighborhood) {
+    return { error: "Let us know where in Manhattan you live." };
+  }
+  if (neighborhood.length > MAX_NEIGHBORHOOD) {
+    return {
+      error: `Neighborhood should be ${MAX_NEIGHBORHOOD} characters or fewer.`,
+    };
+  }
+  if (!occupation) {
+    return { error: "Tell us what you do." };
+  }
+  if (occupation.length > MAX_OCCUPATION) {
+    return {
+      error: `Keep that to ${MAX_OCCUPATION} characters or fewer.`,
+    };
+  }
+  if (!about) {
+    return { error: "Tell us a little about yourself, in your own words." };
+  }
+  if (about.length > MAX_ABOUT) {
+    return {
+      error: `That's a little long — keep it under ${MAX_ABOUT} characters.`,
+    };
+  }
+  if (sponsorReference && sponsorReference.length > MAX_SPONSOR_REF) {
+    return {
+      error: `Keep the referral to ${MAX_SPONSOR_REF} characters or fewer.`,
+    };
+  }
+
+  // ---- 1. Write name + neighborhood back to the accounts row. ----
+  // RLS "accounts: update own row" allows this; the protect_account_columns
+  // trigger (0001) ignores name/neighborhood (they're not protected columns).
+  // This is the byline-name side effect — applying sets the member's real name.
+  const { error: profileError } = await supabase
+    .from("accounts")
+    .update({ name, neighborhood })
+    .eq("id", user.id);
+
+  if (profileError) {
+    console.error("Failed to update account during apply:", profileError);
+    return {
+      error: "Something went wrong sending your application. Try again in a moment.",
+    };
+  }
+
+  // ---- 2. Insert the application row. RLS is the real gate. ----
+  const { error: insertError } = await supabase.from("applications").insert({
+    account_id: user.id,
+    occupation,
     about,
-    referee,
+    sponsor_reference: sponsorReference,
+    neighborhood,
+    // status defaults to 'pending' in the schema.
   });
 
-  // ============ 1. Send notification email via Resend ============
+  if (insertError) {
+    // Already have a pending application — defensive; the route guards this too.
+    if (insertError.code === UNIQUE_VIOLATION) {
+      return {
+        error: "You've already applied — we're reading it. Hang tight.",
+      };
+    }
+    // is_member() gate fired (somehow already a member): send them to /profile.
+    if (insertError.code === RLS_VIOLATION) {
+      redirect("/profile");
+    }
+    console.error("Failed to insert application:", insertError);
+    return {
+      error: "Something went wrong sending your application. Try again in a moment.",
+    };
+  }
+
+  // ---- 3. Reviewer heads-up via Resend (best-effort). ----
+  // Own try/catch so a mail failure never loses the application — the row is
+  // already safely written above.
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    // Build a small helper string for the Neighborhood line. If the
-    // applicant chose "Other", we want to show what they typed in too.
-    const neighborhoodLine =
-      neighborhood === "Other" && otherNeighborhood
-        ? `${neighborhood} — ${otherNeighborhood}`
-        : neighborhood;
-
-    const { data: emailData, error: emailError } = await resend.emails.send({
+    await resend.emails.send({
       from: "Manhattanite <applications@manhattanite.com>",
       to: "info@manhattanite.com",
-      subject: `New Manhattanite Application: ${name}`,
+      subject: `New Manhattanite application: ${name}`,
       html: `
-        <h2>New Manhattanite Application</h2>
+        <h2>New Manhattanite application</h2>
         <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Neighborhood:</strong> ${neighborhoodLine}</p>
-        <p><strong>Instagram or LinkedIn:</strong> ${social}</p>
-        <p><strong>Use Cases:</strong> ${
-          useCases.length ? useCases.join(", ") : "—"
-        }</p>
-        <p><strong>About:</strong><br />${
-          about ? about.replace(/\n/g, "<br />") : "—"
-        }</p>
-        <p><strong>Referred By:</strong> ${referee || "—"}</p>
+        <p><strong>Email:</strong> ${user.email ?? "—"}</p>
+        <p><strong>Neighborhood:</strong> ${neighborhood}</p>
+        <p><strong>Occupation:</strong> ${occupation}</p>
+        <p><strong>About:</strong><br />${about.replace(/\n/g, "<br />")}</p>
+        <p><strong>Referred by:</strong> ${sponsorReference ?? "—"}</p>
       `,
     });
-
-    if (emailError) {
-      console.error("Resend rejected the email:", emailError);
-    } else {
-      console.log("Email sent successfully:", emailData);
-    }
   } catch (error) {
-    // Catches network failures and other unexpected issues.
-    console.error("Unexpected error sending email:", error);
+    console.error("Reviewer notification email failed (application saved):", error);
   }
 
-  // ============ 2. Save the application to Airtable ============
-  // Independent try/catch so that an Airtable failure doesn't break the
-  // email path (and vice versa). Either channel surviving means we don't
-  // lose the application.
-  try {
-    const fields: Record<string, unknown> = {
-      Name: name,
-      Email: email,
-      Neighborhood: neighborhood,
-      "Instagram or LinkedIn": social,
-      Status: "New",
-    };
-
-    // Only set "Other Neighborhood" if the applicant chose "Other" from
-    // the dropdown — keeps the column tidy for everyone else.
-    if (neighborhood === "Other" && otherNeighborhood) {
-      fields["Other Neighborhood"] = otherNeighborhood;
-    }
-
-    // Use Cases is a multi-select Airtable field, which expects an array
-    // of strings matching the configured option labels.
-    if (useCases.length) {
-      fields["Use Cases"] = useCases;
-    }
-
-    if (about) {
-      fields["About"] = about;
-    }
-
-    // Only set Referred By if the applicant provided one. With
-    // typecast: true (below), Airtable will match this string against
-    // existing applicants by name; if no match exists, it creates a stub
-    // record so the link is preserved.
-    if (referee) {
-      fields["Referred By"] = [referee];
-    }
-
-    const airtableResponse = await fetch(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ fields, typecast: true }),
-      }
-    );
-
-    if (!airtableResponse.ok) {
-      const errText = await airtableResponse.text();
-      console.error(
-        "Airtable rejected the record:",
-        airtableResponse.status,
-        errText
-      );
-    } else {
-      const airtableData = await airtableResponse.json();
-      console.log("Airtable record created:", airtableData.id);
-    }
-  } catch (error) {
-    console.error("Unexpected error saving to Airtable:", error);
-  }
-
-  redirect("/thank-you");
+  // Success — a pending row now exists, so /apply renders the confirmation state.
+  redirect("/apply");
 }
