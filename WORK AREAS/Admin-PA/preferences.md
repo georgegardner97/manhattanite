@@ -70,3 +70,13 @@ For every task surfaced, recommended, or planned, explicitly mark where it shoul
 Category: Working style
 
 Every morning briefing must pull current Todoist tasks via the Todoist MCP and merge them into the briefing. Treat Todoist as a primary task source alongside `tasks.md`. Items due today belong in "Today's time-blocked schedule" (slot them where they fit) and "Top 3 priorities". Items overdue belong in "Heads up". Apply the same [Claude Code] vs [Cowork] tagging. Use Todoist's own priority levels (p1 highest) when ranking.
+
+### 2026-06-08 — No inline avatar thumbnails; profile photos only
+Category: Brand / design
+
+A photo on a member's profile page is fine and on-brand. Small face thumbnails next to names — on listing bylines, the browse grid, anywhere inline — are NOT wanted; George finds them scrappy. They read as consumer-social (Facebook/Nextdoor/Vinted) and fight the editorial Soho House / Mr Porter / Le Labo voice. GdC-faithful: the trust value of a real photo is delivered on the profile (viewable on click-through), not by sprinkling thumbnails. Photo earns its place on the profile page (generous, well-shot) and, at most, a tasteful "about the lister" block on listing detail — never a thumbnail, never on browse bylines. Full rationale in COMPANY/memory/decisions.md.
+
+### 2026-06-08 — Flag the "explore the website" pause at end of Slice C
+Category: Working style / build cadence
+
+George wants a deliberate pause to walk through and explore the live site once it's worth seeing. AGREED CHECKPOINT: the end of /apply Slice C (the apply→approve→welcome-email loop complete), because that's the first time the full trust mechanic works end to end — visit → account → browse → apply → approved → post (the spec's v1 success path). When Slice C ships, PROACTIVELY tell George it's time, and run a guided walkthrough / help him test everything out (don't wait for him to ask). Caveat to mention then: landing page (Phase 1.5 redesign pending) and thin content (2 listings, no real photos, placeholder sponsor) will still look unfinished — the "looks real" checkpoint is after seed listings + photos load. Offer both checkpoints.

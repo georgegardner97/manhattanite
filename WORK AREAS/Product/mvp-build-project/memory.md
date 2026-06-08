@@ -4,7 +4,44 @@ Chronological log. Newest entries at the top.
 
 ---
 
-## 2026-06-08 · /apply Slice A BUILT — code written, migration 0007 applied to prod, RLS smoke-tested; awaiting commit + deploy, then live test
+## 2026-06-08 · /apply Slice B SHIPPED — approve/decline transaction (migration 0008), tested clean on prod
+
+**Worked on:**
+- Wrote + applied `supabase/migrations/0008_approve_application.sql` to production. Three SECURITY DEFINER functions: `approve_application(app_id, sponsor_id default founder)` — the atomic 3-way transaction (account → is_member=true + sponsor_id set; application → approved + reviewed_at), with guards (app exists, app is pending, account not already a member, sponsor must be a member); `decline_application(app_id, note)` → status declined; `request_more_info(app_id, note)` → status needs_info. None granted to `authenticated` — called from the SQL editor (postgres) during seed; expose via a narrow admin path when an /admin page lands.
+- **Full happy-path tested on prod** by standing up a synthetic non-member applicant (inserted `auth.users` row → the 0001 trigger auto-created the accounts row → inserted a pending application), then calling `approve_application`. Verified atomically: is_member true, sponsor_id = founder, status approved, reviewed_at set, sponsor name resolves to "George Gardner". Cleanup = single `delete from auth.users where id=…` which cascaded to accounts + applications. Final check: 0 synthetic rows, 0 applications, founder untouched (is_member true, sponsor_id null).
+
+**Decided:**
+- **Sponsor defaults to the founder** (`85ce5315-…`) when `approve_application` is called without a sponsor — the seed-phase default. Pass an explicit sponsor to override.
+- **`needs_info` frees re-application** — the 0007 one-pending partial unique index only covers status='pending', so moving an app to needs_info lets the applicant submit a fresh one via /apply. Intended back-and-forth path for v1.
+- **SQL-driven review, no /admin page** (per the Slice plan). Approve from the SQL editor: `select public.approve_application('<app-id>');`.
+- **Synergy confirmed:** writing `sponsor_id` fires the 0006 byline trigger, so approving a member also lights up their listings' "· sponsored by [name]" automatically.
+
+**Blockers / open threads:**
+- `decline_application` and `request_more_info` not independently tested (simple UPDATE-with-guard; happy path of approve was the priority). Low risk; exercise on first real use.
+- No deploy needed — these are DB functions, already live in prod. Commit is just the migration file for version control.
+- Scratch SQL snippet "Membership Applications with RLS Controls" still in George's SQL editor (now holds the last verification query). Harmless.
+
+**Next:** Slice C — the three emails (applicant confirmation, reviewer ping refinement, the "you're in" welcome fired on approval). **End of Slice C = the agreed pause/walkthrough checkpoint** (see preferences.md) — proactively flag it and help George test the full loop.
+
+---
+
+## 2026-06-08 · /apply Slice A SHIPPED — built, committed, deployed, live-tested clean on prod
+
+**Live test loop (after George ran the Claude Code commit → Vercel deployed):**
+- `/apply` as a member → redirects to `/profile` ✓ (deploy confirmed live + member-gate works).
+- Flipped founder `is_member=false` via SQL. `/apply` → form rendered with **name prefilled "George Gardner"** (prefill works); neighborhood blank (account had null), occupation/about required.
+- Filled neighborhood "West Village" / occupation "Founder, Manhattanite" / about text, submitted via the real server action.
+- Redirected to `/apply` showing the **confirmation state** ("Thanks for applying." + received copy, no form) ✓.
+- DB verified: one `applications` row (status `pending`, occupation/about/neighborhood snapshot, sponsor_reference NULL). Accounts write-back verified: **neighborhood null → "West Village"** (the design-win — applying populates the profile), name intact, is_member still false (pending ≠ approved) ✓.
+- Revisited `/apply` → still confirmation, no second form ✓ (one-pending guard holds).
+- Reviewer ping email sent to info@manhattanite.com (one real test email in the inbox).
+- **Cleanup:** deleted the test application row, restored `is_member=true` and `neighborhood=null`. Final verify: app_count 0, is_member true, name "George Gardner", neighborhood NULL. `/apply` → `/profile` again. Account is exactly as before the test.
+
+**Slice A status: DONE.** Next is Slice B (approve/decline atomic transaction, migration 0008).
+
+---
+
+## 2026-06-08 · /apply Slice A BUILT — code written, migration 0007 applied to prod, RLS smoke-tested
 
 **Worked on (build):**
 - Greenlit and built Slice A in full. Five files written to the repo: `supabase/migrations/0007_applications.sql` (new), `lib/applications/submit.ts` (rewritten — Airtable dropped, writes to Supabase, useActionState shape, writes name+neighborhood back to accounts then inserts the application, Resend ping to George, maps 23505→"already applied"/42501→/profile), `app/components/ApplicationForm.tsx` (refactored to useActionState; fields name/neighborhood/occupation/about/sponsor_reference, email from session, CTA "Apply for membership"), `app/apply/page.tsx` (new route — gates no-session→/login, member→/profile, pending row→confirmation state, else prefilled form; copy verbatim from voice-and-copy.md), `app/profile/page.tsx` (apply CTA uncommented + pointed at /apply).

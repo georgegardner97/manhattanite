@@ -27,3 +27,12 @@ Rotate monthly. On the 1st of July, start `2026-07-captains-log.md`.
 
 ## 2026-06-04 (Thursday)
 **07:00** — Morning briefing ran.
+
+## 2026-06-05 (Friday)
+**06:52** — Morning briefing ran.
+
+## 2026-06-07 (Sunday)
+**07:00** — Morning briefing ran.
+
+## 2026-06-08 (Monday)
+**07:00** — Morning briefing ran.
