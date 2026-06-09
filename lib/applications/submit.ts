@@ -22,8 +22,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
+import {
+  sendApplicantConfirmation,
+  sendReviewerPing,
+} from "@/lib/applications/emails";
 
 export type SubmitApplicationState = { error: string | null };
 
@@ -125,14 +128,20 @@ export async function submitApplication(
   }
 
   // ---- 2. Insert the application row. RLS is the real gate. ----
-  const { error: insertError } = await supabase.from("applications").insert({
-    account_id: user.id,
-    occupation,
-    about,
-    sponsor_reference: sponsorReference,
-    neighborhood,
-    // status defaults to 'pending' in the schema.
-  });
+  // Select the new id back so the reviewer ping can embed it (the approve
+  // command in the email is keyed on this id).
+  const { data: inserted, error: insertError } = await supabase
+    .from("applications")
+    .insert({
+      account_id: user.id,
+      occupation,
+      about,
+      sponsor_reference: sponsorReference,
+      neighborhood,
+      // status defaults to 'pending' in the schema.
+    })
+    .select("id")
+    .single();
 
   if (insertError) {
     // Already have a pending application — defensive; the route guards this too.
@@ -151,24 +160,27 @@ export async function submitApplication(
     };
   }
 
-  // ---- 3. Reviewer heads-up via Resend (best-effort). ----
-  // Own try/catch so a mail failure never loses the application — the row is
-  // already safely written above.
+  // ---- 3. On-submit emails (both best-effort). ----
+  // Two separate awaits, each in its own try/catch: the applicant confirmation
+  // failing must not skip the reviewer ping (or vice versa), and neither mail
+  // failure can lose the application — the row is already safely written above.
+  if (user.email) {
+    try {
+      await sendApplicantConfirmation({ to: user.email });
+    } catch (error) {
+      console.error("Applicant confirmation email failed (application saved):", error);
+    }
+  }
+
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: "Manhattanite <applications@manhattanite.com>",
-      to: "info@manhattanite.com",
-      subject: `New Manhattanite application: ${name}`,
-      html: `
-        <h2>New Manhattanite application</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${user.email ?? "—"}</p>
-        <p><strong>Neighborhood:</strong> ${neighborhood}</p>
-        <p><strong>Occupation:</strong> ${occupation}</p>
-        <p><strong>About:</strong><br />${about.replace(/\n/g, "<br />")}</p>
-        <p><strong>Referred by:</strong> ${sponsorReference ?? "—"}</p>
-      `,
+    await sendReviewerPing({
+      applicantName: name,
+      email: user.email ?? "—",
+      neighborhood,
+      occupation,
+      about,
+      sponsorReference,
+      applicationId: inserted.id,
     });
   } catch (error) {
     console.error("Reviewer notification email failed (application saved):", error);
