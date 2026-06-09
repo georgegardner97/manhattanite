@@ -4,6 +4,51 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-09 · Navigation slice SPECCED — build plan + Claude Code prompt written (not built yet)
+
+**What:** Specced the next build (the highest-leverage walkthrough fix). Two outputs:
+- `outputs/Navigation-Slice_Build-Plan_v1.md` — file-by-file plan.
+- `outputs/Navigation-Slice_Claude-Code-Prompt_v1.md` — copy-paste hand-off for the Code tab.
+
+**Grounded in the real wiring** (checked this session): no nav component exists; `app/layout.tsx` is bare; pages read session via `createClient()` → `getUser()` → `accounts` row; design tokens bone/ink/slate/park + Instrument Serif (`font-serif`), `mh-link` hover.
+
+**Slice scope:** (1) `SiteNav.tsx` — a server-component tier-aware top bar (guest: Listings/Log in/Create account; account: Listings/**Apply**/Profile/Log out; member: Listings/Post/My listings/Profile/Log out); (2) mount in layout + strip redundant per-page wordmarks on interior pages; (3) back links on detail/new/apply; (4) `/listings/mine` member-only read view (no new RLS — posting publishes directly); (5) **teaser** for logged-out (`/listings` shows 6 most recent + create-account prompt) via migration **0010** (anon SELECT on published listings — the data-layer form of the D1 decision: viewing is a funnel, action is the wall; cap enforced in query, not RLS).
+
+**Out of scope (flagged as follow-ups):** edit/delete listing UI, the contact slice, signup-name field, Phase 1.5 restyle.
+
+**One default flagged for George to confirm:** teaser = 6 most recent listings shown *in full incl. detail* (generous, GDC-like) vs *cards-only* (detail needs an account). Plan assumes the generous version; one-line change either way.
+
+**Next:** George runs the Claude Code prompt (will pause for the 0010 migration line, same as Slice C). When it reports back: reconcile, mark SHIPPED, tee up the contact slice or the signup-name + copy pass.
+
+---
+
+## 2026-06-09 · Walkthrough checkpoint RUN — punch list captured (Manhattanite_Walkthrough-Findings_v1.md)
+
+**What happened:** Ran the agreed end-of-Slice-C live-site walkthrough (George clicked through manhattanite.com as a real Tier-1 account `george.gardner480@gmail.com`, non-member, while Cowork guided). George surfaced a rich punch list. Captured + sorted into `outputs/Manhattanite_Walkthrough-Findings_v1.md`, with each claim checked against the actual code/RLS.
+
+**Two headlines:**
+1. **No navigation exists** — confirmed no nav/header component anywhere. Every page is a URL-only island. Most "feels off" complaints reduce to this one fix.
+2. **Listings are view-only for everyone, even members** — the contact feature isn't built (Contact link commented out on detail page, no route, no `listing_contacts` table). A member's only extra power today is *posting*. The "capture the value" half of Tier 2 is the biggest functional gap. Contact is a defined v1 slice (form → Resend email), just not shipped.
+
+**Verified facts (from code):**
+- Signup (`app/signup/page.tsx`) captures email + password only — **no name field**. Account identity shows the email until the user edits profile or applies. (George's ask: add name to signup.)
+- Listings read policy = `status='published' and auth.uid() is not null` → **must be logged in to browse** ("Tier 0 → Tier 1 gate"). So a Tier-1 non-member CAN browse (RLS allows it); George's "no way to browse as non-member" is a *navigation* gap (no link from /profile), not access.
+- No `middleware.ts`; components are forms only (no nav).
+- Founder's 2 listings are text-only — image upload is built, just no photos uploaded.
+
+**Strategic (referred to GDC, researched this session):** GDC = register free → browse; must be a member (sponsored by 3) to respond/publish; signature feature is the connection/trust chain. Open decisions logged in the doc:
+- **D1 (decide first):** should logged-out visitors see listings (public preview) to draw people in? Manhattanite is currently *stricter* than GDC (login required to see anything). This shapes the nav slice — settle before building nav.
+- **D2:** mutual-connections-via-sponsors — already in the v2 vision (graded trust / Connector tier, strategy-blueprint.md). Post-MVP.
+- **D3:** make account-vs-membership distinction unmistakable (copy + IA).
+
+**Suggested next sequencing (not decided):** (1) Navigation slice [highest leverage], (2) Contact slice [biggest product gap], (3) signup-name + copy pass, (4) seed listings + photos → unlocks the "does it look finished" checkpoint, (5) Phase 1.5 design, (6) strategic decisions (D1/D3 now, D2 v2).
+
+**Next:** George to react to the findings doc + settle D1 (public browse) so the navigation slice can be specced.
+
+**Update (same session) — D1 DECIDED + tier model locked:** George approved the **three viewing-layer model (trust gate at the ACTION layer, not the VIEWING layer)**: logged-out = teaser; account (Tier 1) = full browse, acts on nothing, is an on-ramp/conversion step (funnel + application container); member (Tier 2) = contact/post/sponsor. Guardrail: never give Tier 1 transactional power. Logged in `COMPANY/memory/decisions.md` (Product) + the findings doc D1 (now marked DECIDED). **Navigation slice is now unblocked** and must be built around this model. Likely next build: spec the navigation slice (nav around the 3 tiers) — then the contact slice.
+
+---
+
 ## 2026-06-09 · /apply Slice C SHIPPED — three membership emails live, full loop tested clean on prod
 
 **Worked on:**

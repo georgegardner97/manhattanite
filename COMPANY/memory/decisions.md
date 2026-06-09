@@ -14,6 +14,11 @@ Read this at the start of every Manhattanite conversation.
 - **Account creation in the MVP is real, not example.** Visitors can genuinely apply for membership; George reviews each application. The application flow is live from day one. Only the listings are example data. (2026-05-16)
 - **Two-tier access model.** Tier 1 = Account (free, no review, view-only). Tier 2 = Member (application + approval, can post/contact/sponsor). The interaction wall, not the viewing wall, is where trust is enforced. This is the core product mechanic. (2026-05-16)
 - **Contact form, not in-platform messaging in v1.** Members initiate contact via a form on the listing that forwards to email. No in-product inbox until v2. (2026-05-16)
+- **Tier model refined to three viewing layers — the trust gate sits at the ACTION layer, not the VIEWING layer.** (2026-06-09, George, after the Slice C walkthrough; refines the 2026-05-16 two-tier entry and revises the listings RLS "must have an account to browse"):
+  - **Visitor (logged out):** sees a *teaser* — a limited set of listings + the pitch. Job: make an account. (Previously saw nothing — RLS required login. This is the change.)
+  - **Account (Tier 1):** sees *everything*, full detail, but can *act* on nothing — no contacting, posting, or sponsoring. The account is an **on-ramp / conversion step, not a destination**: its value to the user is "browse the whole catalogue," its value to the business is captured email + raised hand + the object membership attaches to. Job: apply for membership.
+  - **Member (Tier 2):** contact sellers, post, sponsor (and, v2, see trust connections).
+  - **Rationale:** mirrors GDC (free registration is a deliberately thin funnel tier; "browse freely, but be a member to respond/post"). Two nested hooks: teaser → want an account; full browse → want to act → worth the social cost of being sponsored. **Guardrail:** never give Tier 1 transactional power to "thicken" it — that dismantles the moat. Instead keep the teaser genuinely limited and make the copy sell the account as "the lobby, not the building." Settle before the navigation slice, since it changes what the logged-out experience contains.
 
 ## Trust mechanic
 

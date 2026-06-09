@@ -11,22 +11,26 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state — as of 2026-06-08 (consolidated)
+## Quick state — as of 2026-06-09 (Slice C shipped)
 
-> Reconciled snapshot. On 2026-06-08 the `/apply` flow was built across two slices; this is the single authoritative state. Verified against git (working tree clean, in sync with `origin/main`) and the production database. Naming note: the membership flow is **"Phase 2"** per the build plan even though it shipped *after* the Phase 4 byline/profile work — the phase numbers reflect the original plan order, not chronology.
+> Reconciled snapshot. On 2026-06-08 the `/apply` flow was built across two slices; on 2026-06-09 Slice C (the membership emails) shipped and the full apply→approve→welcome loop was verified end-to-end on the deployed site. Verified against git (working tree clean, in sync with `origin/main`) and the production database. Naming note: the membership flow is **"Phase 2"** per the build plan even though it shipped *after* the Phase 4 byline/profile work — the phase numbers reflect the original plan order, not chronology.
 
-**Build progress at a glance.** Through **/apply Slice B (2026-06-08)**:
+**Build progress at a glance.** Through **/apply Slice C (2026-06-09)**:
 - **Auth:** email+password, signup, login, forgot-password reset.
 - **Two-tier gating** page at `/`; `/profile`; `/profile/edit` (self-edit name/neighborhood/bio).
 - **Listings:** `listings` table + RLS, `/listings` browse with covers, `/listings/[id]` detail with gallery, `/listings/new` member-gated posting with image upload (private `listing-images` bucket + signed URLs). Denormalized author/sponsor bylines ("Listed by George Gardner · sponsored by John Robinson"). **Byline convention = GdC-style full first + last.**
 - **Membership application flow (NEW, the big 2026-06-08 work):**
   - **Slice A** — `/apply` route: a logged-in Tier-1 account fills the form (name required + prefilled, neighborhood, occupation, paragraph, optional referral), it writes an `applications` row (status `pending`) + writes name/neighborhood back to the account, sends a reviewer ping email, and shows a confirmation state. The "Apply for membership" CTA on `/profile` is now live. Migration `0007_applications.sql`. Built, committed, **deployed**, live-tested clean on prod.
   - **Slice B** — review functions (migration `0008_approve_application.sql`): `approve_application()` (atomic: account→member + sponsor_id set + application→approved), `decline_application()`, `request_more_info()`. SQL-driven review (no /admin page yet). Committed; functions live in prod; happy-path tested clean. Approving via SQL: `select public.approve_application('<app-id>');` (sponsor defaults to founder).
+  - **Slice C — SHIPPED 2026-06-09.** Three membership emails (`lib/applications/emails.ts`, best-effort Resend sends): applicant confirmation ("We've got your application.") + reviewer ping (refined, leads with the `npm run approve -- <id>` action block) fire on submit; member welcome ("You're in.") fires on approval. Approval moved from raw SQL to **`npm run approve -- <app-id>`** (`scripts/approve-application.ts`), which calls `approve_application()` then sends the welcome. Migration `0009` grants `service_role` execute on the approve function. The CLI runs **only from George's Mac** — the `SUPABASE_SERVICE_ROLE_KEY` lives in `.env.local` and is never deployed (by design for seed phase). Committed (3 commits), pushed, **deployed**, and the full visit→account→apply→approve→welcome→post loop tested clean on prod with a Gmail plus-alias applicant. Cleanup left prod pristine.
 
-**Production DB state:** all 8 migrations applied. `applications` table + 3 review functions live. **0 applications, 0 non-founder accounts.** Founder (`info@manhattanite.com`, `85ce5315-…`) is `is_member=true`, `name='George Gardner'`, `sponsor_id` null.
+**Production DB state:** all 9 migrations applied. `applications` table + 3 review functions + the 0009 service_role grant live. **0 applications, 0 non-founder accounts.** Founder (`info@manhattanite.com`, `85ce5315-…`) is `is_member=true`, `name='George Gardner'`, `sponsor_id` null.
 
 **Still open:**
-- **Slice C (emails) — NOT built yet.** Applicant confirmation email + the "you're in" welcome-on-approval don't exist (approval works, but no applicant-facing email fires). **End of Slice C = the agreed pause/walkthrough checkpoint** — proactively flag it and run a guided test of the full loop (see `preferences.md`).
+- **Walkthrough checkpoint — DONE 2026-06-09.** Produced `outputs/Manhattanite_Walkthrough-Findings_v1.md` (punch list, sorted build-now / Phase 1.5 / strategic). Two headlines: (1) **no navigation exists** (no nav/header component — most "feels off" reduces to this); (2) **listings are view-only for everyone, even members** — the contact feature isn't built (biggest functional gap; it's a planned v1 slice). Also verified: signup doesn't capture name; logged-out currently sees nothing (RLS login-gate).
+- **TIER MODEL DECIDED 2026-06-09** (see decisions.md): three viewing layers, trust gate at the ACTION layer not the VIEWING layer — logged-out **teaser** / account = **full browse, acts on nothing** (on-ramp) / member = contact+post+sponsor. Reshapes the listings RLS + logged-out experience.
+- **Next build = navigation slice**, built around the three-tier model (now unblocked). Then the **contact slice** (the "capture the value" half of membership). Then signup-name + copy pass; seed listings + photos (→ unlocks the second, "does it look finished" checkpoint).
+- Standing caveats for the next walkthrough: landing page (Phase 1.5 rework pending) + thin content (2 listings, no photos, placeholder "John Robinson" sponsor) still look unfinished.
 - `sponsor_name='John Robinson'` is fake placeholder on the founder's listings — replace before any non-founder sees the network.
 - Seed listings (27, with real photos) not loaded; only the 2 founder listings exist, text-only.
 - No email-change flow. No `/admin` review page (SQL-driven for now). Landing page flagged for Phase 1.5 redesign.
@@ -130,4 +134,4 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 
 ---
 
-*Last updated: 2026-06-08 (consolidated after /apply Slices A + B).*
+*Last updated: 2026-06-09 (Slice C shipped — membership emails live, full loop verified on prod).*
