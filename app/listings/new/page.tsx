@@ -45,16 +45,6 @@ export default async function NewListingPage() {
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
-        {/* Wordmark */}
-        <div className="text-center mb-20">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-4xl md:text-5xl tracking-tighter leading-none text-ink"
-          >
-            Manhattan<span className="italic">ite</span>
-          </Link>
-        </div>
-
         <Link
           href="/listings"
           className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"

@@ -66,16 +66,6 @@ export default async function ProfilePage() {
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
-        {/* Wordmark */}
-        <div className="text-center mb-20">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-4xl md:text-5xl tracking-tighter leading-none text-ink"
-          >
-            Manhattan<span className="italic">ite</span>
-          </Link>
-        </div>
-
         {/* Header */}
         <div className="text-center mb-16">
           <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
