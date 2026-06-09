@@ -11,9 +11,28 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state — as of 2026-06-04
+## Quick state — as of 2026-06-08 (consolidated)
 
-**Build progress at a glance.** Through Phase 4 Slice 2: auth (email+password, signup, login, forgot-password reset), two-tier gating page at `/`, `/profile`, **`/profile/edit` for self-editing name/neighborhood/bio**, `listings` table with RLS, `/listings` browse with covers, `/listings/[id]` detail with gallery, `/listings/new` member-gated posting with image upload, denormalized author/sponsor bylines that read "Listed by George Gardner · sponsored by John Robinson" on the seed data. Storage is a private `listing-images` bucket + signed URLs. Founder is `is_member=true` with `name='George Gardner'`. Two real seed listings live in prod (West Village apartment + Ceccotti table — text only for now, photos to be sourced before any non-founder sees them). **Byline name convention is GdC-style full first + last** (decided 2026-06-04). `sponsor_name='John Robinson'` is fake placeholder data on the founder's listings — must be replaced before any non-founder sees the network. Open threads: no `/apply` route yet (members still created by SQL flip), no email-change flow. Full per-slice detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+> Reconciled snapshot. On 2026-06-08 the `/apply` flow was built across two slices; this is the single authoritative state. Verified against git (working tree clean, in sync with `origin/main`) and the production database. Naming note: the membership flow is **"Phase 2"** per the build plan even though it shipped *after* the Phase 4 byline/profile work — the phase numbers reflect the original plan order, not chronology.
+
+**Build progress at a glance.** Through **/apply Slice B (2026-06-08)**:
+- **Auth:** email+password, signup, login, forgot-password reset.
+- **Two-tier gating** page at `/`; `/profile`; `/profile/edit` (self-edit name/neighborhood/bio).
+- **Listings:** `listings` table + RLS, `/listings` browse with covers, `/listings/[id]` detail with gallery, `/listings/new` member-gated posting with image upload (private `listing-images` bucket + signed URLs). Denormalized author/sponsor bylines ("Listed by George Gardner · sponsored by John Robinson"). **Byline convention = GdC-style full first + last.**
+- **Membership application flow (NEW, the big 2026-06-08 work):**
+  - **Slice A** — `/apply` route: a logged-in Tier-1 account fills the form (name required + prefilled, neighborhood, occupation, paragraph, optional referral), it writes an `applications` row (status `pending`) + writes name/neighborhood back to the account, sends a reviewer ping email, and shows a confirmation state. The "Apply for membership" CTA on `/profile` is now live. Migration `0007_applications.sql`. Built, committed, **deployed**, live-tested clean on prod.
+  - **Slice B** — review functions (migration `0008_approve_application.sql`): `approve_application()` (atomic: account→member + sponsor_id set + application→approved), `decline_application()`, `request_more_info()`. SQL-driven review (no /admin page yet). Committed; functions live in prod; happy-path tested clean. Approving via SQL: `select public.approve_application('<app-id>');` (sponsor defaults to founder).
+
+**Production DB state:** all 8 migrations applied. `applications` table + 3 review functions live. **0 applications, 0 non-founder accounts.** Founder (`info@manhattanite.com`, `85ce5315-…`) is `is_member=true`, `name='George Gardner'`, `sponsor_id` null.
+
+**Still open:**
+- **Slice C (emails) — NOT built yet.** Applicant confirmation email + the "you're in" welcome-on-approval don't exist (approval works, but no applicant-facing email fires). **End of Slice C = the agreed pause/walkthrough checkpoint** — proactively flag it and run a guided test of the full loop (see `preferences.md`).
+- `sponsor_name='John Robinson'` is fake placeholder on the founder's listings — replace before any non-founder sees the network.
+- Seed listings (27, with real photos) not loaded; only the 2 founder listings exist, text-only.
+- No email-change flow. No `/admin` review page (SQL-driven for now). Landing page flagged for Phase 1.5 redesign.
+- **Profile photos:** decided 2026-06-08 — photo on profile page OK, but NO inline avatar thumbnails by names (looks scrappy). Implementation deferred to Phase 1.5.
+
+Full per-slice detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
 
 ---
 
@@ -111,4 +130,4 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 
 ---
 
-*Last updated: 2026-06-04 (after Phase 4 Slice 2).*
+*Last updated: 2026-06-08 (consolidated after /apply Slices A + B).*

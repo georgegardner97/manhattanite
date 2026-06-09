@@ -4,6 +4,51 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-09 · /apply Slice C build STARTED (Claude Code) — code written, prereqs cleared, test loop pending
+
+**Worked on:**
+- Claude Code built the Slice C code: `lib/applications/emails.ts` (3 best-effort Resend sends — applicant confirmation, reviewer ping, member welcome), wired confirmation + ping into `submit.ts` (insert now returns id), and `scripts/approve-application.ts` + `npm run approve` (Option A CLI). tsc + eslint clean on changed files. **Nothing committed yet.**
+- **Approval connection = Option (i):** service-role key via supabase-js `rpc()` (reuses existing dep, no `pg`). Required migration `0009_approve_grant_service_role.sql` because 0008's `revoke all from public` stripped service_role's execute.
+
+**Prereqs cleared this session (George + Cowork):**
+- George pasted `SUPABASE_SERVICE_ROLE_KEY` into `.env.local` (gitignored). Used the **new Supabase `sb_secret_...` secret key** (Project Settings → API → Secret keys), not the legacy service_role JWT — functions identically with supabase-js.
+- **Migration 0009 applied to PROD** by Cowork via Chrome MCP → Supabase SQL editor (new untitled snippet, postgres role): `grant execute on function public.approve_application(uuid, uuid) to service_role;` → "Success. No rows returned." Auto-saved as snippet "Grant Execute on Approve Application Function" (harmless).
+- Synthetic-applicant test approach confirmed (founder stays member+sponsor; throwaway account applies). **Good catch by Claude Code:** the original plan's "flip founder is_member=false then apply as founder" can't pass — approve requires a member sponsor, and the founder is the only member.
+
+**Next:** George told Claude Code to run the prod test loop (apply → `npm run approve` → confirm all 3 emails fire → cleanup). When it reports back: reconcile the one-line copy divergence in `Manhattanite_Apply-Emails_v1.md` (ping leads with `npm run approve`), mark Slice C SHIPPED, then **run the walkthrough checkpoint** (the agreed live-site pause). Caveat to repeat then: landing page (Phase 1.5 pending) + thin content still look unfinished.
+
+---
+
+## 2026-06-08 · /apply Slice C copy lane DONE — three membership emails drafted (build lane still owed)
+
+**Worked on:**
+- Drafted `outputs/Manhattanite_Apply-Emails_v1.md` — send-ready copy for the three Slice C emails, grounded in `voice-and-copy.md` and run through the five-point voice test (all pass):
+  1. **Applicant confirmation** (on submit) — subject "We've got your application.", verbatim from the voice guide's "Application received" block, no name greeting, no CTA. Static copy.
+  2. **Reviewer ping** (on submit, to info@) — subject "New membership application — {{name}}", functional/internal register, lists neighborhood/occupation/sponsor-reference/about AND embeds the exact `approve_application()` / `decline_application()` SQL so the email IS the review tool.
+  3. **Welcome / "You're in."** (on approve) — subject "You're in.", verbatim from the "Application approved" block, CTA → /listings. The brand moment.
+- Sender convention set: all applicant-facing sends from `Manhattanite <applications@manhattanite.com>`; ping to `info@manhattanite.com`. Resend already domain-verified, no DNS work.
+
+**Decided:**
+- **No decline email at seed** (George, 2026-06-08) — declined applications stay silent for now, revisit later. Matches the plan's lean.
+- **No `needs_info` email either** — re-application is freed by the one-pending index; any "why" is a manual note for now. Flagged in the doc if we want it built.
+- **Cold "You're in." open over "Hi {{first_name}},"** — kept the stronger cold open; first-name derivation noted as available if George prefers warm.
+
+**Blockers / open threads:**
+- **Build lane not done.** Copy is ready; the [Claude Code] work is still owed: `lib/applications/emails.ts` (3 templated sends), wire confirmation + ping into `submit.ts`, and a thin server action wrapping `approve_application()` that fires the welcome on success. I offered to write the full Slice C build plan (Slice 5/6 level of detail) on George's word.
+- **End of Slice C = the agreed walkthrough checkpoint** (preferences.md, 2026-06-08). Once the build lane ships and the apply→approve→welcome loop fires for real, proactively run the guided live-site walkthrough. Caveat to repeat then: landing page (Phase 1.5 pending) + thin content (2 listings, no photos, placeholder sponsor) still look unfinished.
+
+**Next:**
+1. George's word → I write the Slice C build plan → hand to Claude Code → wire the three sends.
+2. Live-test the full loop on prod, then run the walkthrough checkpoint.
+
+**Update (same session):** Build plan + Claude Code hand-off prompt now written.
+- `outputs/Apply-Route_Slice-C-Build-Plan_v1.md` — full file-by-file build plan.
+- `outputs/Apply-Route_Slice-C_Claude-Code-Prompt_v1.md` — copy-paste prompt for the Code tab.
+- **DECIDED — welcome-email trigger = Option A, the CLI script** (George, 2026-06-08). Approval moves from raw SQL to `npm run approve -- <app-id>`, a `scripts/approve-application.ts` that calls `approve_application()` then fires the "You're in." welcome via Resend. Rationale: SQL functions can't send email; a Node action layer is needed, and at founder-only seed volume a CLI script beats an Edge-Function webhook or a (deferred) /admin page. **Prerequisite George must do once:** paste a privileged secret (service-role key or DB connection string) into `.env.local` (gitignored, never committed) — Claude Code will specify the exact line. Reviewer-ping copy now leads with `npm run approve` (one-line divergence from the copy doc, to be reconciled back after build).
+- **Build is now in George's court (Claude Code).** When it reports back: reconcile the copy doc, mark Slice C SHIPPED, run the walkthrough checkpoint.
+
+---
+
 ## 2026-06-08 · /apply Slice B SHIPPED — approve/decline transaction (migration 0008), tested clean on prod
 
 **Worked on:**
