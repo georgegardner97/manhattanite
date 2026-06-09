@@ -4,6 +4,28 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-09 · Navigation slice SHIPPED — tier-aware nav + teaser browse, tested clean on prod
+
+**Worked on:**
+- Built + shipped the navigation spine and the three-tier model (D1: trust gate at the ACTION layer). Three commits, pushed, Vercel deployed:
+  - `feat(nav)`: `app/components/SiteNav.tsx` (global server-component nav that renders only the links each tier can use), mounted in `layout.tsx`; new `app/listings/mine/page.tsx` (member-only, own published listings, mirrors the /apply gate); removed the redundant centered wordmark from the 6 interior pages (nav now carries the single wordmark); back links preserved.
+  - `feat(listings)`: logged-out teaser browse — `/listings` shows 6 most recent published + a create-account prompt; `/listings/[id]` renders only for a teaser listing, else redirects to `/signup`. **Migration 0010** adds an `anon` SELECT policy on published listings (the data-layer side of D1); the 6-cap is enforced in the query, not the policy. (George ran 0010 in the SQL editor before deploy.)
+- **Full test loop on prod (deployed code), all tiers pass:**
+  - **Guest** (curl, logged out): `/listings` shows all 3 listings + the teaser prompt, nav = Listings · Log in · Create account (no Apply/Post/My-listings); a teaser detail → 200; a non-teaser id → 307 → `/signup`.
+  - **Account** (synthetic, is_member=false): nav = Listings · Apply for membership · Profile · Log out; full browse (3 listings, no prompt); no Post/My-listings links; `/listings/new` and `/listings/mine` typed directly both → `/profile` (gates hold).
+  - **Member** (same synthetic flipped is_member=true + one seeded listing): nav = Listings · Post a listing · My listings · Profile · Log out; `/listings/mine` lists the seeded listing; `/listings/new` form + "← Listings" back link; detail back link navigates to `/listings`.
+  - Cleanup: deleted the synthetic account (cascaded its seeded listing) → 3 published listings, 2 accounts, founder untouched (is_member=true, sponsor_id=null).
+
+**Decisions / notes:**
+- **Used synthetic accounts, not the founder**, for account+member tiers (no founder password to log in via browser; keeps the founder fully untouched). The "lists the founder's 2 listings" check became "lists the member's own seeded listing" — same query path. Prod actually has **3** founder listings now, not 2.
+- **Non-teaser redirect** tested with a non-existent id (all 3 real listings fall within the 6-cap, so there's no real non-teaser listing yet) — same redirect branch.
+- **Auth pages keep their centered wordmark** (`/login`, `/signup`, `/reset-request`, `/reset-password`) — on a sparse auth page it reads as the page hero, like the landing page. Only the 6 interior app pages dropped theirs. Flagged for the Phase 1.5 visual pass if it ever looks off.
+- Guest currently sees all 3 listings + the "see every listing" prompt because there are fewer than 6 listings — expected given the cap; the prompt is the funnel, not a bug.
+
+**Next:** the next slice — contact (the bigger "capture the value" gap) or signup-name + copy pass. Edit/delete listing UI still out (RLS already permits author edit/delete; forms are a later slice).
+
+---
+
 ## 2026-06-09 · Navigation slice SPECCED — build plan + Claude Code prompt written (not built yet)
 
 **What:** Specced the next build (the highest-leverage walkthrough fix). Two outputs:

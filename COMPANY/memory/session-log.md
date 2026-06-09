@@ -6,6 +6,18 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-09 · Navigation slice SHIPPED — tier-aware nav + logged-out teaser browse
+
+**Worked on:**
+- Built + shipped the navigation spine: a global, tier-aware `SiteNav` (guest / account / member each see only the links they can use), a member-only `/listings/mine`, back links, and removal of the redundant per-page wordmarks on interior pages. Plus the D1 teaser: logged-out visitors browse the 6 most recent published listings (migration 0010 adds an anon read policy) instead of being bounced to `/login`; the action layer stays the wall. Three commits, pushed, deployed.
+- Full prod test loop passed across all three tiers (guest teaser + non-teaser→signup redirect; account nav + gates holding on /listings/new and /listings/mine; member nav + /listings/mine populated + back links). Used synthetic accounts; founder left untouched (is_member=true, sponsor_id=null). Prod has 3 founder listings.
+
+**Next:** contact slice (the "capture the value" gap), or signup-name + copy pass.
+
+Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
 ## 2026-06-09 · /apply Slice C SHIPPED — three membership emails, tested clean on prod
 
 **Worked on:**
