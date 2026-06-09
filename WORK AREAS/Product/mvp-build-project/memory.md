@@ -4,6 +4,68 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-09 · Contact slice SHIPPED — member contact form → lister email + listing_contacts log (built, deployed, tested on prod)
+
+**Shipped** (Claude Code built → committed → pushed/deployed → ran the prod test loop). The "capture the value" half of membership: members can now contact listers. Listings are no longer view-only.
+
+**What shipped:**
+- **Migration `0011_listing_contacts.sql`** (run in prod by Cowork before deploy): `listing_contacts` table (id / listing_id / sender_id / message / created_at) with **RLS on and NO client policies** — the only write path is the function; reads are admin-only (deferred). Plus `log_listing_contact(p_listing_id, p_message)` **SECURITY DEFINER** — guards in order (signed in, `is_member()`, listing published, not self-contact), logs the row, returns the lister's email+name+title. Each guard raises a distinct SQLSTATE (**MH001** not-member → the interaction gate; **MH002** not-published; **MH003** self-contact) the action maps cleanly. `revoke all from public; grant execute to authenticated`.
+- **`lib/applications/emails.ts`** — new `sendListingContact()`. From `applications@manhattanite.com`, **Reply-To = the sender** (this is what lets the lister reply directly — no inbox), subject "Someone's interested in your listing — {title}", editorial body + a link back to the listing. Best-effort.
+- **`lib/listings/contact.ts`** — `useActionState` server action (mirrors submit.ts). Calls the function via `rpc()` **as the authenticated user** (no service role — the function is SECURITY DEFINER), then fires the email in its own try/catch so a mail failure never loses the logged contact. Maps MH001→gate / MH002,MH003→readable errors.
+- **`app/listings/[id]/contact/page.tsx`** (new) — guest → `/login`; Tier-1 → interaction gate (copy **verbatim** from voice-and-copy.md, `[name]` from the listing's `author_name` byline); member → message form → "Your message is on its way." confirmation.
+- **`app/listings/[id]/page.tsx`** — un-stubbed "Message the lister" link; **hidden on the viewer's own listing** (`author_id !== user?.id`).
+
+**Prod test loop (all green):**
+- **Guest:** curl `/listings/{id}/contact` on prod → **307 → /login** ✓ (deploy confirmed live).
+- **Tier-1 / member / row / self-contact / cleanup:** a `tsx` harness against **prod Supabase + prod Resend** stood up a synthetic member (Gmail plus-alias `george.gardner480+contact@googlemail.com`), 26/26 logic checks passed: non-member rpc raises **MH001**; member rpc succeeds and returns founder email (`info@manhattanite.com`)+name+title; the `listing_contacts` row is correct (listing_id / sender_id / message); self-contact (synthetic member posts own listing, contacts it) raises **MH003**; deleting the synthetic auth.users row cascaded accounts+listings+contacts → **0 synthetic rows, founder untouched** (is_member=true, sponsor_id=null).
+- **Email:** all sends landed at **info@manhattanite.com** (verified via Outlook MCP) — including the real `sendListingContact()` output, body rendered correctly ("Hi George Gardner, Contact Tester is interested… Reply to this email to reach them directly. See your listing →"). **Reply-to verified by construction**: code sets `replyTo: senderEmail`, Resend accepted the send + returned an id (it validates replyTo). Direct API read-back of the header was **not possible — the Resend key is send-only (restricted)**, and the Outlook MCP doesn't surface the raw Reply-To header. The 3 "failures" in the first harness run were that 401, not a bad reply-to.
+
+**Decisions / notes:**
+- **"I have an invite →" CTA omitted** from the interaction gate (rendered only "Apply for membership →" → `/apply`). The verbatim gate copy lists both CTAs, but `/invite` doesn't exist yet and this repo's **dead-link rule** (see the gating page) says don't ship broken links. Copy preserved in a comment; one uncomment away when the invite flow lands. Flag if it should point to `/login` instead now.
+- **Self-contact tested with the synthetic member** (posts its own listing, contacts it → MH003), not the founder, since there's no founder browser session — same guard, same code path. The link-hidden UI is verified by code (`author_id !== user?.id`); the rendered Tier-1 gate / member form weren't clicked through with a logged-in browser session (function-layer + guest-redirect were the live checks).
+- **3 test emails sit unread in info@** (two contact emails + one reply-to probe) — harmless; bin them when convenient. (Left them — never delete George's received mail without asking.)
+
+**Out / follow-ups (unchanged):** in-app inbox (v2), admin moderation UI for `listing_contacts` (rows logged now, review UI later), rate-limiting/anti-spam beyond the member gate.
+
+**Next:** signup-name + copy pass (A5, B1/B2/D3), then seed listings + photos (A6 — unlocks the second "does it look finished" walkthrough checkpoint), edit/delete listing UI, Phase 1.5 restyle.
+
+---
+
+## 2026-06-09 · Contact slice SPECCED — build plan + Claude Code prompt written (not built yet)
+
+**What:** Specced the next build (the "capture the value" half of membership). Outputs:
+- `outputs/Contact-Slice_Build-Plan_v1.md` — file-by-file plan.
+- `outputs/Contact-Slice_Claude-Code-Prompt_v1.md` — copy-paste hand-off.
+
+**Grounded in:** `mvp-spec.md` (contact = in-product form → forwards to lister's email; lister replies directly; no inbox till v2) + `voice-and-copy.md` (the interaction-gate copy already exists: "To message [name], you need a member account…"). The listing detail page already has the `/contact` link stubbed (commented "dead-link rule") ready to wire.
+
+**Design spine:** contact is **member-only** (Tier-1 → interaction gate, not a redirect; guest → login). **Key call:** resolve the lister's email via a `SECURITY DEFINER` function `log_listing_contact()` (migration 0011), NOT by denormalizing email onto listings — the 0010 anon-teaser policy makes published listings publicly readable, so an email column would leak. The function enforces member + published + no-self-contact, logs a `listing_contacts` row, and returns the lister's email/name/title for the send. Email uses **Reply-To = the sender** so the lister replies directly (realizes the spec). New `sendListingContact` in emails.ts; new `lib/listings/contact.ts` action; new `/listings/[id]/contact` page.
+
+**Migration 0011** (`listing_contacts` table + the function) to be run by Cowork via Chrome before deploy, same as 0010.
+
+**Next:** George runs the Claude Code prompt → it pauses for the 0011 SQL → Cowork runs it → Claude Code deploys + tests (synthetic-member contacts a founder listing, verify row + email w/ reply-to). Then reconcile + mark SHIPPED. After contact: signup-name + copy pass, then seed listings + photos (→ unlocks the "does it look finished" checkpoint).
+
+---
+
+## 2026-06-09 · Navigation slice SHIPPED — tier-aware nav + teaser browse + my-listings (built, deployed, tested by Claude Code)
+
+**Shipped** (George confirmed done; Claude Code built → committed → pushed/deployed → ran the prod test loop per its workflow):
+- **`SiteNav.tsx`** — server-component tier-aware top bar mounted in `app/layout.tsx`. Guest: Listings / Log in / Create account. Account: Listings / **Apply for membership** / Profile / Log out. Member: Listings / Post a listing / My listings / Profile / Log out. Sign-out reuses the existing `/auth/sign-out` POST route (no new route).
+- Redundant centered wordmarks stripped from the six interior pages; kept on the landing `/` hero + the four auth pages (login/signup/reset-request/reset-password) where they read as the page hero. Back links on detail/new/apply already existed — preserved.
+- **`/listings/mine`** — member-only read view of the viewer's own published listings (no new RLS; posting publishes directly). Edit/delete UI still deferred.
+- **Teaser (D1 implemented):** logged-out `/listings` now shows the 6 most recent published listings + a "create an account to see every listing" prompt (was: redirect to /login). **Migration `0010_listings_anon_teaser_read.sql`** — `listings_read_published_for_anon` (anon SELECT on published). **Applied to PROD by Cowork via Chrome MCP** ("Success. No rows returned.") before deploy, so logged-out browse never hit an empty page. The 6-cap lives in the query, not RLS (intentional MVP funnel; viewing is not the moat).
+- tsc + eslint clean. Teaser used the plan's **generous default** (6 listings shown in full incl. detail) unless George flipped the `[TEASER CHOICE]` flag.
+
+**Resolves walkthrough findings:** A1 (no nav), A3 (no browse path from account), A2-lite (my-listings entry), and D1 (public teaser).
+
+**Production DB state now:** 10 migrations applied (0010 = anon teaser read policy live). Founder untouched.
+
+**Still owed from the walkthrough:** A4 contact slice (biggest remaining product gap — the "capture the value" half of membership), A5 signup-name field, B1/B2 copy pass (incl. D3 account-vs-membership clarity), A6 seed listings + photos, edit/delete listing UI, Phase 1.5 restyle (C1–C3).
+
+**Next:** tee up the **contact slice** (form on each listing → Resend email to the lister; logs a `listing_contacts` row for moderation history — per mvp-spec) OR the small **signup-name + copy pass**. George to pick.
+
+---
+
 ## 2026-06-09 · Navigation slice SHIPPED — tier-aware nav + teaser browse, tested clean on prod
 
 **Worked on:**
