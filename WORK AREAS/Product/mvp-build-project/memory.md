@@ -4,6 +4,26 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-09 · /apply Slice C SHIPPED — three membership emails live, full loop tested clean on prod
+
+**Worked on:**
+- Committed (2 commits) + pushed → Vercel deployed. `feat(apply): membership emails…` (emails.ts, submit.ts, scripts/approve-application.ts, package.json + lock, migration 0009) and `docs: Slice C copy + build plan + Claude Code prompt + memory`.
+- **Full loop tested on prod against the deployed code** using a synthetic applicant on a readable inbox (`george.gardner480+slicec@googlemail.com`, a Gmail plus-alias, so the applicant-facing emails could be verified; founder stayed member+sponsor):
+  - Submit `/apply` → pending row written; **both** on-submit emails confirmed: applicant confirmation ("We've got your application.", Gmail) + the refined reviewer ping ("New membership application — Marcus Halloway", info@) with the `npm run approve -- <id>` action block leading, SQL fallbacks below, and `\n`→`<br/>` in the about paragraph. Ping's embedded id matched the row.
+  - `npm run approve -- <id>` → printed "Approved Marcus Halloway (…) — welcome email sent."; DB atomic (is_member=true, sponsor_id=founder, status approved, reviewed_at set); **"You're in." welcome confirmed in Gmail**; approved member could load `/listings/new`.
+  - Cleanup: deleted synthetic auth.users row (cascaded) → 0 applications, founder untouched (is_member=true, sponsor_id=null, name "George Gardner").
+
+**Caught + handled:**
+- **First test run hit OLD code** — prod was still serving the pre-Slice-C build (changes weren't deployed yet), so the first submit fired the old inline ping and no confirmation. Resolved by deploying first, then re-testing. (The approve script + welcome were validatable locally before deploy since the CLI runs against prod DB.)
+- **Resend quota false alarm** — `x-resend-*-quota` response headers looked tiny; flagged to George, who confirmed they're rate-limit headers, not send budget (only 6 sends in 15 days). No risk.
+- **Test-inbox gotcha** — first run used `george@manhattanite.com` as applicant, which isn't a readable/deliverable inbox; switched to the Gmail plus-alias so confirmation + welcome could actually be read.
+
+**Reconciled:** updated `Manhattanite_Apply-Emails_v1.md` reviewer-ping action block to match what shipped (leads with `npm run approve`, raw SQL as no-email fallback).
+
+**Next:** **Run the walkthrough checkpoint** (the agreed live-site pause). Caveat to repeat: landing page (Phase 1.5 pending) + thin content (2 listings, placeholder "John Robinson" sponsor) still look unfinished.
+
+---
+
 ## 2026-06-09 · /apply Slice C build STARTED (Claude Code) — code written, prereqs cleared, test loop pending
 
 **Worked on:**

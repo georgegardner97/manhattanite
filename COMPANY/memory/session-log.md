@@ -6,6 +6,21 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-09 · /apply Slice C SHIPPED — three membership emails, tested clean on prod
+
+**Worked on:**
+- Built + shipped Slice C: `lib/applications/emails.ts` (three best-effort Resend sends — applicant confirmation, refined reviewer ping, "You're in." welcome), wired confirmation + ping into `submit.ts` (insert now returns the id), and `scripts/approve-application.ts` + `npm run approve` as the seed-phase approval path (Option A CLI; service-role key via supabase-js rpc, migration 0009 grants execute). Two commits, pushed, Vercel deployed.
+- Full apply → approve → welcome → cleanup loop tested on prod against the deployed code (synthetic applicant on a Gmail plus-alias so applicant-facing emails were readable; founder untouched). All three emails confirmed; DB transaction atomic; `/listings/new` gate opens for the approved member.
+
+**Caught:**
+- First test run hit the not-yet-deployed old code (deployed, then re-tested). Resend "low quota" headers were a false alarm (rate-limit, not budget — George confirmed). First test-applicant address (`george@manhattanite.com`) wasn't a readable inbox; switched to the Gmail plus-alias.
+
+**Next:** the walkthrough checkpoint (agreed live-site pause); repeat the landing-page / thin-content caveats.
+
+Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
 ## 2026-06-04 · Phase 4 Slice 2 shipped — /profile/edit + cosmetic fix on /profile link stacking
 
 **Worked on:**

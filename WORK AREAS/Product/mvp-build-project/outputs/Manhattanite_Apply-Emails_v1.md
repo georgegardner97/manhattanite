@@ -51,7 +51,10 @@ Send-ready copy for the three membership emails. Drafted against `COMPANY/voice-
 > {{about}}
 >
 > ---
-> To approve, run in the Supabase SQL editor:
+> To approve (sends the welcome email):
+> `npm run approve -- {{application_id}}`
+>
+> Or, no email:
 > `select public.approve_application('{{application_id}}');`
 >
 > To decline:
@@ -59,7 +62,8 @@ Send-ready copy for the three membership emails. Drafted against `COMPANY/voice-
 
 **Notes:**
 - This one is internal and functional, not brand copy — short, factual, never marketing (per the notifications tone rule). It exists to let George act in two clicks.
-- Embedding the exact approve/decline SQL turns the email into the review tool itself — no need to go hunt the application ID. This is the Slice B "SQL-driven review" made convenient.
+- Embedding the exact commands turns the email into the review tool itself — no need to go hunt the application ID. This is the Slice B "SQL-driven review" made convenient.
+- **Reconciled at build (2026-06-09):** the shipped action block leads with `npm run approve -- {{application_id}}` (the CLI path that fires the welcome email), keeping the raw `approve_application()` SQL as the no-email fallback. Updated above to match the shipped ping.
 - Dynamic fields: `applicant_name`, `neighborhood`, `occupation`, `sponsor_reference` (fall back to "—" when null), `about`, `application_id`.
 
 ---
