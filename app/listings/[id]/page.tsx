@@ -30,6 +30,7 @@ type ListingDetail = {
   price_cents: number;
   details: Record<string, unknown>;
   images: ListingImage[];
+  author_id: string;
   author_name: string | null;
   sponsor_name: string | null;
 };
@@ -95,7 +96,7 @@ export default async function ListingDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, details, images, author_name, sponsor_name"
+      "id, type, title, description, price_cents, details, images, author_id, author_name, sponsor_name"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -184,13 +185,18 @@ export default async function ListingDetailPage({
           {renderByline(listing.author_name, listing.sponsor_name)}
         </p>
 
-        {/* Contact is a separate member-gated slice — dead-link rule, not built:
-        <Link
-          href={`/listings/${listing.id}/contact`}
-          className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
-        >
-          Message the lister
-        </Link> */}
+        {/* Contact lives on a member-gated page (/contact does the gating +
+            explains, so guests and Tier-1 accounts see it too). Hidden only on
+            the viewer's own listing — you can't message yourself, and the
+            function rejects it anyway. */}
+        {listing.author_id !== user?.id && (
+          <Link
+            href={`/listings/${listing.id}/contact`}
+            className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
+          >
+            Message the lister
+          </Link>
+        )}
       </div>
     </main>
   );

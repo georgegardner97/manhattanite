@@ -122,3 +122,49 @@ export async function sendMemberWelcome({ to }: { to: string }): Promise<void> {
     html: shell(inner),
   });
 }
+
+// ---------------------------------------------------------------------------
+// 4. Listing contact — a member reaching out to a lister, sent to the lister.
+//    Reply-To is set to the SENDER's address: this is what realizes "the lister
+//    chooses whether to reply directly" — they just hit reply and it reaches the
+//    member, not Manhattanite. Best-effort like the rest; the contact row is
+//    already logged before this is called, so a mail failure never loses it.
+// ---------------------------------------------------------------------------
+export async function sendListingContact({
+  to,
+  listerName,
+  senderName,
+  senderEmail,
+  message,
+  listingTitle,
+  listingId,
+}: {
+  to: string;
+  listerName: string | null;
+  senderName: string | null;
+  senderEmail: string;
+  message: string;
+  listingTitle: string;
+  listingId: string;
+}): Promise<void> {
+  const greeting = listerName ? `Hi ${listerName},` : "Hi,";
+  const sender = senderName ?? "A member";
+  const messageHtml = message.replace(/\n/g, "<br/>");
+  const listingUrl = `https://manhattanite.com/listings/${listingId}`;
+
+  const inner = `
+    <p style="margin:0 0 20px;">${greeting}</p>
+    <p style="margin:0 0 20px;"><strong>${sender}</strong> is interested in your listing, <em>${listingTitle}</em>.</p>
+    <p style="margin:0 0 24px;">${messageHtml}</p>
+    <hr style="border:none;border-top:1px solid #e2e2e2;margin:0 0 24px;" />
+    <p style="margin:0 0 20px;font-size:15px;color:#555;">Reply to this email to reach them directly.</p>
+    <p style="margin:0;"><a href="${listingUrl}" style="color:#1a1a1a;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;">See your listing &rarr;</a></p>`;
+
+  await resend.emails.send({
+    from: APPLICATIONS_FROM,
+    to,
+    replyTo: senderEmail,
+    subject: `Someone's interested in your listing — ${listingTitle}`,
+    html: shell(inner),
+  });
+}
