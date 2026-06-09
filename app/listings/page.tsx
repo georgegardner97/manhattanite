@@ -1,15 +1,17 @@
-// /listings — read-only browse.
+// /listings — read-only browse, now with a logged-out teaser.
 //
-// Server Component. RLS gates the read server-side (only published rows, and
-// only for signed-in users), but we also redirect logged-out visitors to
-// /login as defense in depth — so the render path short-circuits before any
-// query, never relying on RLS alone.
+// Server Component. Tiered by viewer (D1 decision, 2026-06-09 — the trust gate
+// is at the ACTION layer, not viewing):
+//   - guest (logged out): a TEASER — the 6 most recent published listings, then
+//     a "create an account" prompt where the rest would be. Anon read is allowed
+//     at the data layer by migration 0010; the 6-cap is enforced here in the
+//     query (intentional for MVP — viewing is a funnel, not the moat).
+//   - account / member: full browse (limit 50), unchanged.
 //
-// Read-only this slice: no filters, no search, no sort controls. Posting,
-// contact, and sponsor display are later slices.
+// Read-only this slice: no filters, search, or sort. Posting, contact, and
+// sponsor display are other slices.
 
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 
@@ -40,14 +42,12 @@ export default async function ListingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
+  const isGuest = !user;
+  const TEASER_LIMIT = 6;
 
-  // RLS policy listings_read_published_for_accounts restricts this to published
-  // rows for signed-in users. The author name embed is gated by the accounts
-  // RLS too — it resolves for the viewer's own listings and stays null for
-  // others until a public-profile read policy lands (see memory, Slice 4).
+  // Published rows are readable by signed-in users (listings_read_published_for_accounts)
+  // and, after migration 0010, by anon too. Guests are capped at the teaser set
+  // in the query below; accounts/members get the full feed.
   const { data: listings } = await supabase
     .from("listings")
     .select(
@@ -55,7 +55,7 @@ export default async function ListingsPage() {
     )
     .eq("status", "published")
     .order("created_at", { ascending: false })
-    .limit(50)
+    .limit(isGuest ? TEASER_LIMIT : 50)
     .returns<ListingCard[]>();
 
   // Sign all cover-image paths in one round-trip, then look up per card.
@@ -68,16 +68,6 @@ export default async function ListingsPage() {
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
-        {/* Wordmark */}
-        <div className="text-center mb-20">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-4xl md:text-5xl tracking-tighter leading-none text-ink"
-          >
-            Manhattan<span className="italic">ite</span>
-          </Link>
-        </div>
-
         <div className="text-center mb-16">
           <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
             Listings
@@ -101,6 +91,23 @@ export default async function ListingsPage() {
               );
             })}
           </ul>
+        )}
+
+        {/* Teaser wall — guests see the create-account prompt where the rest of
+            the network would be. The action layer stays the real gate. */}
+        {isGuest && listings && listings.length > 0 && (
+          <div className="mt-16 border-t border-ink/10 pt-12 text-center">
+            <p className="font-serif text-xl leading-relaxed text-ink">
+              This is a glimpse. Create a free account to see every listing in
+              the network.
+            </p>
+            <Link
+              href="/signup"
+              className="mh-link inline-block mt-8 text-[14px] tracking-[0.22em] uppercase text-ink"
+            >
+              Create an account to see every listing &rarr;
+            </Link>
+          </div>
         )}
       </div>
     </main>

@@ -1,9 +1,12 @@
-// /listings/[id] — read-only listing detail.
+// /listings/[id] — read-only listing detail, teaser-aware.
 //
-// Server Component. RLS only returns published rows to signed-in users, so a
-// draft, archived, or non-existent id simply resolves to no row → notFound().
-// Logged-out visitors are redirected to /login (defense in depth), same as the
-// browse page.
+// Server Component. RLS returns published rows; a draft, archived, or
+// non-existent id resolves to no row → notFound().
+//
+// Logged-out (guest) visibility mirrors the /listings teaser (D1 decision):
+// a guest may view a detail page ONLY if the listing is within the teaser set
+// (the 6 most recent published). Any other detail → redirect to /signup. Logged-in
+// accounts and members view any published listing.
 //
 // Read-only this slice. The "Message the lister" CTA is intentionally not built
 // — contact is a separate member-gated slice (dead-link rule: commented, not
@@ -71,8 +74,22 @@ export default async function ListingDetailPage({
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Guests may only see detail for a teaser listing (the 6 most recent
+  // published). Everything else sends them to signup. Anon read of published
+  // rows is enabled by migration 0010; the teaser cap is enforced here.
   if (!user) {
-    redirect("/login");
+    const { data: teaser } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .returns<{ id: string }[]>();
+
+    const inTeaser = teaser?.some((t) => t.id === id) ?? false;
+    if (!inTeaser) {
+      redirect("/signup");
+    }
   }
 
   const { data: listing } = await supabase
@@ -104,16 +121,6 @@ export default async function ListingDetailPage({
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
-        {/* Wordmark */}
-        <div className="text-center mb-20">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-4xl md:text-5xl tracking-tighter leading-none text-ink"
-          >
-            Manhattan<span className="italic">ite</span>
-          </Link>
-        </div>
-
         <Link
           href="/listings"
           className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
