@@ -11,7 +11,7 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state — as of 2026-06-09 (Slice C shipped)
+## Quick state — as of 2026-06-09 (Slice C + Navigation slice shipped)
 
 > Reconciled snapshot. On 2026-06-08 the `/apply` flow was built across two slices; on 2026-06-09 Slice C (the membership emails) shipped and the full apply→approve→welcome loop was verified end-to-end on the deployed site. Verified against git (working tree clean, in sync with `origin/main`) and the production database. Naming note: the membership flow is **"Phase 2"** per the build plan even though it shipped *after* the Phase 4 byline/profile work — the phase numbers reflect the original plan order, not chronology.
 
@@ -27,9 +27,10 @@ If something below conflicts with what you read in the deeper files, the deeper 
 **Production DB state:** all 9 migrations applied. `applications` table + 3 review functions + the 0009 service_role grant live. **0 applications, 0 non-founder accounts.** Founder (`info@manhattanite.com`, `85ce5315-…`) is `is_member=true`, `name='George Gardner'`, `sponsor_id` null.
 
 **Still open:**
-- **Walkthrough checkpoint — DONE 2026-06-09.** Produced `outputs/Manhattanite_Walkthrough-Findings_v1.md` (punch list, sorted build-now / Phase 1.5 / strategic). Two headlines: (1) **no navigation exists** (no nav/header component — most "feels off" reduces to this); (2) **listings are view-only for everyone, even members** — the contact feature isn't built (biggest functional gap; it's a planned v1 slice). Also verified: signup doesn't capture name; logged-out currently sees nothing (RLS login-gate).
-- **TIER MODEL DECIDED 2026-06-09** (see decisions.md): three viewing layers, trust gate at the ACTION layer not the VIEWING layer — logged-out **teaser** / account = **full browse, acts on nothing** (on-ramp) / member = contact+post+sponsor. Reshapes the listings RLS + logged-out experience.
-- **Next build = navigation slice**, built around the three-tier model (now unblocked). Then the **contact slice** (the "capture the value" half of membership). Then signup-name + copy pass; seed listings + photos (→ unlocks the second, "does it look finished" checkpoint).
+- **Walkthrough checkpoint — DONE 2026-06-09.** Produced `outputs/Manhattanite_Walkthrough-Findings_v1.md` (punch list). Two headlines were: (1) no navigation existed → **now fixed** (nav slice shipped); (2) **listings are view-only for everyone, even members** — the contact feature still isn't built (the biggest remaining product gap; a planned v1 slice).
+- **TIER MODEL DECIDED 2026-06-09** (see decisions.md): three viewing layers, trust gate at the ACTION layer not the VIEWING layer — logged-out **teaser** / account = **full browse, acts on nothing** (on-ramp) / member = contact+post+sponsor. **Implemented** in the nav slice (migration 0010 anon teaser read).
+- **Navigation slice — SHIPPED 2026-06-09.** Tier-aware `SiteNav`, back links, `/listings/mine`, logged-out 6-listing teaser (migration 0010). Resolves walkthrough A1/A3/A2-lite + D1.
+- **Next build:** the **contact slice** (form on each listing → Resend email; logs `listing_contacts` for moderation — per mvp-spec) — the "capture the value" half of membership. Or the small **signup-name + copy pass** first. Then seed listings + photos (→ unlocks the second, "does it look finished" checkpoint).
 - Standing caveats for the next walkthrough: landing page (Phase 1.5 rework pending) + thin content (2 listings, no photos, placeholder "John Robinson" sponsor) still look unfinished.
 - `sponsor_name='John Robinson'` is fake placeholder on the founder's listings — replace before any non-founder sees the network.
 - Seed listings (27, with real photos) not loaded; only the 2 founder listings exist, text-only.
@@ -135,3 +136,9 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 ---
 
 *Last updated: 2026-06-09 (Slice C shipped — membership emails live, full loop verified on prod).*
+
+## 2026-06-09 — Legal action plan delivered
+- Created `WORK AREAS/Legal/company-formation-project/` (new work area: Legal).
+- George has no registered entity yet. Recommended NY LLC by default; Delaware C-Corp only if raising/equity within ~12–18 months. Flagged Manhattan LLC publication cost (~$1,200–2,000).
+- Three do-now items: form entity, Terms+Privacy live before real users, fair-housing guardrails before non-George apartment listings.
+- Output: `Manhattanite_Legal-Roadmap_v1.md`.

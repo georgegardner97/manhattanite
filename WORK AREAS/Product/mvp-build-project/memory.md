@@ -4,6 +4,26 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-10 · Multi-Sponsor slice SPECCED — build plan + Claude Code prompt written (not built yet)
+
+**Context / trigger:** George asked whether the current "· sponsored by [one name]" byline matches GDC. Researched it: GDC uses sponsorship as the *entry gate* (min 3 sponsors) and surfaces status badges / ratings / connection-degree on listings — it does **not** print a single named sponsor per listing. George's call: move closer to GDC (work toward **min 2** sponsors, **min 1** now, **no upper limit**) but **keep sponsors named** on listings (a deliberate, stronger-accountability divergence). New byline = **hybrid-at-2**.
+
+**Discovered en route:** the repo is well ahead of the stale root `CLAUDE.md` (which still says "Phase 3 Slice 5, images not wired, names don't render"). Reality: migrations through `0011`, byline renders, image upload fully wired, contact slice shipped. Both items I'd have proposed building were already done. Flagged; CLAUDE.md reconcile is a follow-up.
+
+**Also flagged:** the "Marcus Halloway" application emails (2026-06-09) were George's own slice-C test (plus-alias `+slicec` / `george@manhattanite.com`). But **two** near-identical application emails fired (15:08 "New Manhattanite application" + 15:37 "New membership application") — possible double-send path in the apply flow. Check when revisiting `/apply`.
+
+**Decision logged** in `COMPANY/memory/decisions.md` (Trust mechanic, 2026-06-10).
+
+**Outputs:**
+- `outputs/Multi-Sponsor_Build-Plan_v1.md` — full file-by-file plan. Key calls: (1) new `sponsorships` table = source of truth, RLS-on/no-client-policies (0011 pattern); (2) `listings.sponsor_name text` → `sponsor_names text[]` (ordered denorm cache, primary first), format logic stays in TS; (3) keep `accounts.sponsor_id` as the primary/inviter pointer; (4) byline triggers (0006) reworked + a `rebuild_sponsor_names()` helper + sponsorship-change trigger; (5) `add_sponsor()` seed helper to test 2/3-sponsor bylines; (6) `approve_application()` also writes a primary sponsorship row; min-floor=1, one-line lift to 2 later.
+- `outputs/Multi-Sponsor_Claude-Code-Prompt_v1.md` — copy-paste hand-off. Migration = `0012_multi_sponsor.sql`.
+
+**Run order:** Claude Code writes migration + frontend + harness → **pauses** → Cowork runs `0012` in prod SQL editor via Chrome (frontend drops `sponsor_name`, so SQL must land first) → deploy + prod test loop (1/2/3-sponsor bylines, rename propagation, sponsor removal, order, cleanup, founder untouched) → reconcile SHIPPED.
+
+**Next:** George runs the Claude Code prompt. Then: reconcile root CLAUDE.md to the multi-sponsor model; later, the min-2 apply flow.
+
+---
+
 ## 2026-06-09 · Contact slice SHIPPED — member contact form → lister email + listing_contacts log (built, deployed, tested on prod)
 
 **Shipped** (Claude Code built → committed → pushed/deployed → ran the prod test loop). The "capture the value" half of membership: members can now contact listers. Listings are no longer view-only.

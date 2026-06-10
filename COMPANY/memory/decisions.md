@@ -27,6 +27,12 @@ Read this at the start of every Manhattanite conversation.
 - **Post-launch:** Sponsor-only becomes the primary path. One existing member vouches and is publicly named on the new member's profile. Application path may quietly remain or be removed depending on what we learn during MVP. (2026-05-16)
 - **No "waiting list" framing.** The terminology is "apply for membership" — confident, member-facing, Soho House-style. Not waitlist, not signup, not registration. (2026-05-16)
 - **Primary reviewer at start:** George. Until other members start sponsoring at volume, every approved member is functionally sponsored by him. (2026-05-16)
+- **Multi-sponsor model adopted — moves toward true GDC.** (2026-06-10, George) Revises the "one canonical sponsor per member" architecture. A member can now have **many** sponsors, not one:
+  - **Floor, no ceiling.** Minimum **1** sponsor now; **work toward a minimum of 2** later (a one-line config lift, not a rebuild). **No upper limit** — a member can accrue any number of sponsors.
+  - **Sponsors stay publicly named on listings** (not GDC's gate-only model — George's deliberate divergence; the named vouch is a stronger personal-accountability signal).
+  - **Byline format = "hybrid-at-2":** 1 sponsor → "sponsored by John R."; 2 → "sponsored by John R. & Sarah K."; 3+ → "sponsored by John R., Sarah K. + N more". Real names kept up to two, then a count. Threshold lives in frontend code (easy to change).
+  - **Schema impact (real, not cosmetic):** new `sponsorships` table (member→many sponsors) becomes the source of truth; `listings.sponsor_name text` → `sponsor_names text[]` (ordered denorm cache, primary inviter first); byline triggers (migration 0006) reworked; `approve_application` writes a primary sponsorship row. `accounts.sponsor_id` retained as the "primary sponsor / inviter" pointer. Build plan: `WORK AREAS/Product/mvp-build-project/outputs/Multi-Sponsor_Build-Plan_v1.md`.
+  - **Follow-up:** root `CLAUDE.md` still describes the old single-sponsor model — reconcile in a dedicated pass.
 
 ## Timeline
 

@@ -27,3 +27,9 @@ Append-only. Most recent at the bottom.
 - 2026-06-09 · Manhattanite_Walkthrough-Findings_v1.md · mvp-build-project/outputs · live-site walkthrough punch list (nav, contact, signup-name, GDC strategic decisions)
 - 2026-06-09 · Navigation-Slice_Build-Plan_v1.md · mvp-build-project/outputs · nav slice file-by-file plan
 - 2026-06-09 · Navigation-Slice_Claude-Code-Prompt_v1.md · mvp-build-project/outputs · nav slice Claude Code hand-off prompt
+- 2026-06-09 · Contact-Slice_Build-Plan_v1.md · mvp-build-project/outputs · contact slice file-by-file plan
+- 2026-06-09 · Contact-Slice_Claude-Code-Prompt_v1.md · mvp-build-project/outputs · contact slice Claude Code hand-off prompt
+
+- 2026-06-09 | Manhattanite_Legal-Roadmap_v1.md | Legal/company-formation-project | Pre-launch legal action plan (entity, Terms/Privacy, fair housing)
+- 2026-06-09 | Manhattanite_Attorney-Brief_v1.md | Legal/company-formation-project | One-page brief to send to startup counsel for a fixed-fee quote
+- 2026-06-09 | Manhattanite_Attorney-Brief_v2.md | Legal/company-formation-project | Attorney brief rewritten in natural email voice; Gens de Confiance reference removed
