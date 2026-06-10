@@ -6,6 +6,22 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-10 · Multi-Sponsor slice SHIPPED — many sponsors per member, hybrid-at-2 byline live
+
+**Worked on:**
+- Built + shipped the multi-sponsor model: `sponsorships` table (source of truth, RLS locked down), `listings.sponsor_names text[]` denorm cache, shared `lib/listings/byline.ts` renderer (hybrid-at-2), reworked byline/propagation triggers, `add_sponsor()` seed helper, `approve_application()` writes a primary sponsorship row. Three pages moved to the array column (the plan named two; `/listings/mine` was a third, caught by the grep guard).
+- Mid-slice, George changed the cutover plan: 0012 was applied to prod in an **additive** form — `sponsor_name` kept and dual-written (= primary) instead of dropped, zero-downtime in either migrate/deploy order. Repo migration updated to match prod.
+- Prod test harness (`npm run test:multi-sponsor`): **21/21 green** — 1/2/3-sponsor bylines, primary-first order, rename propagation, sponsor removal, anon read, dual-write invariant, cleanup to 0 synthetic rows, founder untouched (snapshot-verified). Pushed; Vercel deploy succeeded; live render verified on manhattanite.com/listings.
+
+**Caught:**
+- First harness run failed one assertion — it wrongly demanded the 'John Robinson' placeholder on every founder listing; the founder's third listing (2026-06-09, post-0006) legitimately has none. Test bug, fixed via before/after snapshot compare.
+
+**Next:** cleanup migration dropping `listings.sponsor_name`; reconcile root `CLAUDE.md` (still describes single-sponsor); min-2 apply flow later.
+
+Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
 ## 2026-06-09 · Navigation slice SHIPPED — tier-aware nav + logged-out teaser browse
 
 **Worked on:**

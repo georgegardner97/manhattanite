@@ -4,6 +4,26 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-10 · Multi-Sponsor slice SHIPPED — sponsorships table + hybrid-at-2 byline, live on prod
+
+**Shipped** (Claude Code built → paused → Cowork ran 0012 in the prod SQL editor → prod test harness green → pushed → Vercel deployed → live render verified). Members can now have many sponsors; the byline assembles them with the hybrid-at-2 rule from `lib/listings/byline.ts`.
+
+**What landed:**
+- Migration `0012_multi_sponsor.sql`: `sponsorships` table (RLS on, no client policies — 0011 lockdown), backfill, `listings.sponsor_names text[]` (ordered, primary first), `rebuild_sponsor_names()` + reworked byline/propagation triggers, `add_sponsor()` seed helper (execute granted to service_role only, mirroring 0009), `approve_application()` now writes a primary sponsorship row. `-- MIN_SPONSORS = 1` comment marks the future floor-raise spot.
+- **Plan deviation, George's call mid-slice: 0012 went ADDITIVE.** `listings.sponsor_name` was NOT dropped — it's kept and dual-written (= primary sponsor) by the rebuild helper and the BEFORE INSERT trigger, so the migrate→deploy cutover was zero-downtime in either order. **Follow-up: a trivial cleanup migration drops `sponsor_name`** now the new frontend is confirmed live.
+- Frontend: `app/listings/page.tsx`, `[id]/page.tsx`, **`mine/page.tsx` (a third page the plan missed — caught by the grep guard)** all read `sponsor_names`; per-file `renderByline` copies replaced by the shared `lib/listings/byline.ts`.
+- `scripts/test-multi-sponsor.ts` + `npm run test:multi-sponsor` — reusable prod harness.
+
+**Prod test results: 21/21 green.** Bylines correct at 1/2/3 sponsors (incl. "+ 1 more"), primary always first, rename propagation, sponsor removal, anon teaser read of the array column, legacy dual-write asserted on every read, cleanup to 0 synthetic rows, founder untouched (account fields + byte-identical before/after snapshot of his listings' byline columns).
+
+**Caught during the test loop:** first run failed one check — the harness wrongly required the 'John Robinson' placeholder on ALL founder listings, but the founder has a third listing (posted 2026-06-09, after the 0006 override) that legitimately has no sponsor. Test bug, not a prod bug; fixed by switching to the snapshot-compare. Note for future sessions: **founder has 3 listings**, two with the placeholder, one without.
+
+**Commits:** `1b1a579` (slice), `42042bb` (additive 0012 + harness fix), `5acd043` (docs). All pushed; Vercel deploy succeeded.
+
+**Next:** cleanup migration to drop `listings.sponsor_name`; reconcile root `CLAUDE.md` to the multi-sponsor model; later, the min-2 apply flow.
+
+---
+
 ## 2026-06-10 · Multi-Sponsor slice SPECCED — build plan + Claude Code prompt written (not built yet)
 
 **Context / trigger:** George asked whether the current "· sponsored by [one name]" byline matches GDC. Researched it: GDC uses sponsorship as the *entry gate* (min 3 sponsors) and surfaces status badges / ratings / connection-degree on listings — it does **not** print a single named sponsor per listing. George's call: move closer to GDC (work toward **min 2** sponsors, **min 1** now, **no upper limit**) but **keep sponsors named** on listings (a deliberate, stronger-accountability divergence). New byline = **hybrid-at-2**.
