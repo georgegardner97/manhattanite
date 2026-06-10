@@ -2,8 +2,8 @@
 //
 //   npm run test:multi-sponsor
 //
-// Runs against PROD Supabase (service-role key from .env.local) AFTER migration
-// 0012 is applied. Stands up synthetic members on Gmail plus-aliases, exercises
+// Runs against PROD Supabase (service-role key from .env.local) AFTER migrations
+// 0012 + 0013 are applied. Stands up synthetic members on Gmail plus-aliases, exercises
 // the full multi-sponsor mechanic end-to-end, asserts the hybrid-at-2 byline at
 // each step, then deletes the synthetic auth.users so the cascade clears every
 // synthetic row. The founder must end UNTOUCHED.
@@ -21,9 +21,9 @@
 //                    (account fields + a before/after snapshot of his listings'
 //                    byline columns — byte-identical or the test fails).
 //
-// Additive 0012 invariant: every listing read also asserts the legacy
-// sponsor_name column is dual-written (= sponsor_names[1st], null when empty),
-// since the zero-downtime cutover depends on it.
+// (0012's additive dual-write invariant on the legacy sponsor_name column was
+// asserted here during the cutover; 0013 dropped the column, so those
+// assertions are gone.)
 //
 // It imports the REAL byline renderer (lib/listings/byline.ts) so the assertions
 // test exactly what the pages render — not a re-implementation.
@@ -86,7 +86,6 @@ function die(message: string): never {
 // ----- helpers -------------------------------------------------------------
 type ListingRow = {
   author_name: string | null;
-  sponsor_name: string | null; // legacy single column, dual-written (additive 0012)
   sponsor_names: string[];
 };
 
@@ -96,16 +95,10 @@ async function readByline(
 ): Promise<{ row: ListingRow; byline: string }> {
   const { data, error } = await admin
     .from("listings")
-    .select("author_name, sponsor_name, sponsor_names")
+    .select("author_name, sponsor_names")
     .eq("id", listingId)
     .single<ListingRow>();
   if (error || !data) die(`Could not read listing ${listingId}: ${error?.message}`);
-  // Additive invariant: legacy sponsor_name mirrors the primary on every change.
-  checkTrue(
-    "legacy sponsor_name dual-written (= primary)",
-    data.sponsor_name === (data.sponsor_names[0] ?? null),
-    `sponsor_name=${JSON.stringify(data.sponsor_name)} vs sponsor_names=${JSON.stringify(data.sponsor_names)}`
-  );
   return { row: data, byline: renderByline(data.author_name, data.sponsor_names) };
 }
 
@@ -186,10 +179,10 @@ async function main(): Promise<void> {
   // final check asserts they come back byte-identical — the real "founder
   // untouched" invariant, independent of how many listings he has or which of
   // them carry the 0006 'John Robinson' placeholder.
-  type FounderListing = { id: string; sponsor_name: string | null; sponsor_names: string[] };
+  type FounderListing = { id: string; sponsor_names: string[] };
   const { data: founderBefore, error: snapErr } = await admin
     .from("listings")
-    .select("id, sponsor_name, sponsor_names")
+    .select("id, sponsor_names")
     .eq("author_id", founder.id)
     .order("id")
     .returns<FounderListing[]>();
@@ -350,7 +343,7 @@ async function main(): Promise<void> {
 
     const { data: founderAfter } = await admin
       .from("listings")
-      .select("id, sponsor_name, sponsor_names")
+      .select("id, sponsor_names")
       .eq("author_id", founder.id)
       .order("id")
       .returns<FounderListing[]>();
