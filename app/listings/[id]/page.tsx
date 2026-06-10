@@ -17,6 +17,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
+import { renderByline } from "@/lib/listings/byline";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -32,19 +33,8 @@ type ListingDetail = {
   images: ListingImage[];
   author_id: string;
   author_name: string | null;
-  sponsor_name: string | null;
+  sponsor_names: string[];
 };
-
-// Byline rules — same as the browse page:
-// - Author always shown ("a member" fallback if null).
-// - Sponsor portion shown only when sponsor_name is present.
-function renderByline(
-  authorName: string | null,
-  sponsorName: string | null
-): string {
-  const author = `Listed by ${authorName ?? "a member"}`;
-  return sponsorName ? `${author} · sponsored by ${sponsorName}` : author;
-}
 
 function formatPrice(cents: number, type: ListingDetail["type"]): string {
   const dollars = Math.round(cents / 100).toLocaleString("en-US");
@@ -96,7 +86,7 @@ export default async function ListingDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, details, images, author_id, author_name, sponsor_name"
+      "id, type, title, description, price_cents, details, images, author_id, author_name, sponsor_names"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -182,7 +172,7 @@ export default async function ListingDetailPage({
         )}
 
         <p className="mt-14 text-[11px] tracking-[0.22em] uppercase text-slate">
-          {renderByline(listing.author_name, listing.sponsor_name)}
+          {renderByline(listing.author_name, listing.sponsor_names)}
         </p>
 
         {/* Contact lives on a member-gated page (/contact does the gating +

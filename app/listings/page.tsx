@@ -14,6 +14,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
+import { renderByline } from "@/lib/listings/byline";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -27,7 +28,7 @@ type ListingCard = {
   price_cents: number;
   images: ListingImage[];
   author_name: string | null;
-  sponsor_name: string | null;
+  sponsor_names: string[];
 };
 
 function formatPrice(cents: number, type: ListingCard["type"]): string {
@@ -51,7 +52,7 @@ export default async function ListingsPage() {
   const { data: listings } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, images, author_name, sponsor_name"
+      "id, type, title, description, price_cents, images, author_name, sponsor_names"
     )
     .eq("status", "published")
     .order("created_at", { ascending: false })
@@ -146,24 +147,10 @@ function ListingCardItem({
       </div>
       <p className="mt-3 text-slate leading-relaxed">{listing.description}</p>
       <p className="mt-5 text-[11px] tracking-[0.22em] uppercase text-slate">
-        {renderByline(listing.author_name, listing.sponsor_name)}
+        {renderByline(listing.author_name, listing.sponsor_names)}
       </p>
     </Link>
   );
-}
-
-// Byline rules:
-// - Author always shown. Falls back to "a member" if the denorm is null
-//   (defensive; shouldn't happen post-migration 0006).
-// - Sponsor portion shown only when sponsor_name is present. Founders /
-//   first-cohort members with no sponsor get a clean "Listed by [Name]"
-//   with no trailing em-dash.
-function renderByline(
-  authorName: string | null,
-  sponsorName: string | null
-): string {
-  const author = `Listed by ${authorName ?? "a member"}`;
-  return sponsorName ? `${author} · sponsored by ${sponsorName}` : author;
 }
 
 function EmptyState() {
