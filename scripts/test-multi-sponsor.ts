@@ -17,7 +17,13 @@
 //   5. Remove      — delete a sponsorship → byline count drops.
 //   6. Order       — primary (founder) always first.
 //   7. Anon render — anon-key read of sponsor_names still works (0010 policy).
-//   8. Cleanup     — delete synthetic users → 0 synthetic rows, founder intact.
+//   8. Cleanup     — delete synthetic users → 0 synthetic rows, founder intact
+//                    (account fields + a before/after snapshot of his listings'
+//                    byline columns — byte-identical or the test fails).
+//
+// Additive 0012 invariant: every listing read also asserts the legacy
+// sponsor_name column is dual-written (= sponsor_names[1st], null when empty),
+// since the zero-downtime cutover depends on it.
 //
 // It imports the REAL byline renderer (lib/listings/byline.ts) so the assertions
 // test exactly what the pages render — not a re-implementation.
@@ -78,7 +84,11 @@ function die(message: string): never {
 }
 
 // ----- helpers -------------------------------------------------------------
-type ListingRow = { author_name: string | null; sponsor_names: string[] };
+type ListingRow = {
+  author_name: string | null;
+  sponsor_name: string | null; // legacy single column, dual-written (additive 0012)
+  sponsor_names: string[];
+};
 
 async function readByline(
   admin: SupabaseClient,
@@ -86,10 +96,16 @@ async function readByline(
 ): Promise<{ row: ListingRow; byline: string }> {
   const { data, error } = await admin
     .from("listings")
-    .select("author_name, sponsor_names")
+    .select("author_name, sponsor_name, sponsor_names")
     .eq("id", listingId)
     .single<ListingRow>();
   if (error || !data) die(`Could not read listing ${listingId}: ${error?.message}`);
+  // Additive invariant: legacy sponsor_name mirrors the primary on every change.
+  checkTrue(
+    "legacy sponsor_name dual-written (= primary)",
+    data.sponsor_name === (data.sponsor_names[0] ?? null),
+    `sponsor_name=${JSON.stringify(data.sponsor_name)} vs sponsor_names=${JSON.stringify(data.sponsor_names)}`
+  );
   return { row: data, byline: renderByline(data.author_name, data.sponsor_names) };
 }
 
@@ -165,6 +181,21 @@ async function main(): Promise<void> {
   const founderName = founder.name ?? die("Founder has no name — byline expectations would break.");
 
   console.log(`Founder: ${founderName} (${founder.id})`);
+
+  // Snapshot the founder's listings' byline columns BEFORE any test runs. The
+  // final check asserts they come back byte-identical — the real "founder
+  // untouched" invariant, independent of how many listings he has or which of
+  // them carry the 0006 'John Robinson' placeholder.
+  type FounderListing = { id: string; sponsor_name: string | null; sponsor_names: string[] };
+  const { data: founderBefore, error: snapErr } = await admin
+    .from("listings")
+    .select("id, sponsor_name, sponsor_names")
+    .eq("author_id", founder.id)
+    .order("id")
+    .returns<FounderListing[]>();
+  if (snapErr || !founderBefore) die(`Could not snapshot founder listings: ${snapErr?.message}`);
+  console.log(`Snapshot: ${founderBefore.length} founder listing(s) recorded.`);
+
   console.log("Pre-clean: removing any leftover synthetic users…");
   const preCleaned = await purgeSynthetic(admin);
   if (preCleaned > 0) console.log(`  removed ${preCleaned} leftover synthetic user(s)`);
@@ -317,14 +348,15 @@ async function main(): Promise<void> {
       `sponsor_id=${f2?.sponsor_id}`);
     checkTrue("founder name unchanged", f2?.name === founderName, `name=${f2?.name}`);
 
-    const { data: fl } = await admin
+    const { data: founderAfter } = await admin
       .from("listings")
-      .select("sponsor_names")
+      .select("id, sponsor_name, sponsor_names")
       .eq("author_id", founder.id)
-      .returns<{ sponsor_names: string[] }[]>();
-    checkTrue("founder listings keep 'John Robinson' placeholder",
-      (fl ?? []).length > 0 && (fl ?? []).every((l) => l.sponsor_names.includes("John Robinson")),
-      `got ${JSON.stringify(fl)}`);
+      .order("id")
+      .returns<FounderListing[]>();
+    checkTrue("founder listings' bylines unchanged (snapshot match)",
+      JSON.stringify(founderAfter) === JSON.stringify(founderBefore),
+      `before=${JSON.stringify(founderBefore)} after=${JSON.stringify(founderAfter)}`);
   }
 
   // ----- summary -----

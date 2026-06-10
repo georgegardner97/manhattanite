@@ -30,10 +30,13 @@
 --   7. add_sponsor() — seed-phase helper to add an extra sponsor.
 --   8. approve_application() — also write a primary sponsorship row on approval.
 --
--- ⚠️ Dropping listings.sponsor_name means every TypeScript reference moves to
--- sponsor_names IN THE SAME SLICE. Claude Code did that (app/listings/page.tsx,
--- app/listings/[id]/page.tsx, app/listings/mine/page.tsx, lib/listings/byline.ts)
--- and deploys only AFTER this migration runs, so prod never sees a mismatch.
+-- ADDITIVE finish (2026-06-10, George's call): this migration does NOT drop
+-- listings.sponsor_name. The new frontend (app/listings/page.tsx, [id]/page.tsx,
+-- mine/page.tsx, lib/listings/byline.ts) reads sponsor_names; the legacy
+-- sponsor_name column is KEPT and dual-written (= primary sponsor) so the live
+-- site renders correctly whether the migration or the deploy lands first — zero
+-- downtime. A later cleanup migration drops sponsor_name once the new frontend
+-- is confirmed live.
 
 -- ---------------------------------------------------------------------------
 -- 1. sponsorships table
@@ -94,7 +97,12 @@ update public.listings
          else array[sponsor_name]
        end;
 
-alter table public.listings drop column sponsor_name;
+-- ADDITIVE (2026-06-10): the old singular column is intentionally KEPT (not
+-- dropped) so the currently-live frontend keeps rendering during the cutover —
+-- zero downtime in any migrate/deploy order. rebuild_sponsor_names() and the
+-- BEFORE INSERT trigger below dual-write sponsor_name = the primary sponsor, so
+-- the legacy column stays correct. Drop it later in a trivial cleanup migration
+-- once the new sponsor_names frontend is confirmed live.
 
 -- ---------------------------------------------------------------------------
 -- 4. rebuild_sponsor_names(member) — recompute one member's cached array
@@ -120,7 +128,8 @@ begin
      and a.name is not null;
 
   update public.listings
-     set sponsor_names = coalesce(v_names, '{}')
+     set sponsor_names = coalesce(v_names, '{}'),
+         sponsor_name  = v_names[1]   -- legacy single (= primary); null if none
    where author_id = p_member_id;
 end;
 $$;
@@ -154,6 +163,7 @@ begin
 
   new.author_name   := v_author_name;
   new.sponsor_names := coalesce(v_names, '{}');
+  new.sponsor_name  := v_names[1];   -- legacy single (= primary); kept additive
   return new;
 end;
 $$;
@@ -360,13 +370,14 @@ grant execute on function public.approve_application(uuid, uuid) to service_role
 --      and tgname like '%byline%';
 --     -- expect: listings_populate_byline_on_insert, accounts_propagate_byline_changes
 --
--- (c) Column moved + sample byline array.
---   select title, author_name, sponsor_names from public.listings;
---     -- founder's two listings → author_name 'George Gardner', sponsor_names {John Robinson}
---   -- the old singular column is gone:
+-- (c) New array column + sample byline; legacy column kept (additive).
+--   select title, author_name, sponsor_name, sponsor_names from public.listings;
+--     -- founder's two listings → author_name 'George Gardner',
+--     --   sponsor_names {John Robinson}, sponsor_name 'John Robinson' (dual-written)
+--   -- the old singular column is intentionally STILL PRESENT this slice:
 --   select column_name from information_schema.columns
 --    where table_schema = 'public' and table_name = 'listings' and column_name = 'sponsor_name';
---     -- expect: 0 rows
+--     -- expect: 1 row (dropped later in a cleanup migration)
 --
 -- (d) Functions present.
 --   select proname from pg_proc where pronamespace = 'public'::regnamespace
