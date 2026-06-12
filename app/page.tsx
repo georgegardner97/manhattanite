@@ -24,14 +24,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signImagePaths } from "@/lib/storage/sign-image-urls";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
 const LABEL = "text-[11px] tracking-[0.26em] uppercase text-slate";
 
+type ListingImage = { path: string };
+
 type GlimpseListing = {
   id: string;
+  type: "apartment" | "furniture";
   title: string;
+  price_cents: number;
+  images: ListingImage[] | null;
   details: Record<string, unknown> | null;
 };
 
@@ -40,6 +46,11 @@ function placeOf(listing: GlimpseListing): string | null {
   return typeof neighborhood === "string" && neighborhood.trim()
     ? neighborhood
     : null;
+}
+
+function formatPrice(cents: number, type: GlimpseListing["type"]): string {
+  const dollars = Math.round(cents / 100).toLocaleString("en-US");
+  return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
 }
 
 export default async function Home() {
@@ -56,16 +67,26 @@ export default async function Home() {
     redirect("/profile");
   }
 
-  // The glimpse: 5 most recent live listings, listing columns only.
+  // The glimpse: 3 most recent live listings, shown as a restrained image band
+  // (GDC leads with real listing photos — the cards are the proof). Three keeps
+  // it curated rather than thin at low volume.
   const { data: glimpse } = await supabase
     .from("listings")
-    .select("id, title, details")
+    .select("id, type, title, price_cents, images, details")
     .eq("status", "published")
     .order("created_at", { ascending: false })
-    .limit(5)
+    .limit(3)
     .returns<GlimpseListing[]>();
 
   const listings = glimpse ?? [];
+
+  // Sign each card's cover image in one round-trip. Anon read of the
+  // listing-images bucket is allowed by migration 0018, so this works
+  // logged-out — without it the band would render empty frames.
+  const coverPaths = listings
+    .map((l) => l.images?.[0]?.path)
+    .filter((p): p is string => Boolean(p));
+  const coverUrlByPath = await signImagePaths(coverPaths);
 
   return (
     <>
@@ -97,6 +118,62 @@ export default async function Home() {
           </p>
         </section>
 
+        {/* ============ ON THE NETWORK — a restrained band of real listings ===
+            Shown, not claimed. Display-only (no link — the Browse CTA is the
+            only way in, like GDC's non-clickable teasers). Zero listings hides
+            the whole section. */}
+        {listings.length > 0 && (
+          <section className="pb-24">
+            <div className="max-w-5xl mx-auto px-7">
+              <p className={`${LABEL} mb-10 text-center`}>On the network</p>
+              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-x-7 gap-y-12">
+                {listings.map((listing) => {
+                  const place = placeOf(listing);
+                  const coverPath = listing.images?.[0]?.path;
+                  const coverUrl = coverPath
+                    ? coverUrlByPath.get(coverPath) ?? null
+                    : null;
+                  return (
+                    <li key={listing.id}>
+                      <div className="aspect-[4/5] overflow-hidden bg-ink/5">
+                        {coverUrl && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={coverUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      {place && (
+                        <p className="mt-5 text-[11px] tracking-[0.18em] uppercase text-slate">
+                          {place}
+                        </p>
+                      )}
+                      <div className="mt-2 flex items-baseline justify-between gap-3">
+                        <h3 className="font-serif text-lg md:text-xl leading-[1.25] text-ink">
+                          {listing.title}
+                        </h3>
+                        <p className="font-serif text-base text-ink whitespace-nowrap">
+                          {formatPrice(listing.price_cents, listing.type)}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-14 text-center">
+                <Link
+                  href="/listings"
+                  className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
+                >
+                  Browse the network &rarr;
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ============ HOW IT WORKS ============ */}
         <section className="py-26">
           <div className="max-w-[600px] mx-auto px-7 text-center">
@@ -114,43 +191,6 @@ export default async function Home() {
             </p>
           </div>
         </section>
-
-        {/* ============ ON THE NETWORK — shown, not claimed ============ */}
-        {listings.length > 0 && (
-          <section className="py-26">
-            <div className="max-w-[600px] mx-auto px-7">
-              <p className={`${LABEL} mb-6 text-center`}>On the network</p>
-              <ul className="border-t border-ink/10">
-                {listings.map((listing) => {
-                  const place = placeOf(listing);
-                  return (
-                    <li
-                      key={listing.id}
-                      className="flex items-baseline justify-between gap-5 py-5 border-b border-ink/10"
-                    >
-                      {place && (
-                        <span className="text-[11px] tracking-[0.18em] uppercase text-slate whitespace-nowrap">
-                          {place}
-                        </span>
-                      )}
-                      <span className="font-serif text-xl md:text-[23px] leading-[1.25] text-ink text-right ml-auto">
-                        {listing.title}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="mt-8 text-center">
-                <Link
-                  href="/listings"
-                  className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
-                >
-                  Browse the network &rarr;
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* ============ QUIET PRIVACY ASIDE ============ */}
         <div className="py-21 px-7 text-center">
