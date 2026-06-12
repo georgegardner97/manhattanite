@@ -34,15 +34,19 @@ export default async function SiteNav() {
   } = await supabase.auth.getUser();
 
   let viewer: Viewer = "guest";
+  let isAdmin = false;
   if (user) {
     // RLS "read own row" allows this. A missing row (signup race) falls back
     // to 'account' — logged in but not yet confirmed a member.
     const { data: account } = await supabase
       .from("accounts")
-      .select("is_member")
+      .select("is_member, role")
       .eq("id", user.id)
-      .single<{ is_member: boolean }>();
+      .single<{ is_member: boolean; role: string }>();
     viewer = account?.is_member ? "member" : "account";
+    // Admin rides on top of the tier — the link only renders for role='admin'.
+    // The /admin routes gate themselves (and RLS underneath); this is just nav.
+    isAdmin = account?.role === "admin";
   }
 
   return (
@@ -83,6 +87,12 @@ export default async function SiteNav() {
               <Link href="/profile" className={LINK_QUIET}>
                 Profile
               </Link>
+              {/* Defensive: an admin who isn't flagged a member still gets in. */}
+              {isAdmin && (
+                <Link href="/admin" className={LINK_QUIET}>
+                  Admin
+                </Link>
+              )}
               <SignOutButton />
             </>
           )}
@@ -98,6 +108,11 @@ export default async function SiteNav() {
               <Link href="/profile" className={LINK_QUIET}>
                 Profile
               </Link>
+              {isAdmin && (
+                <Link href="/admin" className={LINK_QUIET}>
+                  Admin
+                </Link>
+              )}
               <SignOutButton />
             </>
           )}
