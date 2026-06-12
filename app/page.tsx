@@ -124,9 +124,9 @@ export default async function Home() {
             the whole section. */}
         {listings.length > 0 && (
           <section className="pb-24">
-            <div className="max-w-5xl mx-auto px-7">
-              <p className={`${LABEL} mb-10 text-center`}>On the network</p>
-              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-x-7 gap-y-12">
+            <div className="max-w-2xl mx-auto px-7">
+              <p className={`${LABEL} mb-9 text-center`}>On the network</p>
+              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {listings.map((listing) => {
                   const place = placeOf(listing);
                   const coverPath = listing.images?.[0]?.path;
@@ -135,7 +135,7 @@ export default async function Home() {
                     : null;
                   return (
                     <li key={listing.id}>
-                      <div className="aspect-[4/5] overflow-hidden bg-ink/5">
+                      <div className="aspect-[4/3] overflow-hidden bg-ink/5">
                         {coverUrl && (
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
@@ -146,23 +146,21 @@ export default async function Home() {
                         )}
                       </div>
                       {place && (
-                        <p className="mt-5 text-[11px] tracking-[0.18em] uppercase text-slate">
+                        <p className="mt-3.5 text-[10px] tracking-[0.18em] uppercase text-slate">
                           {place}
                         </p>
                       )}
-                      <div className="mt-2 flex items-baseline justify-between gap-3">
-                        <h3 className="font-serif text-lg md:text-xl leading-[1.25] text-ink">
-                          {listing.title}
-                        </h3>
-                        <p className="font-serif text-base text-ink whitespace-nowrap">
-                          {formatPrice(listing.price_cents, listing.type)}
-                        </p>
-                      </div>
+                      <p className="mt-1 font-serif text-[15px] leading-snug text-ink">
+                        {listing.title}
+                      </p>
+                      <p className="mt-0.5 text-[13px] text-slate">
+                        {formatPrice(listing.price_cents, listing.type)}
+                      </p>
                     </li>
                   );
                 })}
               </ul>
-              <div className="mt-14 text-center">
+              <div className="mt-12 text-center">
                 <Link
                   href="/listings"
                   className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
