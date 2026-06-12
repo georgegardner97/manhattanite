@@ -94,9 +94,9 @@ If a session involves email/calendar work alongside code:
 
 ## What this repo is right now
 
-A real, working Next.js 16 project. Originally scaffolded 2026-04-26 to run the manhattanite.com waitlist; now the production build for the marketplace itself. **Through Phase 3 Slice 5 as of 2026-06-01:** auth (email + password, signup, login, forgot-password reset), two-tier gating page at `/`, `/profile`, `listings` table with RLS, `/listings` browse, `/listings/[id]` detail, `/listings/new` member-gated posting flow. Founder is `is_member=true` and two real test listings (apartment + furniture) are live in prod.
+A real, working Next.js 16 project. Originally scaffolded 2026-04-26 to run the manhattanite.com waitlist; now the production build for the marketplace itself. **Current state (2026-06-10):** auth (email + password — signup, login, forgot-password reset), Tier 1 gating page at `/`, `/profile` + `/profile/edit`, `listings` table with RLS, `/listings` browse (with a logged-out teaser), `/listings/[id]` detail, member-gated `/listings/new`, `/listings/mine`, edit + archive of your own listings (`/listings/[id]/edit`), image upload (Supabase Storage), `/apply` + manual approval, member-to-lister contact (`/listings/[id]/contact` → Resend), tier-aware navigation, and the multi-sponsor model (many sponsors per member, hybrid-at-2 byline). Migrations are applied through `0012` (with `0013`, a cosmetic column-drop, written but not yet applied). Founder is `is_member=true` with three real test listings live in prod.
 
-The stack is **Next.js (App Router) + Supabase + Vercel + Resend + Airtable (dormant)**. See `COMPANY/tech-architecture.md` for locked stack decisions. The Airtable application pipeline is preserved as dormant code (`lib/applications/submit.ts`) — the `/apply` slice (Phase 2) will revive it.
+The stack is **Next.js (App Router) + Supabase + Vercel + Resend + Airtable (dormant)**. See `COMPANY/tech-architecture.md` for locked stack decisions. The `/apply` slice (Phase 2) shipped on `lib/applications/submit.ts`; the Airtable side of that pipeline stays dormant, with Supabase as the live store.
 
 @AGENTS.md — Read this for Next 16 breaking-changes warnings. Do not use Next 15 muscle memory.
 
@@ -112,11 +112,11 @@ Manhattanite reconciles two strategy streams: an earlier deep analysis (`COMPANY
 
 ## Architectural anchors (the non-obvious essentials)
 
-- **Two-tier access model is the product.** Tier 1 (Account) = free, can browse + apply, cannot post/contact/sponsor. Tier 2 (Member) = application + manual approval, sponsor publicly named. The wall between them is the trust gate and the moat — never weaken it for ergonomics. Full spec in `COMPANY/mvp-spec.md`. Future direction: replace the binary with a graded trust score per `COMPANY/strategy-blueprint.md`.
+- **Two-tier access model is the product.** Tier 1 (Account) = free, can browse + apply, cannot post/contact/sponsor. Tier 2 (Member) = application + manual approval, sponsor(s) publicly named. The wall between them is the trust gate and the moat — never weaken it for ergonomics. Full spec in `COMPANY/mvp-spec.md`. Future direction: replace the binary with a graded trust score per `COMPANY/strategy-blueprint.md`.
 - **Row-Level Security (RLS) is load-bearing, not optional.** The Tier 1/Tier 2 wall must be enforced at the Supabase database layer on every member-only table, not just in UI. RLS = Supabase's database-level permission system that decides which rows a logged-in user can see/edit. An RLS-less feature is a broken feature. See `COMPANY/tech-architecture.md`.
 - **Single `listings` table with a `type` enum + JSON `details` column.** Apartments and furniture share common fields; type-specific fields live in `details`. Designed to extend (jobs, services) without schema explosion.
-- **One canonical sponsor per member**, foreign-keyed on `accounts.sponsor_id`. During seed phase, sponsor defaults to George. Sponsorships also get their own row in `sponsorships` for queryability.
-- **Applications are rows with status**, not a separate approval table. Approval flips `is_member` and writes the sponsor FK in one transaction.
+- **Many sponsors per member** (revised 2026-06-10; was single-sponsor). The `sponsorships` table (migration 0012) is the source of truth; `accounts.sponsor_id` is retained as the *primary / inviter* pointer, rendered first. Floor of 1 sponsor now, working toward 2, no upper limit. The listing caches an ordered `sponsor_names text[]`; the byline is assembled by the **hybrid-at-2** rule in `lib/listings/byline.ts` (1 name → "A & B" at two → "A, B + N more" beyond). During seed phase the primary sponsor defaults to George.
+- **Applications are rows with status**, not a separate approval table. Approval (`approve_application`) flips `is_member`, writes `accounts.sponsor_id`, and inserts the primary `sponsorships` row in one transaction.
 - **Contact = form → Resend email.** No in-product inbox, no real-time messaging in v1. A `listing_contacts` row is logged for moderation history.
 - **Auth = email + password.** Signup, login, and a forgot-password reset flow (`/reset-request` → `/reset-password`). Magic-link-only was the earlier plan but was overridden in Phase 1 Slice 2 (see the 2026-05-27 decisions-log entry).
 - **Airtable is transitional, not permanent.** During seed phase, applications flow into both Airtable (for George's manual review UI) and Supabase (for the member record). Sunset Airtable when the in-product admin review UI is built (v1.5 or v2).
@@ -138,8 +138,9 @@ If a build week slips, scope is cut from later phases — never from the trust l
 
 This repo is mid-build. Be aware:
 
-1. **Airtable application pipeline is dormant, not removed.** Extracted from `app/page.tsx` to `lib/applications/submit.ts` (Slice 3.5). The `/apply` route (Phase 2) will revive and refactor it. Airtable + Resend env vars stay in Vercel.
-2. **No `/apply` route yet.** During seed phase, members are created by manually flipping `is_member=true` via SQL. Real apply/approve flow is deferred Phase 2 work.
-3. **Author name + sponsor name don't render on listings.** The `accounts` RLS read-own policy hides other members' names — cards/detail show "a member" and sponsor renders "—". Needs either a public-profile read policy or denormalized `author_name`/`sponsor_name` on listings.
-4. **Image upload not yet wired.** Listings are text-only; `/listings/new` has a "Photos coming soon" placeholder. Slice 6.
+1. **Airtable application pipeline is dormant, not removed.** `/apply` (Phase 2) shipped on `lib/applications/submit.ts`; Supabase is the live store and Airtable is the dormant mirror. Airtable + Resend env vars stay in Vercel. Sunset Airtable when the in-product admin review UI lands (v1.5/v2).
+2. **Bylines render (multi-sponsor).** Denormalized `author_name` + `sponsor_names text[]` on listings (migrations 0006 → 0012), assembled by `lib/listings/byline.ts`. The old singular `listings.sponsor_name` is kept and dual-written for now; **migration `0013` (drop `sponsor_name`) is written but not yet applied/pushed** — a parked cosmetic cleanup, safe to run any time (it recreates the byline functions without the dual-write before dropping).
+3. **Image upload is wired** (Slice 6) — Supabase Storage `listing-images` bucket, RLS-scoped to the user's own folder, signed URLs on read.
+4. **`/apply` + manual approval is live.** Apply creates a pending application; approval is run from a CLI/SQL during seed (`approve_application`). Niggle to check: the apply flow appears to fire two near-identical confirmation emails (flagged 2026-06-09).
 5. **Landing page flagged for Phase 1.5 rework.** Copy + design both. Functional but not the marketing surface we need.
+6. **`min-2` sponsor floor and a member-facing `/invite` / sponsorship-request flow are future.** The model supports many sponsors now, but the floor stays at 1 and there's no in-product "add a sponsor" UI yet (seed uses the `add_sponsor` helper).

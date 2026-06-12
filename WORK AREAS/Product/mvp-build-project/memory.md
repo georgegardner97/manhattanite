@@ -4,6 +4,79 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-11 · Edit & Remove + Admin Console BOTH SHIPPED — 0013–0016 live on prod, all harnesses green
+
+Both slices are committed, pushed to main, and deploying via Vercel. Cowork applied **four** migrations to prod via the Supabase SQL editor: **0013** (drop `listings.sponsor_name`), **0014** (listings owner-archive: permissive update WITH CHECK allows `status in ('published','archived')`, and the member hard-delete policy dropped), **0015** (founder→admin, admin-guarded review functions granted to authenticated, `listings_admin_read_all`), **0016** (`listings_read_own` — the real archive fix).
+
+**All three prod harnesses green:** `test:multi-sponsor` 16/16 (regression holds after `sponsor_name` dropped), `test:admin-console` 24/24 (0015 fully live — non-admin blocked with 'not authorized', admin + service-role approve both work, founder is admin), `test:edit-archive` 20/20 (owner edit + archive + ownership RLS + owner-read-own-archived).
+
+**The 0014 / archive saga — what was actually wrong (correcting my earlier wrong hypothesis on the record).** I had two prod-drift findings here:
+1. **Real drift 0014 closed:** prod had an OPEN member hard-DELETE policy (a member could `delete` their own listing via the API, wiping `listing_contacts` history — against the locked soft-delete-only decision). 0014 dropped it. Verified: a member's own-row delete now matches 0 rows (was 1).
+2. **My WRONG hypothesis (disproven):** when archive stayed blocked after 0014, I theorized a hidden **RESTRICTIVE** `status='published'` policy and parked `0016_listings_drop_restrictive_status_pin.sql`. **Cowork's live `pg_policy` read proved there are ZERO restrictive policies on `public.listings`**, and 0014's update WITH CHECK already allowed `archived`. My parked migration was a no-op on a false premise — **deleted**.
+3. **The actual blocker:** there was **no SELECT policy letting a member read their own non-published rows** (only published-for-accounts, published-for-anon, admin-read-all). Archiving flips status to `archived`; the owner could no longer read the row back, so the archive appeared to fail (and archived/draft listings would vanish from the member entirely). Fix = `0016_listings_read_own.sql` (Cowork): `create policy listings_read_own on public.listings for select using (author_id = auth.uid())`. Additive, own-rows-only. After it, archive works and the owner can read their own archived rows (enabling a future unarchive UI; `/listings/mine` still filters to published, so archived = off the list).
+
+**Lesson recorded:** I lack any direct-SQL path in dev (.env.local has only PostgREST keys), so I diagnose drift behaviorally — but behavioral elimination led me to the wrong policy *type*. When an RLS read-back fails, suspect a missing **SELECT** policy before inventing a restrictive WITH CHECK. The authoritative move is a live `pg_policy` read in the SQL editor (Cowork can; Claude Code can't from here).
+
+**Both slices, final state:**
+- **Admin Console (3 of mvp-spec's 4 admin views):** `/admin` dashboard (account/member/listing/pending counts), `/admin/applications` review queue (Approve/Decline/Request-more-info as admin-session rpc — never service role), `/admin/members` read-only directory. SiteNav shows "Admin" only to `role='admin'`. **Listing-moderation queue deliberately NOT built — separate follow-up slice.**
+- **Edit & Remove:** owner-only `/listings/[id]/edit` (pre-filled, shared NewListingForm in edit mode), `updateListing` (writes only type/title/description/price/details/images — never status/author/byline), `archiveListing` (soft delete), Edit/Remove controls on `/listings/mine`, Edit link on the detail page for the author.
+
+**Next:** listing-moderation-queue follow-up slice (the 4th admin view). Also still parked, independent: nothing — the migration backlog is now clear (0013–0016 all applied).
+
+---
+
+## 2026-06-11 · Admin Console slice BUILT — awaiting 0015 SQL run (found a second prod drift / live security gap)
+
+**Status: code complete, typecheck/build/lint green, harness green with 2 expected pre-migration deferrals. STOPPED before deploy** per the slice instruction ("apply 0015, then push"). Nothing committed/pushed.
+
+**Scope built (the 3 admin views in mvp-spec §"Admin views"):** application review queue, stats dashboard, read-only member directory. **Listing moderation queue deliberately NOT built — it's the separate follow-up slice.** (mvp-spec lists 4 admin views; this slice does 3.)
+
+**What landed (all role='admin'-gated, defense in depth at route + RLS + function):**
+- `lib/admin/guard.ts` — `requireAdmin()` (no session → /login, non-admin → notFound). The clean-UX layer.
+- `lib/admin/review.ts` — `approveApplication` / `declineApplication` / `requestInfo` server actions (useActionState shape). They re-check the admin role and call the rpc **AS THE SIGNED-IN ADMIN, never the service role** (verified: no service_role import). approve also fires the "You're in." welcome email, best-effort, mirroring the CLI path. Postgres errors mapped to readable copy.
+- `app/admin/page.tsx` (dashboard: accounts / members / listings / pending counts), `app/admin/applications/page.tsx` (pending queue with Approve/Decline/Request-more-info; needs_info shown muted as "waiting on them" — those functions only act on 'pending', and needs_info frees a re-apply via /apply), `app/admin/members/page.tsx` (read-only directory; occupation sourced from the approved application since accounts has no such column; primary sponsor via the accounts self-FK).
+- `app/components/ApplicationActions.tsx` — inline confirm-gated review controls (no browser dialogs, MyListingActions pattern).
+- SiteNav: "Admin" link renders only for role='admin' (members and, defensively, accounts).
+- `supabase/migrations/0015_admin_console.sql` + `scripts/test-admin-console.ts` / `npm run test:admin-console`.
+
+**MIGRATION RENUMBERED 0014 → 0015.** The plan said 0014, but 0014 is already taken by the parked listings-owner-archive migration from the Edit & Remove slice (uncommitted, not yet applied). 0015 is independent of 0013/0014 and can run in any order relative to them. **George now has TWO (soon three) parked SQL-editor migrations: 0013 (drop sponsor_name, cosmetic), 0014 (listings owner-archive, fixes the Edit & Remove drift), 0015 (this slice).**
+
+**SECOND PROD DRIFT FOUND (a live security gap, confirmed empirically).** The harness + a focused probe (`scripts/probe-listing-policies.ts` is the edit-slice one; this used an inline probe) proved that in prod **right now**, any signed-in `authenticated` user can execute the three review functions — the repo (0008/0009) says service-role-only, but the `revoke … from public` evidently never took in prod:
+- `decline_application` and `request_more_info`: **SUCCEED for any member** — a member could decline/limbo anyone's application. No guard at all.
+- `approve_application`: runs but the protect_account_columns trigger (0001) blocks the is_member write → 'is_member is protected'. So a non-admin still **cannot** grant membership (that wall holds), but can call the function.
+
+Migration 0015 closes it: it re-revokes from public AND adds the in-function admin guard (`auth.uid() is null` = seed path passes; admin passes; everyone else → 'not authorized' 42501) on all three, then grants `authenticated` (the guard does the gating). So 0015 both adds the console's admin-callable path AND fixes the pre-existing gap.
+
+**Harness result pre-0015: 15 passed, 0 failed, 2 deferred.** Green on: admin reads the queue (0007 policy live), name embed (0002), all four dashboard counts match service-role ground truth + sane, service-role approval still works, founder untouched, 0 synthetic rows. The 2 deferrals (non-admin gets 'not authorized'; admin rpc approve flips membership) need 0015 live — the harness self-detects migration state via a non-admin probe and will run them in full on re-run.
+
+**PRE-CHECK FOR GEORGE — founder is NOT admin yet.** info@manhattanite.com is role='account' (is_member=true) in prod. 0015 §0 includes the `update … set role='admin'` flip; the admin console matches zero people until it runs. (Strike that line if you'd rather set it by hand.)
+
+**Next:** George applies 0013 + 0014 + 0015 in the SQL editor → I re-run `test:admin-console` (expect all green, no deferrals) + `test:edit-archive` → commit/push/deploy → re-verify on prod. Then: the listing-moderation-queue follow-up slice.
+
+---
+
+## 2026-06-11 · Edit & Remove slice BUILT, NOT SHIPPED — blocked by undocumented prod RLS drift
+
+**Status: code complete and tested locally, but STOPPED before commit/push** per the slice guardrail ("if anything fails, stop and show me"). Nothing pushed; working tree holds the full slice.
+
+**What's built (all green on typecheck + `next build` + grep guard):**
+- `lib/listings/update.ts` — `updateListing` server action, mirrors create.ts (useActionState shape, validation, image-path ownership checks). Write set is ONLY `type/title/description/price_cents/details/images` — never status, author_id, or byline columns; verified by grep guard. Session + membership + ownership re-checked server-side.
+- `lib/listings/archive.ts` — `archiveListing` soft delete (status='archived'). Deliberately no `.select()` after the update: Postgres applies SELECT policies to `UPDATE … RETURNING`, and an archived row stops being visible to the published-only read policy.
+- `app/listings/[id]/edit/page.tsx` — owner-only pre-filled form; gating mirrors /listings/new (no session → /login, non-member → /profile, non-author → redirect to the listing, archived/missing → notFound via RLS).
+- `NewListingForm` extended with optional `initial` (edit mode, same component both flows); `ImageUpload` takes `initialItems` (existing photos pre-signed server-side, removable). `MyListingActions` on /listings/mine: Edit link + inline confirm-gated Remove ("Remove this listing? It comes off the network right away." / Keep it). Detail page shows "Edit listing" to the author where others see "Message the lister".
+- Archived listings are OMITTED from /listings/mine (not shown muted): the published-only read policy means owners can't read their own archived rows, so no honest unarchive UI is possible without a new read policy. Future slice.
+- `scripts/test-edit-archive.ts` + `npm run test:edit-archive` — prod harness in the multi-sponsor mold (plus-alias synthetics, founder snapshot, auto-cleanup).
+
+**The blocker — prod RLS has drifted from the repo.** Harness run: 15/20, and every failure traces to one fact. The live `listings_write_member_own_update` policy in prod pins `status = 'published'` in WITH CHECK — members can edit fields but CANNOT set status to 'archived' (or 'draft'). Migration 0003 in the repo has no such pin, no later migration touches the policy, and neither decisions.md nor this file records it. Confirmed empirically via `scripts/probe-listing-policies.ts` (synthetic member, auto-cleanup): title-only update OK, status→archived BLOCKED, status→draft BLOCKED, status→published OK, **hard DELETE of own row OK**. The slice premise "no migration needed" was wrong in prod even though it's true of the repo's SQL.
+
+**Also caught:** the live member DELETE policy means any member can hard-delete their own listings via direct API call, wiping listing_contacts moderation history — contradicts the locked soft-delete-only decision.
+
+**Proposed fix, awaiting George (SQL-editor gate):** draft migration `0014_listings_owner_archive.sql` — recreate the UPDATE policy with `status in ('published','archived')` in WITH CHECK (archive allowed, draft still blocked), and drop the member DELETE policy (soft-delete only, DB-enforced). After it's applied: re-run `npm run test:edit-archive` (expect all green), then commit/push/deploy.
+
+**Everything that doesn't touch status already passes against prod:** owner edit of all six writable fields (byline columns byte-identical before/after), cross-member update/archive blocked by RLS (0 rows, data unchanged), cleanup to 0 synthetic rows, founder account + 3 listings snapshot-identical.
+
+---
+
 ## 2026-06-10 · Multi-Sponsor slice SHIPPED — sponsorships table + hybrid-at-2 byline, live on prod
 
 **Shipped** (Claude Code built → paused → Cowork ran 0012 in the prod SQL editor → prod test harness green → pushed → Vercel deployed → live render verified). Members can now have many sponsors; the byline assembles them with the hybrid-at-2 rule from `lib/listings/byline.ts`.

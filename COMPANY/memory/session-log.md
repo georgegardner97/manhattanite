@@ -6,6 +6,59 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-11 · Edit & Remove + Admin Console BOTH SHIPPED — 0013–0016 applied by Cowork, all harnesses green
+
+**Worked on:**
+- Cowork applied four migrations to prod via the SQL editor (0013 drop sponsor_name, 0014 listings owner-archive + drop member hard-delete, 0015 admin console, 0016 listings_read_own). I ran all three harnesses green — `test:multi-sponsor` 16/16, `test:admin-console` 24/24, `test:edit-archive` 20/20 — then committed both slices + migrations + scripts + docs and pushed to main. Vercel deploying.
+
+**The archive saga, corrected for the record:**
+- 0014 closed a real drift: an OPEN member hard-DELETE policy (a member could delete their own listing via the API, wiping moderation history). Now gone.
+- My follow-on hypothesis was WRONG: I thought a hidden RESTRICTIVE status-pin policy blocked archive and parked a migration to drop restrictive policies. Cowork's live pg_policy read proved ZERO restrictive policies exist and 0014's WITH CHECK already allowed 'archived'. My parked migration was a no-op — deleted.
+- Actual cause: no SELECT policy let a member read their own non-published rows, so the archive read-back returned nothing and looked like a failure. Fix = 0016 `listings_read_own` (own-rows-only SELECT). Lesson: when an RLS read-back fails, suspect a missing SELECT policy before inventing a restrictive WITH CHECK; the authoritative check is a live pg_policy read (Claude Code has no direct-SQL path here — PostgREST keys only).
+
+**Shipped:** Admin Console (dashboard + review queue + member directory; listing-moderation queue is the separate next slice) and Edit & Remove (owner edit + soft-delete archive). Migration backlog now clear (0013–0016 all live).
+
+**Next:** verify live /admin + edit/archive after deploy; then the listing-moderation-queue follow-up.
+
+Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
+## 2026-06-11 · Admin Console slice BUILT — stopped pre-deploy for 0015 SQL run; found a live security gap
+
+**Worked on:**
+- Built the Admin Console (George-only): application review queue with Approve/Decline/Request-more-info, stats dashboard, read-only member directory. Route-gated (requireAdmin: non-admin → notFound) + RLS + a new in-function admin guard underneath. Server actions call the rpc as the signed-in admin, never the service role. SiteNav gets an admin-only "Admin" link. Listing-moderation queue deliberately left for the separate follow-up.
+- Migration `0015_admin_console.sql` (renumbered from the planned 0014, which is taken by the parked edit-slice migration): adds an admin guard to approve/decline/request_more_info and grants them to authenticated; adds an admin read-all policy on listings; flips the founder to role='admin'. Plus `npm run test:admin-console`.
+
+**Caught — second prod drift in two slices, and this one's a live gap:**
+- In prod today, any signed-in user can call the review functions. `decline_application` / `request_more_info` SUCCEED with no guard (a member could sabotage the queue); `approve_application` is stopped only by the column-protection trigger, so membership still can't be granted by a non-admin. Repo says service-role-only; the `revoke from public` never took in prod. Confirmed with a synthetic non-admin (a decline went through).
+- Migration 0015 closes it (re-revoke + admin guard). Harness self-detects whether 0015 is live: pre-0015 it's 15 passed / 0 failed / 2 deferred (the security assertions that need the guard), and it documents the gap as a FINDING.
+- Founder is still role='account' in prod — 0015 sets it. Flagged so George knows the console matches nobody until the SQL runs.
+
+**Parked SQL-editor queue for George (in order):** 0013 (drop sponsor_name), 0014 (listings owner-archive), 0015 (admin console). Then I re-run both harnesses, push, deploy, re-verify.
+
+**Next:** George runs 0013/0014/0015 → re-run test:admin-console + test:edit-archive (expect green) → commit/push/deploy → listing-moderation-queue slice.
+
+Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
+## 2026-06-11 · Edit & Remove slice BUILT — stopped pre-push: prod RLS drift blocks archive
+
+**Worked on:**
+- Built the full listing edit + remove (soft delete) slice: `updateListing` + `archiveListing` server actions, owner-only `/listings/[id]/edit` with pre-filled form (NewListingForm + ImageUpload extended for edit mode), Edit/Remove controls on `/listings/mine` (inline confirm, no browser dialog), "Edit listing" link for the author on the detail page. Typecheck, build, lint, and the write-set grep guard all clean.
+- New prod harness `npm run test:edit-archive` (multi-sponsor mold: plus-alias synthetics, founder snapshot, auto-cleanup).
+
+**Caught — the reason nothing shipped:**
+- **Prod RLS has drifted from the repo.** The live listings UPDATE policy pins `status='published'` in WITH CHECK, so members cannot archive (probe-verified; field edits pass, status transitions fail). No migration or memory entry records that pin. Worse: the live DELETE policy lets members hard-delete their own listings via the API — against the locked soft-delete-only decision.
+- Per the slice guardrails: stopped before commit/push. Drafted migration `0014_listings_owner_archive.sql` (allow owner archive in WITH CHECK; drop the member DELETE policy) for George to review and run in the SQL editor. Harness passes everything that doesn't touch status (15/20; the 5 = archive path + one cosmetic JSONB key-order compare, since fixed).
+
+**Next:** George reviews/applies 0014 → re-run `test:edit-archive` (expect green) → commit, push, deploy, re-verify on prod.
+
+Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
+
+---
+
 ## 2026-06-10 · Multi-Sponsor slice SHIPPED — many sponsors per member, hybrid-at-2 byline live
 
 **Worked on:**
