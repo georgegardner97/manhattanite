@@ -1,24 +1,46 @@
-// / — the public Tier 1 entry point (the gating page).
+// / — the public landing page. (Phase 1.5 landing rework, mockup v3.)
 //
 // Server Component. Before rendering, validate the session: a signed-in user
-// is already through the gate, so we send them straight to /profile rather than
-// show them the pitch again (the reverse of what /profile does for logged-out
-// visitors). Logged-out visitors get the gating page: what Manhattanite is,
-// the two CTAs, and the Account vs Member explainer.
+// is already through the gate, so we send them straight to /profile rather
+// than show them the pitch again (the reverse of what /profile does for
+// logged-out visitors).
 //
-// The old waitlist Airtable form was retired here in Slice 3.5 to close the
-// front-door/side-door mismatch — visitors used to hit an application form
-// while /signup quietly created real accounts. The application pipeline lives
-// on, dormant, in lib/applications/submit.ts for the /apply slice to revive.
+// v3 replaces the thin Slice 3.5 gating page with the narrative landing —
+// plainer, warmer, trust-first (Gens de Confiance-aligned: benefit →
+// mechanism → reassurance). Copy and structure come verbatim from
+// outputs/Manhattanite_Landing-Page_Mockup_v3.html, translated into the
+// app's design system. American spelling throughout.
 //
-// Copy is the locked "Public-facing gating page" + "Two-tier explainer" from
-// COMPANY/voice-and-copy.md. American spelling throughout.
+// "On the network" shows the 5 most recent REAL published listings — shown,
+// not claimed. Published rows are anon-readable (migration 0010, the teaser
+// policy), so the query works logged-out. Each row is display-only (no link —
+// the Browse CTA is the only way in, like GDC's non-clickable teasers), shows
+// no timestamp (deliberate: at low volume it reads as curated, not stale),
+// and takes its place label from the listing's own details->>'neighborhood' —
+// NOT from an author embed (a PostgREST FK embed here is what broke the
+// member directory). Furniture rows simply omit the place. Zero published
+// listings hides the whole section.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
+
+const LABEL = "text-[11px] tracking-[0.26em] uppercase text-slate";
+
+type GlimpseListing = {
+  id: string;
+  title: string;
+  details: Record<string, unknown> | null;
+};
+
+function placeOf(listing: GlimpseListing): string | null {
+  const neighborhood = listing.details?.neighborhood;
+  return typeof neighborhood === "string" && neighborhood.trim()
+    ? neighborhood
+    : null;
+}
 
 export default async function Home() {
   const supabase = await createClient();
@@ -34,65 +56,152 @@ export default async function Home() {
     redirect("/profile");
   }
 
+  // The glimpse: 5 most recent live listings, listing columns only.
+  const { data: glimpse } = await supabase
+    .from("listings")
+    .select("id, title, details")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(5)
+    .returns<GlimpseListing[]>();
+
+  const listings = glimpse ?? [];
+
   return (
     <>
       <main>
-        {/* ============ HERO + GATE ============ */}
-        <section className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
+        {/* ============ HERO — benefit → mechanism → reassurance ============ */}
+        <section className="min-h-[90vh] flex flex-col items-center justify-center text-center px-6 py-20">
           <h1 className="mh-fade-in font-serif font-extralight text-7xl md:text-9xl tracking-tighter leading-none">
             Manhattan<span className="italic">ite</span>
           </h1>
 
-          <div className="mh-fade-in max-w-md text-center mt-12">
-            <p className="font-serif text-xl md:text-2xl leading-[1.4] text-ink">
-              Manhattanite is a private marketplace for New Yorkers.
-            </p>
-            <p className="font-serif text-lg text-slate leading-relaxed mt-6">
-              Create a free account to browse the network. To post a listing or
-              contact a member, you&apos;ll need to be approved.
-            </p>
-          </div>
+          <p className="mh-fade-in font-serif text-2xl md:text-[28px] leading-[1.35] text-ink mt-9">
+            A private marketplace for New York.
+          </p>
+          <p className="mh-fade-in max-w-[430px] text-slate leading-[1.75] mt-5">
+            You&apos;re brought in by someone who vouches for you. It&apos;s why
+            there are no scams, no spam, and no strangers.
+          </p>
 
-          {/* ============ CTAs ============ */}
-          <div className="mh-fade-in-delay mt-14 flex flex-col items-center gap-7">
+          <div className="mh-fade-in-delay mt-11">
             <Link
               href="/signup"
-              className="mh-link text-[14px] tracking-[0.22em] uppercase text-ink"
+              className="mh-link mh-link-park text-[13px] tracking-[0.22em] uppercase text-ink"
             >
-              Create an account →
+              Create a free account &rarr;
             </Link>
-
-            {/* Quiet return path for existing users — links to /login. Locked
-                "Log in" phrasing; slate weight so it sits under the primary CTA. */}
-            <Link
-              href="/login"
-              className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
-            >
-              Log in →
-            </Link>
-
-            {/* "I have an invite →" — no invite flow exists yet, so this stays
-                commented out per the dead-link rule. A later block (5+) will
-                wire it to the invite route. */}
-            {/* <Link
-              href="/invite"
-              className="mh-link text-[14px] tracking-[0.22em] uppercase text-slate"
-            >
-              I have an invite →
-            </Link> */}
           </div>
+          <p className="mh-fade-in-delay mt-6 text-[11px] tracking-[0.18em] uppercase text-slate">
+            Free to join
+          </p>
+        </section>
 
-          {/* ============ TWO-TIER EXPLAINER ============ */}
-          <div className="mh-fade-in-delay max-w-md mt-20 pt-12 border-t border-ink/10 text-center space-y-6">
-            <p className="font-serif text-lg leading-relaxed text-slate">
-              <span className="text-ink">Account.</span> Free. Browse every
-              listing in the network. No application needed.
+        {/* ============ HOW IT WORKS ============ */}
+        <section className="py-26">
+          <div className="max-w-[600px] mx-auto px-7 text-center">
+            <p className={`${LABEL} mb-6`}>How it works</p>
+            <h2 className="font-serif font-light text-4xl md:text-[42px] leading-[1.15] tracking-tight text-ink max-w-[520px] mx-auto">
+              Everyone here was vouched for.
+            </h2>
+            <p className="text-lg leading-[1.8] text-slate max-w-[500px] mx-auto mt-6">
+              A member brings you in and stands behind you &mdash; accountable
+              for you, too, so people only vouch for those they genuinely
+              trust. And every listing is read by hand before it goes live.{" "}
+              <span className="text-ink">
+                Nothing reaches you that a person hasn&apos;t checked first.
+              </span>
             </p>
-            <p className="font-serif text-lg leading-relaxed text-slate">
-              <span className="text-ink">Member.</span>{" "}
-              Required to post, contact, or sponsor. Apply when you&apos;re ready,
-              or ask a current member to bring you in.
-            </p>
+          </div>
+        </section>
+
+        {/* ============ ON THE NETWORK — shown, not claimed ============ */}
+        {listings.length > 0 && (
+          <section className="py-26">
+            <div className="max-w-[600px] mx-auto px-7">
+              <p className={`${LABEL} mb-6 text-center`}>On the network</p>
+              <ul className="border-t border-ink/10">
+                {listings.map((listing) => {
+                  const place = placeOf(listing);
+                  return (
+                    <li
+                      key={listing.id}
+                      className="flex items-baseline justify-between gap-5 py-5 border-b border-ink/10"
+                    >
+                      {place && (
+                        <span className="text-[11px] tracking-[0.18em] uppercase text-slate whitespace-nowrap">
+                          {place}
+                        </span>
+                      )}
+                      <span className="font-serif text-xl md:text-[23px] leading-[1.25] text-ink text-right ml-auto">
+                        {listing.title}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-8 text-center">
+                <Link
+                  href="/listings"
+                  className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
+                >
+                  Browse the network &rarr;
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ============ QUIET PRIVACY ASIDE ============ */}
+        <div className="py-21 px-7 text-center">
+          <p className="font-serif text-2xl md:text-[26px] leading-[1.4] text-ink max-w-[460px] mx-auto">
+            Private, in the literal sense.
+          </p>
+          <p className="text-[13px] text-slate mt-3.5">
+            The network is closed to search engines. What&apos;s here stays
+            between members.
+          </p>
+        </div>
+
+        {/* ============ TWO WAYS IN ============ */}
+        <section className="py-26">
+          <div className="max-w-[600px] mx-auto px-7">
+            <p className={`${LABEL} mb-6 text-center`}>Two ways in</p>
+            <div className="border-t border-ink/10">
+              <div className="py-8 border-b border-ink/10">
+                <p className="text-[13px] tracking-[0.2em] uppercase text-ink">
+                  Account
+                </p>
+                <p className="text-slate leading-[1.7] max-w-[480px] mt-2.5">
+                  Free, no application. Browse every listing in the network.
+                </p>
+                <div className="mt-4">
+                  <Link
+                    href="/signup"
+                    className="mh-link text-[13px] tracking-[0.22em] uppercase text-ink"
+                  >
+                    Create an account &rarr;
+                  </Link>
+                </div>
+              </div>
+              <div className="py-8 border-b border-ink/10">
+                <p className="text-[13px] tracking-[0.2em] uppercase text-ink">
+                  Member
+                </p>
+                <p className="text-slate leading-[1.7] max-w-[480px] mt-2.5">
+                  Post, contact, and sponsor. Apply when you&apos;re ready
+                  &mdash; or ask a member to bring you in.
+                </p>
+                <div className="mt-4">
+                  <Link
+                    href="/apply"
+                    className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
+                  >
+                    Apply for membership &rarr;
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -114,11 +223,11 @@ export default async function Home() {
             <span className="hidden md:block w-px h-3 bg-ink/15" />
             <span>New York City</span>
             <span className="hidden md:block w-px h-3 bg-ink/15" />
-            <span>© 2026</span>
-            <span className="hidden md:block w-px h-3 bg-ink/15" />
             <a href="/privacy" className="hover:text-ink transition-colors">Privacy</a>
             <span className="hidden md:block w-px h-3 bg-ink/15" />
             <a href="/terms" className="hover:text-ink transition-colors">Terms</a>
+            <span className="hidden md:block w-px h-3 bg-ink/15" />
+            <span>© 2026</span>
           </div>
         </div>
       </footer>

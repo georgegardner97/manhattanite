@@ -133,3 +133,17 @@ body {
 .mh-link:hover::after {
   transform: scaleX(1);
 }
+
+/* Accent variant for the primary landing CTA: a 2px park-green underline,
+   visible at rest, that recedes on hover — the inverse of the standard
+   mh-link motion. Compose as `mh-link mh-link-park`. */
+.mh-link-park::after {
+  height: 2px;
+  background-color: var(--color-park);
+  transform: scaleX(1);
+}
+
+.mh-link-park:hover::after {
+  transform: scaleX(0);
+  transform-origin: right center;
+}
