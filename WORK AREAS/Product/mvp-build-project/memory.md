@@ -4,6 +4,10 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-12 · Landing page v3 SHIPPED — narrative, trust-first, real-listings glimpse
+
+The Phase 1.5 landing rework is live on manhattanite.com (`eee5ac8`). `app/page.tsx` rebuilt to `outputs/Manhattanite_Landing-Page_Mockup_v3.html` (GDC-aligned: benefit → mechanism → reassurance) in the existing design system; logged-in → /profile redirect kept. Sections: hero ("A private marketplace for New York." + vouching sub + park-green-underlined "Create a free account →" — new `mh-link-park` accent class in globals.css), How it works, **On the network** (the 5 most recent real published listings, listing-own `details->>'neighborhood'` for the place label — no FK embed, no timestamps, display-only rows; section hides at zero listings), the privacy aside, Two ways in, footer. Hero's inline "Log in →" dropped — SiteNav already carries it for guests. Live check: all sections render, glimpse shows the founder's 3 published listings (furniture row correctly place-less), no timestamps. The CLAUDE.md "landing flagged for Phase 1.5 rework" note can come off at the next reconcile.
+
 ## 2026-06-12 · Listing Moderation SHIPPED — 0017 live on prod, harness 34/34, moderation emails added
 
 **Continuation of the entry below (same day).** Cowork applied 0017 in the prod SQL editor; `test:listing-moderation` is **34/34 green against prod** (key assertion holds: a member's direct `update status='published'` raises 42501 at the database), and `test:edit-archive` re-ran 20/20 (the recreated update policy + new trigger don't regress Edit & Remove). Committed + pushed; Vercel deploys.
