@@ -1,21 +1,22 @@
-// /listings/mine — a member's own listings (read-only). (Navigation slice.)
+// /listings/mine — a member's own listings, every status. (Listing Moderation slice.)
 //
 // Server Component. Member-only, mirroring the /apply + /listings/new gate:
 //   1. No session            → /login.
 //   2. Account, not a member → /profile (the membership nudge).
-//   3. Member                → list the viewer's own published listings.
+//   3. Member                → list ALL of the viewer's own listings.
 //
-// RLS note: posting publishes directly today, so the existing
-// listings_read_published_for_accounts policy already returns the member's own
-// published rows when filtered by author_id — no new policy is needed. (If a
-// draft state is ever introduced, add a "read own, any status" policy then.)
+// Pre-moderation changed this page from "own published listings" to the
+// member's whole picture: every listing they've posted, each under a status
+// badge — In review (pending) / Live (published) / Needs changes (draft,
+// returned by the admin with a note) / Archived. The listings_read_own policy
+// (migration 0016) is what makes the any-status read possible.
 //
-// Edit & Remove slice: each row carries Edit (→ /listings/[id]/edit) and a
-// confirm-gated Remove (archiveListing — soft delete). This query filters to
-// status='published', so archived listings simply drop off the member's list
-// — the intended "removed" behavior. (Migration 0016 / listings_read_own means
-// the owner CAN now read their own archived rows, so a future slice could
-// surface them muted with an unarchive action; out of scope here.)
+// Returned (draft) listings show the moderation note and a Resubmit control;
+// rejected (archived) listings show the note for the record. Edit/Remove stay
+// from the Edit & Remove slice, now status-aware (MyListingActions).
+//
+// ?submitted=1 (the redirect from posting) renders the review-aware
+// confirmation up top — a pending listing has no public page to land on.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -28,6 +29,8 @@ export const dynamic = "force-dynamic"; // session state varies per request.
 
 type ListingImage = { path: string };
 
+export type ListingStatus = "pending" | "published" | "draft" | "archived";
+
 type ListingCard = {
   id: string;
   type: "apartment" | "furniture";
@@ -37,6 +40,15 @@ type ListingCard = {
   images: ListingImage[];
   author_name: string | null;
   sponsor_names: string[];
+  status: ListingStatus;
+  moderation_note: string | null;
+};
+
+const STATUS_BADGE: Record<ListingStatus, string> = {
+  pending: "In review",
+  published: "Live",
+  draft: "Needs changes",
+  archived: "Archived",
 };
 
 function formatPrice(cents: number, type: ListingCard["type"]): string {
@@ -44,7 +56,12 @@ function formatPrice(cents: number, type: ListingCard["type"]): string {
   return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
 }
 
-export default async function MyListingsPage() {
+export default async function MyListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ submitted?: string }>;
+}) {
+  const { submitted } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -65,15 +82,14 @@ export default async function MyListingsPage() {
     redirect("/profile");
   }
 
-  // Own published listings, newest first. author_id filter + the published-read
-  // RLS together return exactly this member's posts.
+  // ALL own listings, newest first. The author_id filter + listings_read_own
+  // (0016) together return exactly this member's posts, any status.
   const { data: listings } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, images, author_name, sponsor_names"
+      "id, type, title, description, price_cents, images, author_name, sponsor_names, status, moderation_note"
     )
     .eq("author_id", user.id)
-    .eq("status", "published")
     .order("created_at", { ascending: false })
     .returns<ListingCard[]>();
 
@@ -93,6 +109,13 @@ export default async function MyListingsPage() {
           <span className="block w-8 h-px bg-ink/30 mx-auto" />
         </div>
 
+        {submitted === "1" && (
+          <p className="mb-14 text-center font-serif text-xl leading-relaxed text-ink">
+            Your listing is in review. We&apos;ll email you once we&apos;ve
+            taken a look.
+          </p>
+        )}
+
         {!listings || listings.length === 0 ? (
           <EmptyState />
         ) : (
@@ -108,7 +131,18 @@ export default async function MyListingsPage() {
                   className="border-t border-ink/10 py-10 last:border-b"
                 >
                   <ListingCardItem listing={listing} coverUrl={coverUrl} />
-                  <MyListingActions listingId={listing.id} />
+                  {listing.moderation_note && (
+                    <p className="mt-5 text-sm text-slate">
+                      <span className="text-[11px] tracking-[0.22em] uppercase">
+                        From the review:&nbsp;
+                      </span>
+                      {listing.moderation_note}
+                    </p>
+                  )}
+                  <MyListingActions
+                    listingId={listing.id}
+                    status={listing.status}
+                  />
                 </li>
               );
             })}
@@ -126,10 +160,10 @@ function ListingCardItem({
   listing: ListingCard;
   coverUrl: string | null;
 }) {
-  return (
-    // The row border/padding lives on the <li> so the Edit/Remove controls sit
-    // inside the same bordered block as the card.
-    <Link href={`/listings/${listing.id}`} className="group block">
+  const muted = listing.status === "archived";
+
+  const card = (
+    <>
       {coverUrl && (
         <div className="mb-6 aspect-[4/3] overflow-hidden bg-ink/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -140,6 +174,9 @@ function ListingCardItem({
           />
         </div>
       )}
+      <p className="mb-4 text-[11px] tracking-[0.22em] uppercase text-slate">
+        {STATUS_BADGE[listing.status]}
+      </p>
       <div className="flex items-baseline justify-between gap-6">
         <h2 className="font-serif font-light text-2xl md:text-3xl tracking-tight text-ink">
           {listing.title}
@@ -152,8 +189,20 @@ function ListingCardItem({
       <p className="mt-5 text-[11px] tracking-[0.22em] uppercase text-slate">
         {renderByline(listing.author_name, listing.sponsor_names)}
       </p>
-    </Link>
+    </>
   );
+
+  // Only a live listing has a public page to link to — pending, draft, and
+  // archived rows aren't readable on /listings/[id] (published-only RLS read),
+  // so their cards render unlinked.
+  if (listing.status === "published") {
+    return (
+      <Link href={`/listings/${listing.id}`} className="group block">
+        {card}
+      </Link>
+    );
+  }
+  return <div className={muted ? "opacity-60" : undefined}>{card}</div>;
 }
 
 function EmptyState() {

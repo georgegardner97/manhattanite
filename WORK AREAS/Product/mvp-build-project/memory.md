@@ -4,6 +4,32 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-12 · Listing Moderation SHIPPED — 0017 live on prod, harness 34/34, moderation emails added
+
+**Continuation of the entry below (same day).** Cowork applied 0017 in the prod SQL editor; `test:listing-moderation` is **34/34 green against prod** (key assertion holds: a member's direct `update status='published'` raises 42501 at the database), and `test:edit-archive` re-ran 20/20 (the recreated update policy + new trigger don't regress Edit & Remove). Committed + pushed; Vercel deploys.
+
+**Two additions George requested before the commit:**
+- Confirmation copy is now outcome-honest: "Your listing is in review. We'll email you once we've taken a look." (no promise it goes live).
+- **Moderation emails shipped** (the earlier "no notifications until v1.1" flag is resolved): three best-effort sends from `lib/admin/moderate.ts` after each successful rpc — approved ("Your listing is live." + listing link), returned ("A note on your listing." + the note + resubmit nudge), rejected ("About your listing." + the reason, gracious, voice-and-copy "Removed listing" register). Functions live in `lib/applications/emails.ts` (reuse the editorial shell), from applications@manhattanite.com. Lister lookup is TWO separate queries (listing → accounts), deliberately not a PostgREST FK embed (the member-directory lesson). A mail failure logs and never fails the review.
+
+**Next:** live check in the browser (post → review → approve/return/reject, emails arriving), then the RLS-audit re-run note in the build plan's step 5 is already covered (Cowork audited 2026-06-12, per CLAUDE.md).
+
+## 2026-06-12 · Listing Moderation slice BUILT — paused for the 0017 SQL run
+
+**Decision (George):** PRE-MODERATION. New listings land in a `pending` (in-review) status and only an admin can publish them. Build follows `outputs/Listing-Moderation_Build-Plan_v1.md`.
+
+**Worked on (all built, lint + tsc + production build green):**
+- `supabase/migrations/0017_listing_moderation.sql` — `pending` added to the status check (probed prod first: constraint really is `listings_status_check`); `moderation_note` column; `enforce_listing_status_transition()` trigger; owner UPDATE policy recreated without the 0014 status allowlist (trigger owns transitions now); `approve_listing` / `return_listing` / `reject_listing` (SECURITY DEFINER, 0015-style admin guard, granted to authenticated + service_role).
+- **One deliberate addition beyond the plan:** the trigger fires BEFORE **INSERT** as well as BEFORE UPDATE. The plan's UPDATE-only trigger left the API insert door open — a member could have POSTed a row born `status='published'` (the insert RLS policy doesn't pin status). Members may now only INSERT `pending`. Same trust rule, both doors closed.
+- Frontend: create.ts inserts `pending` + redirects to `/listings/mine?submitted=1` (a pending listing has no public detail page — old redirect would have 404'd); /listings/mine shows ALL own listings with In review / Live / Needs changes / Archived badges, moderation note, status-aware Edit/Remove/Resubmit; `lib/listings/resubmit.ts`; `/admin/moderation` queue + `ModerationActions` + `lib/admin/moderate.ts`; /admin dashboard "Listings in review" count + link; edit flow fixed for non-published listings (post-save redirect + back-link).
+- Harness `scripts/test-listing-moderation.ts` (`npm run test:listing-moderation`) — synthetic admin + member via real password sessions; key assertion: member's direct `update status='published'` raises 42501.
+
+**Found while probing prod:** migration **0013 (drop `listings.sponsor_name`) IS applied** — the column is gone. CLAUDE.md still says "written but not yet applied"; reconcile at commit time.
+
+**Blockers / Next:**
+- WAITING: Cowork applies 0017 in the prod SQL editor (verify queries in the migration footer), then Claude Code re-runs the harness against prod; if green → commit + push (Vercel deploys), live check, RLS-audit re-run.
+- Flagged: confirmation copy promises "we'll let you know once it's live" but approve/return/reject notifications are out of scope until v1.1 — the only place the outcome shows is /listings/mine.
+
 ## 2026-06-11 · Edit & Remove + Admin Console BOTH SHIPPED — 0013–0016 live on prod, all harnesses green
 
 Both slices are committed, pushed to main, and deploying via Vercel. Cowork applied **four** migrations to prod via the Supabase SQL editor: **0013** (drop `listings.sponsor_name`), **0014** (listings owner-archive: permissive update WITH CHECK allows `status in ('published','archived')`, and the member hard-delete policy dropped), **0015** (founder→admin, admin-guarded review functions granted to authenticated, `listings_admin_read_all`), **0016** (`listings_read_own` — the real archive fix).

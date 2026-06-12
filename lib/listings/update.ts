@@ -64,13 +64,14 @@ export async function updateListing(
   }
 
   // Ownership pre-check (defense in depth — the RLS update policy is the
-  // real gate). The published-read policy returns the row; a wrong author
-  // means this listing isn't the editor's to touch.
+  // real gate). listings_read_own (0016) returns the row whatever its status;
+  // a wrong author means this listing isn't the editor's to touch. The status
+  // rides along to pick the post-save destination below.
   const { data: existing } = await supabase
     .from("listings")
-    .select("author_id")
+    .select("author_id, status")
     .eq("id", id)
-    .maybeSingle<{ author_id: string }>();
+    .maybeSingle<{ author_id: string; status: string }>();
 
   if (!existing || existing.author_id !== user.id) {
     return { error: "Only your own listings can be edited." };
@@ -169,8 +170,10 @@ export async function updateListing(
 
   // ---- Update. RLS is the final gate. ----
   // The write set deliberately excludes status, author_id, and the byline
-  // columns. The id + author_id filters scope the row; .select() afterwards
-  // is safe because the row stays published (so still SELECT-visible).
+  // columns — the 0017 trigger sees an unchanged status and waves the content
+  // edit through. The id + author_id filters scope the row; .select()
+  // afterwards is safe because the owner can read their own rows at any
+  // status (0016, listings_read_own).
   const { data: updated, error } = await supabase
     .from("listings")
     .update({
@@ -196,7 +199,12 @@ export async function updateListing(
   revalidatePath("/listings");
   revalidatePath("/listings/mine");
   revalidatePath(`/listings/${id}`);
+  revalidatePath("/admin/moderation");
 
-  // Success: the refreshed listing page is the confirmation.
-  redirect(`/listings/${id}`);
+  // Success: a live listing shows the edit on its own page; anything not
+  // published has no public page, so My Listings is the confirmation.
+  if (existing.status === "published") {
+    redirect(`/listings/${id}`);
+  }
+  redirect("/listings/mine");
 }

@@ -8,10 +8,13 @@
 // RLS is the wall.
 //
 // Returns a { error } state for inline display (used with useActionState in
-// the client form). On a clean insert it redirect()s to the new listing's
-// detail page — the listing appearing IS the success state, no celebration
-// copy. If RLS rejects the insert (a non-member somehow reached here), we
-// send them to /profile, where the membership nudge lives.
+// the client form). Listing Moderation slice: new listings insert as
+// status='pending' (pre-moderation — nothing reaches the network without an
+// admin yes; the 0017 trigger enforces this at the database). A pending
+// listing isn't readable on the public detail page, so success redirects to
+// /listings/mine?submitted=1, where the review-aware confirmation and the
+// "In review" badge live. If RLS rejects the insert (a non-member somehow
+// reached here), we send them to /profile, where the membership nudge lives.
 
 "use server";
 
@@ -135,21 +138,19 @@ export async function createListing(
   }
   const images = imagePaths.map((path) => ({ path }));
 
-  // ---- Insert. RLS is the final gate. ----
-  const { data: inserted, error } = await supabase
-    .from("listings")
-    .insert({
-      author_id: user.id,
-      type,
-      title,
-      description,
-      price_cents,
-      details,
-      images,
-      status: "published",
-    })
-    .select("id")
-    .single();
+  // ---- Insert. RLS is the final gate; the 0017 trigger pins the status. ----
+  // No .select() — a pending row IS owner-readable (listings_read_own), but
+  // the bare insert is the minimal write and the /mine redirect confirms.
+  const { error } = await supabase.from("listings").insert({
+    author_id: user.id,
+    type,
+    title,
+    description,
+    price_cents,
+    details,
+    images,
+    status: "pending",
+  });
 
   if (error) {
     // The member gate fired (or any other RLS rejection): send them to the
@@ -163,6 +164,7 @@ export async function createListing(
     };
   }
 
-  // Success: the listing appearing on its own page is the confirmation.
-  redirect(`/listings/${inserted.id}`);
+  // Success: My Listings shows the new listing under its "In review" badge,
+  // with the review-aware confirmation up top (?submitted=1).
+  redirect("/listings/mine?submitted=1");
 }

@@ -1,10 +1,11 @@
-// Membership emails — Phase 2 Slice C.
+// Transactional emails — membership (Phase 2 Slice C), listing contact, and
+// listing moderation (Listing Moderation slice).
 //
-// Three sends, all through Resend (domain already verified). Copy is lifted
-// verbatim from outputs/Manhattanite_Apply-Emails_v1.md — American spelling,
-// Soho House register, no generic transactional chrome. The HTML is simple and
-// inline-styled on purpose: these are short, editorial notes, and a heavy
-// template would fight the voice.
+// All through Resend (domain already verified). Copy follows
+// COMPANY/voice-and-copy.md — American spelling, Soho House register, no
+// generic transactional chrome. The HTML is simple and inline-styled on
+// purpose: these are short, editorial notes, and a heavy template would fight
+// the voice.
 //
 // Every function is best-effort and returns void — callers wrap each call in
 // its own try/catch so a mail failure never breaks the underlying action (the
@@ -165,6 +166,105 @@ export async function sendListingContact({
     to,
     replyTo: senderEmail,
     subject: `Someone's interested in your listing — ${listingTitle}`,
+    html: shell(inner),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 5–7. Listing moderation — the three review outcomes, sent to the lister.
+//      Best-effort like the rest: lib/admin/moderate.ts wraps each call in its
+//      own try/catch AFTER the rpc succeeds, so a mail failure never undoes or
+//      masks a completed review. These close the loop the /listings/new
+//      confirmation opens ("We'll email you once we've taken a look").
+// ---------------------------------------------------------------------------
+
+// 5. Approved — the listing is live. The good news stays short.
+export async function sendListingApproved({
+  to,
+  listerName,
+  listingTitle,
+  listingId,
+}: {
+  to: string;
+  listerName: string | null;
+  listingTitle: string;
+  listingId: string;
+}): Promise<void> {
+  const greeting = listerName ? `Hi ${listerName},` : "Hi,";
+  const listingUrl = `https://manhattanite.com/listings/${listingId}`;
+
+  const inner = `
+    <p style="margin:0 0 20px;">${greeting}</p>
+    <p style="margin:0 0 20px;"><em>${listingTitle}</em> is live. Every member can see it now.</p>
+    <p style="margin:0 0 28px;">Listings move quickly — when someone messages you, they're already interested. Reply through your inbox and deal plainly.</p>
+    <p style="margin:0;"><a href="${listingUrl}" style="color:#1a1a1a;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;">See your listing &rarr;</a></p>`;
+
+  await resend.emails.send({
+    from: APPLICATIONS_FROM,
+    to,
+    subject: "Your listing is live.",
+    html: shell(inner),
+  });
+}
+
+// 6. Returned — needs changes before it goes up. The note is the substance;
+//    the next step (edit, resubmit) is the one clear action.
+export async function sendListingReturned({
+  to,
+  listerName,
+  listingTitle,
+  note,
+}: {
+  to: string;
+  listerName: string | null;
+  listingTitle: string;
+  note: string;
+}): Promise<void> {
+  const greeting = listerName ? `Hi ${listerName},` : "Hi,";
+  const noteHtml = note.replace(/\n/g, "<br/>");
+
+  const inner = `
+    <p style="margin:0 0 20px;">${greeting}</p>
+    <p style="margin:0 0 20px;">We've read <em>${listingTitle}</em> and it's not quite ready to go up. Specifically: ${noteHtml}</p>
+    <p style="margin:0 0 28px;">Make the changes and resubmit from My Listings — it comes straight back to us.</p>
+    <p style="margin:0;"><a href="https://manhattanite.com/listings/mine" style="color:#1a1a1a;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;">My listings &rarr;</a></p>`;
+
+  await resend.emails.send({
+    from: APPLICATIONS_FROM,
+    to,
+    subject: "A note on your listing.",
+    html: shell(inner),
+  });
+}
+
+// 7. Rejected — it won't be carried. Gracious, firm, no over-apologizing
+//    (the voice-and-copy.md "Removed listing" register). Covers both a
+//    pending listing that never went up and a live one taken down.
+export async function sendListingRejected({
+  to,
+  listerName,
+  listingTitle,
+  note,
+}: {
+  to: string;
+  listerName: string | null;
+  listingTitle: string;
+  note: string;
+}): Promise<void> {
+  const greeting = listerName ? `Hi ${listerName},` : "Hi,";
+  const noteHtml = note.replace(/\n/g, "<br/>");
+
+  const inner = `
+    <p style="margin:0 0 20px;">${greeting}</p>
+    <p style="margin:0 0 20px;">We can't carry <em>${listingTitle}</em> on the network. Specifically: ${noteHtml}</p>
+    <p style="margin:0 0 20px;">We're strict because every member trusts us to keep the bar high. We hope you understand.</p>
+    <p style="margin:0 0 28px;">You're welcome to post it fresh once you've addressed the feedback.</p>
+    <p style="margin:0;"><a href="https://manhattanite.com/listings/mine" style="color:#1a1a1a;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;">My listings &rarr;</a></p>`;
+
+  await resend.emails.send({
+    from: APPLICATIONS_FROM,
+    to,
+    subject: "About your listing.",
     html: shell(inner),
   });
 }

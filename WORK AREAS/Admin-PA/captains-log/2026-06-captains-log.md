@@ -46,3 +46,6 @@ Rotate monthly. On the 1st of July, start `2026-07-captains-log.md`.
 ## 2026-06-11 (Thursday)
 **07:00** — Morning briefing ran.
 **20:15** — Evening summary ran. DMV rescheduled to Fri 12 Jun 12:15; two slices built (Edit & Remove, Admin Console) parked on migrations 0013/0014/0015; 0015 fixes a live prod security gap. Wrap written to daily/2026-06-11.md.
+
+## 2026-06-12 (Friday)
+**07:00** — Morning briefing ran.

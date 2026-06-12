@@ -10,7 +10,8 @@
     "approve": "node --env-file=.env.local --import tsx scripts/approve-application.ts",
     "test:multi-sponsor": "node --env-file=.env.local --import tsx scripts/test-multi-sponsor.ts",
     "test:edit-archive": "node --env-file=.env.local --import tsx scripts/test-edit-archive.ts",
-    "test:admin-console": "node --env-file=.env.local --import tsx scripts/test-admin-console.ts"
+    "test:admin-console": "node --env-file=.env.local --import tsx scripts/test-admin-console.ts",
+    "test:listing-moderation": "node --env-file=.env.local --import tsx scripts/test-listing-moderation.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

@@ -3,8 +3,9 @@
 // Server Component. Gating mirrors /listings/new, with one extra step:
 //   1. No session             → redirect to /login.
 //   2. Account, not a member  → redirect to /profile (the membership nudge).
-//   3. Listing not readable   → notFound(). (RLS only returns published rows,
-//      so a draft, archived, or nonexistent id all land here.)
+//   3. Listing not readable   → notFound(). (The owner reads their own rows at
+//      any status via listings_read_own; anyone else only sees published rows,
+//      so someone else's pending/draft id and a nonexistent id both land here.)
 //   4. Member but not the author → redirect to the listing itself. The page
 //      is publicly viewable anyway, so this leaks nothing — it's just the
 //      friendlier landing than a 404.
@@ -31,6 +32,7 @@ type ListingRow = {
   price_cents: number;
   details: Record<string, unknown>;
   images: { path: string }[];
+  status: string;
 };
 
 // cents → the string the price input should show (whole dollars stay whole).
@@ -66,7 +68,7 @@ export default async function EditListingPage({
 
   const { data: listing } = await supabase
     .from("listings")
-    .select("id, author_id, type, title, description, price_cents, details, images")
+    .select("id, author_id, type, title, description, price_cents, details, images, status")
     .eq("id", id)
     .maybeSingle<ListingRow>();
 
@@ -102,12 +104,23 @@ export default async function EditListingPage({
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
-        <Link
-          href={`/listings/${listing.id}`}
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Back to the listing
-        </Link>
+        {/* Only a live listing has a public page to go back to — pending and
+            draft rows would 404 on /listings/[id] (published-only read). */}
+        {listing.status === "published" ? (
+          <Link
+            href={`/listings/${listing.id}`}
+            className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+          >
+            &larr; Back to the listing
+          </Link>
+        ) : (
+          <Link
+            href="/listings/mine"
+            className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+          >
+            &larr; My listings
+          </Link>
+        )}
 
         <div className="text-center mt-12 mb-16">
           <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
