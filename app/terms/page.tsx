@@ -54,7 +54,8 @@ export default function TermsPage() {
         <p className={P}>
           There are two ways to be here. An <span className="text-ink">account</span> is
           free and open to anyone with an email address — it lets you browse the
-          network. <span className="text-ink">Membership</span> is by application and
+          network.{" "}
+          <span className="text-ink">Membership</span>{" "}is by application and
           manual approval, and it&apos;s what lets you post listings, contact other
           members, and bring people in. You must be at least 18 years old to hold
           either.

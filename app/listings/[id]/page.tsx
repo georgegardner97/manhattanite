@@ -183,10 +183,11 @@ export default async function ListingDetailPage({
         </p>
 
         {/* Contact lives on a member-gated page (/contact does the gating +
-            explains, so guests and Tier-1 accounts see it too). Hidden only on
-            the viewer's own listing — you can't message yourself, and the
-            function rejects it anyway. The owner gets the Edit link in the
-            same spot instead. */}
+            explains for logged-in accounts). Three cases:
+              - owner → Edit (you can't message yourself; the fn rejects it too)
+              - logged-in non-owner → Message the lister (/contact gates it)
+              - guest → "Sign in to message" → /login, so the label sets the
+                expectation instead of bouncing them to a bare login screen. */}
         {user && listing.author_id === user.id ? (
           <Link
             href={`/listings/${listing.id}/edit`}
@@ -194,12 +195,19 @@ export default async function ListingDetailPage({
           >
             Edit listing
           </Link>
-        ) : (
+        ) : user ? (
           <Link
             href={`/listings/${listing.id}/contact`}
             className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
           >
             Message the lister
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
+          >
+            Sign in to message
           </Link>
         )}
       </div>
