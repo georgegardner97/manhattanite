@@ -4,6 +4,25 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-06-12 · Example listings SEEDED to prod — 17 live with photos, Example badge shipped
+
+The seed inventory is live: 10 apartments (A1–A6, A8, A9, A11, A12 from `outputs/Manhattanite_Seed-Listings_v1.md`; A7 + A10 left out) + 7 furniture (FM1–FM7 from `outputs/Manhattanite_Seed-Listings-Furniture-Matched_v1.md`), all `is_example=true`, `status='published'`, every one with photos (commit `c31a6e8`). The named-designer furniture (F1–F15) stays deferred per the matched doc.
+
+**Mechanics:** new `scripts/seed-example-listings.ts` (`npm run seed:examples`, idempotent — re-run skips by author+title; `-- --unseed` reverses everything by exact storage path, founder-safe). Four example members — Anna (West Village, gallery director), Max (Tribeca, architect), Lila (UES, magazine editor), Sam (Harlem, photographer) — on `george.gardner480+seed-*@googlemail.com` plus-aliases, created through the REAL apply → `approve_application` path (occupation lives on `applications`, not `accounts` — there is no accounts.occupation column), each primary-sponsored by George, so member bylines render "Listed by Anna · sponsored by George Gardner". George authors 7 of the 17 per the docs. Photos: George's 20 Unsplash downloads were found loose on the Desktop (the briefed `seed-images/` folders didn't exist), content-matched by eye (13 apartments / 7 furniture, exactly the FM1–FM7 descriptions), sips-resized to ≤2000px JPEG q80 into `seed-images/` (now gitignored; Desktop originals untouched), uploaded to `listing-images` at `{author_id}/{uuid}.jpg`. Service role passes the 0017 pre-moderation trigger, so the rows are born published — no migration needed.
+
+**Example badge** added to `/listings` cards + the detail page (small bordered uppercase chip, driven by `is_example`).
+
+**Verified:** harness self-verifies (17/17 published with images + bylines, 10/7 split, founder's 3 real listings byte-identical before/after); idempotent re-run = 0 inserted / 17 skipped; anon probe sees 20 published; signed-in probe (temp-password seed member, rotated after) signed + fetched an image URL HTTP 200; live site: landing "On the network" shows seeded titles + neighborhoods, /listings guest teaser shows 6 Example badges post-deploy.
+
+**Notes / flags:**
+- Guest /listings teaser is **text-only by design** — the `listing-images` SELECT policy (0005) is `to authenticated` only, so anon gets rows (0010) but not pixels. Photos appear once signed in. If George wants photos on the logged-out teaser, that's a deliberate policy decision, not a bug.
+- Landing glimpse is also deliberately photo-less ("shown, not claimed" rows) and carries **no Example label** — worth a think: 5 of 5 glimpse rows are now examples.
+- FM2's doc text has British "colour"; seeded as "color" per the American-spelling convention. Doc not edited.
+- Guest teaser currently shows 6 furniture in a row (insert order = newest). If a mixed teaser matters, nudge created_at or reorder inserts.
+- Unseed caveat: a run that dies between image upload and row insert orphans those storage objects until an unseed sweep.
+
+---
+
 ## 2026-06-12 · Landing page v3 SHIPPED — narrative, trust-first, real-listings glimpse
 
 The Phase 1.5 landing rework is live on manhattanite.com (`eee5ac8`). `app/page.tsx` rebuilt to `outputs/Manhattanite_Landing-Page_Mockup_v3.html` (GDC-aligned: benefit → mechanism → reassurance) in the existing design system; logged-in → /profile redirect kept. Sections: hero ("A private marketplace for New York." + vouching sub + park-green-underlined "Create a free account →" — new `mh-link-park` accent class in globals.css), How it works, **On the network** (the 5 most recent real published listings, listing-own `details->>'neighborhood'` for the place label — no FK embed, no timestamps, display-only rows; section hides at zero listings), the privacy aside, Two ways in, footer. Hero's inline "Log in →" dropped — SiteNav already carries it for guests. Live check: all sections render, glimpse shows the founder's 3 published listings (furniture row correctly place-less), no timestamps. The CLAUDE.md "landing flagged for Phase 1.5 rework" note can come off at the next reconcile.

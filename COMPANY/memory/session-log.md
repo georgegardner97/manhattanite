@@ -6,6 +6,23 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-12 · Example listings SEEDED — 17 live on prod with photos, Example badge shipped
+
+**Worked on:**
+- Seeded prod with the example inventory: 10 apartments + 7 furniture from the two seed docs, all published with photos, via the new idempotent `scripts/seed-example-listings.ts` (`npm run seed:examples`, `--unseed` to reverse). Four example members (Anna, Max, Lila, Sam) created through the real apply → approve path, each sponsored by George — bylines render correctly. George authors 7 of the 17 per the docs.
+- George's 20 Unsplash photos were loose on the Desktop (the `seed-images/` folders in the brief didn't exist) — viewed all 20, content-matched them to listings (the 7 furniture shots matched FM1–FM7 exactly), resized to web size into a gitignored `seed-images/`, uploaded to the private bucket.
+- Added the "Example" badge to /listings cards + detail pages (`is_example`-driven).
+- Verified end to end: 17/17 with images + bylines, founder's 3 real listings byte-identical, idempotent re-run clean, live landing glimpse + teaser badges confirmed post-deploy (commit `c31a6e8`).
+
+**Flagged:**
+- Guest /listings teaser and the landing glimpse show no photos by design (image bucket is authenticated-read only; glimpse rows are text-only). Photos appear for signed-in users.
+- Landing glimpse rows carry no Example label and are currently 100% examples — worth a copy/design think.
+- Seeded "color" over the doc's "colour" (FM2) per American-spelling convention.
+
+**Next:** real-member invitations can now land on a populated network. Possible follow-ups: Example label on the landing glimpse, mixed-type teaser ordering.
+
+---
+
 ## 2026-06-11 · Edit & Remove + Admin Console BOTH SHIPPED — 0013–0016 applied by Cowork, all harnesses green
 
 **Worked on:**
