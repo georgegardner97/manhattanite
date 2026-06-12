@@ -30,11 +30,20 @@ const ACCEPT_ATTR = ALLOWED_IMAGE_TYPES.join(",");
 
 type UploadedItem = {
   path: string;
-  previewUrl: string; // local object URL for thumbnail
+  previewUrl: string; // local object URL (new uploads) or signed URL (existing)
 };
 
-export default function ImageUpload({ userId }: { userId: string }) {
-  const [items, setItems] = useState<UploadedItem[]>([]);
+export default function ImageUpload({
+  userId,
+  initialItems,
+}: {
+  userId: string;
+  // Edit mode: the listing's current images, pre-signed server-side so the
+  // thumbnails render. Removing one here just drops its path from the hidden
+  // field — the file stays in Storage (same orphan tradeoff as above).
+  initialItems?: UploadedItem[];
+}) {
+  const [items, setItems] = useState<UploadedItem[]>(initialItems ?? []);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

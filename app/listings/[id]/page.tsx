@@ -178,8 +178,16 @@ export default async function ListingDetailPage({
         {/* Contact lives on a member-gated page (/contact does the gating +
             explains, so guests and Tier-1 accounts see it too). Hidden only on
             the viewer's own listing — you can't message yourself, and the
-            function rejects it anyway. */}
-        {listing.author_id !== user?.id && (
+            function rejects it anyway. The owner gets the Edit link in the
+            same spot instead. */}
+        {user && listing.author_id === user.id ? (
+          <Link
+            href={`/listings/${listing.id}/edit`}
+            className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
+          >
+            Edit listing
+          </Link>
+        ) : (
           <Link
             href={`/listings/${listing.id}/contact`}
             className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"

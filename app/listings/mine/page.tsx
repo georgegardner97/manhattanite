@@ -10,15 +10,19 @@
 // published rows when filtered by author_id — no new policy is needed. (If a
 // draft state is ever introduced, add a "read own, any status" policy then.)
 //
-// Edit/delete controls are OUT of scope for this slice. The write RLS
-// (listings_write_member_own_update / _delete) already permits the author to
-// edit and delete their own rows — wire the forms in a later slice.
+// Edit & Remove slice: each row carries Edit (→ /listings/[id]/edit) and a
+// confirm-gated Remove (archiveListing — soft delete). This query filters to
+// status='published', so archived listings simply drop off the member's list
+// — the intended "removed" behavior. (Migration 0016 / listings_read_own means
+// the owner CAN now read their own archived rows, so a future slice could
+// surface them muted with an unarchive action; out of scope here.)
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
+import MyListingActions from "@/app/components/MyListingActions";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -99,8 +103,12 @@ export default async function MyListingsPage() {
                 ? coverUrlByPath.get(coverPath) ?? null
                 : null;
               return (
-                <li key={listing.id}>
+                <li
+                  key={listing.id}
+                  className="border-t border-ink/10 py-10 last:border-b"
+                >
                   <ListingCardItem listing={listing} coverUrl={coverUrl} />
+                  <MyListingActions listingId={listing.id} />
                 </li>
               );
             })}
@@ -119,10 +127,9 @@ function ListingCardItem({
   coverUrl: string | null;
 }) {
   return (
-    <Link
-      href={`/listings/${listing.id}`}
-      className="group block border-t border-ink/10 py-10 last:border-b"
-    >
+    // The row border/padding lives on the <li> so the Edit/Remove controls sit
+    // inside the same bordered block as the card.
+    <Link href={`/listings/${listing.id}`} className="group block">
       {coverUrl && (
         <div className="mb-6 aspect-[4/3] overflow-hidden bg-ink/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}

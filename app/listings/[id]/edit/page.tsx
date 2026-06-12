@@ -1,0 +1,126 @@
+// /listings/[id]/edit — edit a listing (member-only, owner-only).
+//
+// Server Component. Gating mirrors /listings/new, with one extra step:
+//   1. No session             → redirect to /login.
+//   2. Account, not a member  → redirect to /profile (the membership nudge).
+//   3. Listing not readable   → notFound(). (RLS only returns published rows,
+//      so a draft, archived, or nonexistent id all land here.)
+//   4. Member but not the author → redirect to the listing itself. The page
+//      is publicly viewable anyway, so this leaks nothing — it's just the
+//      friendlier landing than a 404.
+//   5. The author             → render the form pre-filled.
+// The Slice 4 RLS update policy is the real, database-level gate; this
+// route-level check is the clean user-facing experience. Both layers stay.
+
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { signImagePaths } from "@/lib/storage/sign-image-urls";
+import NewListingForm, {
+  type ListingFormInitial,
+} from "@/app/components/NewListingForm";
+
+export const dynamic = "force-dynamic"; // session state varies per request.
+
+type ListingRow = {
+  id: string;
+  author_id: string;
+  type: "apartment" | "furniture";
+  title: string;
+  description: string;
+  price_cents: number;
+  details: Record<string, unknown>;
+  images: { path: string }[];
+};
+
+// cents → the string the price input should show (whole dollars stay whole).
+function formatPriceInput(cents: number): string {
+  return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
+}
+
+export default async function EditListingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: account } = await supabase
+    .from("accounts")
+    .select("is_member")
+    .eq("id", user.id)
+    .single<{ is_member: boolean }>();
+
+  if (!account?.is_member) {
+    redirect("/profile");
+  }
+
+  const { data: listing } = await supabase
+    .from("listings")
+    .select("id, author_id, type, title, description, price_cents, details, images")
+    .eq("id", id)
+    .maybeSingle<ListingRow>();
+
+  if (!listing) {
+    notFound();
+  }
+
+  if (listing.author_id !== user.id) {
+    redirect(`/listings/${id}`);
+  }
+
+  // Sign the current images so the uploader shows real thumbnails. A path
+  // that fails to sign still rides along (empty preview) — removing it from
+  // the pre-fill would silently strip it from the listing on save.
+  const imagePaths = (listing.images ?? [])
+    .map((i) => i.path)
+    .filter((p): p is string => Boolean(p));
+  const urlByPath = await signImagePaths(imagePaths);
+
+  const initial: ListingFormInitial = {
+    id: listing.id,
+    type: listing.type,
+    title: listing.title,
+    description: listing.description,
+    price: formatPriceInput(listing.price_cents),
+    details: listing.details ?? {},
+    images: imagePaths.map((path) => ({
+      path,
+      previewUrl: urlByPath.get(path) ?? "",
+    })),
+  };
+
+  return (
+    <main className="min-h-screen px-6 py-20">
+      <div className="max-w-2xl mx-auto">
+        <Link
+          href={`/listings/${listing.id}`}
+          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
+        >
+          &larr; Back to the listing
+        </Link>
+
+        <div className="text-center mt-12 mb-16">
+          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
+            Edit listing
+          </p>
+          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
+            Touch it up.
+          </h1>
+          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
+        </div>
+
+        <NewListingForm userId={user.id} initial={initial} />
+      </div>
+    </main>
+  );
+}
