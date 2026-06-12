@@ -18,7 +18,9 @@ Newest entries at the top.
 
 **Shipped:** Admin Console (dashboard + review queue + member directory; listing-moderation queue is the separate next slice) and Edit & Remove (owner edit + soft-delete archive). Migration backlog now clear (0013–0016 all live).
 
-**Next:** verify live /admin + edit/archive after deploy; then the listing-moderation-queue follow-up.
+**Deployed + live-verified.** Pushed 5 commits to main; Vercel deployed. Drove the live site with a synthetic admin + member (cleaned up after, founder untouched): /admin loads for admin with live counts + review queue; non-admin gets a 404 and no Admin nav link; edit + Remove(archive) work end to end (status='archived' in DB, soft delete). Live check caught one bug — the member directory showed "No members yet" because a PostgREST self-join FK embed errored (constraint not named accounts_sponsor_id_fkey); fixed with a second query (commit 849cca5), redeployed, re-verified.
+
+**Next:** listing-moderation-queue follow-up (the 4th admin view).
 
 Full detail in `WORK AREAS/Product/mvp-build-project/memory.md`.
 

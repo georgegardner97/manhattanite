@@ -21,7 +21,11 @@ Both slices are committed, pushed to main, and deploying via Vercel. Cowork appl
 - **Admin Console (3 of mvp-spec's 4 admin views):** `/admin` dashboard (account/member/listing/pending counts), `/admin/applications` review queue (Approve/Decline/Request-more-info as admin-session rpc — never service role), `/admin/members` read-only directory. SiteNav shows "Admin" only to `role='admin'`. **Listing-moderation queue deliberately NOT built — separate follow-up slice.**
 - **Edit & Remove:** owner-only `/listings/[id]/edit` (pre-filled, shared NewListingForm in edit mode), `updateListing` (writes only type/title/description/price/details/images — never status/author/byline), `archiveListing` (soft delete), Edit/Remove controls on `/listings/mine`, Edit link on the detail page for the author.
 
-**Next:** listing-moderation-queue follow-up slice (the 4th admin view). Also still parked, independent: nothing — the migration backlog is now clear (0013–0016 all applied).
+**Live verification (synthetic admin + member driven through the deployed site, then cleaned up — founder never touched):** /admin dashboard renders for an admin with live counts; review queue lists the pending applicant with Approve/Decline/Request-more-info; a non-admin gets a hard 404 on /admin and sees NO Admin nav link; edit changed title/price/condition on the live listing (byline preserved) and Remove archived it (status='archived' in the DB, dropped off /listings/mine). All synthetic rows purged, founder intact (role=admin, 3 published listings).
+
+**One bug caught by the live check + fixed (commit 849cca5):** the member directory rendered "No members yet" despite 3 members — the PostgREST self-join embed `sponsor:accounts!accounts_sponsor_id_fkey(name)` errored (PGRST200; the live FK constraint isn't named `accounts_sponsor_id_fkey`), nulling the whole result. Fixed by dropping the self-embed and resolving sponsor names in a second `in()` query. Redeployed and re-verified live: the directory now lists all members. **Lesson: PostgREST self-referential FK embeds need the exact constraint-name hint and silently null the result if wrong — prefer a second query for self-joins.**
+
+**Next:** listing-moderation-queue follow-up slice (the 4th admin view). Migration backlog is clear (0013–0016 all applied).
 
 ---
 
