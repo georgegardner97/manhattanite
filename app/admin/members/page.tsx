@@ -24,7 +24,7 @@ type MemberRow = {
   name: string | null;
   neighborhood: string | null;
   created_at: string;
-  sponsor: { name: string | null } | null;
+  sponsor_id: string | null;
   applications: {
     status: string;
     occupation: string | null;
@@ -43,14 +43,34 @@ function formatDate(iso: string): string {
 export default async function AdminMembersPage() {
   const { supabase } = await requireAdmin();
 
+  // The primary sponsor is fetched in a SECOND query rather than a self-join
+  // embed. PostgREST needs a constraint-name hint to disambiguate a self-
+  // referential FK (accounts.sponsor_id → accounts.id), and the live
+  // constraint isn't named accounts_sponsor_id_fkey — the embed errored and
+  // dropped the whole result. Two plain queries are robust to the FK's name.
   const { data: members } = await supabase
     .from("accounts")
     .select(
-      "id, name, neighborhood, created_at, sponsor:accounts!accounts_sponsor_id_fkey(name), applications(status, occupation, reviewed_at)"
+      "id, name, neighborhood, created_at, sponsor_id, applications(status, occupation, reviewed_at)"
     )
     .eq("is_member", true)
     .order("created_at", { ascending: true })
     .returns<MemberRow[]>();
+
+  // Resolve sponsor names in one round-trip. Admin read-all (0002) lets us
+  // read every referenced account.
+  const sponsorIds = [
+    ...new Set((members ?? []).map((m) => m.sponsor_id).filter((id): id is string => Boolean(id))),
+  ];
+  const sponsorNameById = new Map<string, string | null>();
+  if (sponsorIds.length > 0) {
+    const { data: sponsors } = await supabase
+      .from("accounts")
+      .select("id, name")
+      .in("id", sponsorIds)
+      .returns<{ id: string; name: string | null }[]>();
+    for (const s of sponsors ?? []) sponsorNameById.set(s.id, s.name);
+  }
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -83,6 +103,9 @@ export default async function AdminMembersPage() {
                 (a) => a.status === "approved"
               );
               const joined = approved?.reviewed_at ?? member.created_at;
+              const sponsorName = member.sponsor_id
+                ? sponsorNameById.get(member.sponsor_id) ?? null
+                : null;
               return (
                 <li
                   key={member.id}
@@ -102,8 +125,8 @@ export default async function AdminMembersPage() {
                       .join(" · ") || "—"}
                   </p>
                   <p className="mt-3 text-sm text-slate">
-                    {member.sponsor?.name
-                      ? `Brought in by ${member.sponsor.name}`
+                    {sponsorName
+                      ? `Brought in by ${sponsorName}`
                       : "No sponsor on record (seed account)"}
                   </p>
                 </li>
