@@ -34,6 +34,7 @@ type ListingDetail = {
   author_id: string;
   author_name: string | null;
   sponsor_names: string[];
+  is_example: boolean;
 };
 
 function formatPrice(cents: number, type: ListingDetail["type"]): string {
@@ -86,7 +87,7 @@ export default async function ListingDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, details, images, author_id, author_name, sponsor_names"
+      "id, type, title, description, price_cents, details, images, author_id, author_name, sponsor_names, is_example"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -128,8 +129,14 @@ export default async function ListingDetailPage({
           </p>
         </div>
 
-        <p className="mt-4 text-[11px] tracking-[0.22em] uppercase text-slate">
+        <p className="mt-4 flex items-center gap-3 text-[11px] tracking-[0.22em] uppercase text-slate">
           {humanizeKey(listing.type)}
+          {/* Honest label on seed content — looks like the network, isn't a live deal. */}
+          {listing.is_example && (
+            <span className="inline-block border border-ink/20 px-2 py-[3px] text-[10px]">
+              Example
+            </span>
+          )}
         </p>
 
         <span className="block w-8 h-px bg-ink/30 mt-10 mb-10" />

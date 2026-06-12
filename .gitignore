@@ -27,6 +27,9 @@
 # personal (not committed — lives only on George's Mac)
 ABOUT ME/
 
+# seed photos (stock images, large — uploaded to Storage by scripts/seed-example-listings.ts)
+/seed-images/
+
 # claude code local user settings (per-machine, not project-wide)
 .claude/
 

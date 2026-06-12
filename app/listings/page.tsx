@@ -29,6 +29,7 @@ type ListingCard = {
   images: ListingImage[];
   author_name: string | null;
   sponsor_names: string[];
+  is_example: boolean;
 };
 
 function formatPrice(cents: number, type: ListingCard["type"]): string {
@@ -52,7 +53,7 @@ export default async function ListingsPage() {
   const { data: listings } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, images, author_name, sponsor_names"
+      "id, type, title, description, price_cents, images, author_name, sponsor_names, is_example"
     )
     .eq("status", "published")
     .order("created_at", { ascending: false })
@@ -137,6 +138,7 @@ function ListingCardItem({
           />
         </div>
       )}
+      {listing.is_example && <ExampleBadge />}
       <div className="flex items-baseline justify-between gap-6">
         <h2 className="font-serif font-light text-2xl md:text-3xl tracking-tight text-ink">
           {listing.title}
@@ -150,6 +152,18 @@ function ListingCardItem({
         {renderByline(listing.author_name, listing.sponsor_names)}
       </p>
     </Link>
+  );
+}
+
+// Small, honest label on seed content — these listings show what the network
+// looks like, but nobody should mistake them for a live deal.
+function ExampleBadge() {
+  return (
+    <p className="mb-3">
+      <span className="inline-block border border-ink/20 px-2 py-[3px] text-[10px] tracking-[0.22em] uppercase text-slate">
+        Example
+      </span>
+    </p>
   );
 }
 
