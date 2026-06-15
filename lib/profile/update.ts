@@ -49,6 +49,8 @@ export async function updateProfile(
   const name = pluck(formData, "name");
   const neighborhood = pluck(formData, "neighborhood");
   const bio = pluck(formData, "bio");
+  const avatarPath = pluck(formData, "avatar_path");
+  const linkedinUrl = pluck(formData, "linkedin_url");
 
   // ---- Validation ----
   // Name is optional but encouraged — the GdC-style byline convention
@@ -73,6 +75,16 @@ export async function updateProfile(
       error: `Bio is a little long — keep it under ${MAX_BIO} characters.`,
     };
   }
+  // avatar_path must sit in the user's own folder if present (defense in depth;
+  // storage RLS already enforces this on upload). Empty → null (photo removed).
+  if (avatarPath !== null && !avatarPath.startsWith(`${user.id}/`)) {
+    return {
+      error: "Something went wrong with that photo. Try uploading it again.",
+    };
+  }
+  if (linkedinUrl !== null && linkedinUrl.length > 200) {
+    return { error: "That link is a little long — keep it under 200 characters." };
+  }
 
   // ---- Update. RLS "accounts: update own row" is the gate. ----
   // The protect_account_columns trigger (0001) backstops the sensitive
@@ -80,7 +92,13 @@ export async function updateProfile(
   // trigger would reject them if we did.
   const { error } = await supabase
     .from("accounts")
-    .update({ name, neighborhood, bio })
+    .update({
+      name,
+      neighborhood,
+      bio,
+      avatar_path: avatarPath,
+      linkedin_url: linkedinUrl,
+    })
     .eq("id", user.id);
 
   if (error) {

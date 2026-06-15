@@ -18,6 +18,8 @@ type AccountRow = {
   name: string | null;
   neighborhood: string | null;
   bio: string | null;
+  avatar_path: string | null;
+  linkedin_url: string | null;
   role: "account" | "member" | "admin";
   is_member: boolean;
   sponsor_id: string | null;
@@ -63,11 +65,27 @@ export default async function ProfilePage() {
     );
   }
 
+  // Public bucket → a plain URL, no signing.
+  const avatarUrl = account.avatar_path
+    ? supabase.storage.from("avatars").getPublicUrl(account.avatar_path).data
+        .publicUrl
+    : null;
+
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
+          {avatarUrl && (
+            <div className="w-24 h-24 rounded-full overflow-hidden bg-ink/[0.06] mx-auto mb-7">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={avatarUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
             {account.is_member ? "Member" : "Account"}
           </p>
@@ -84,6 +102,23 @@ export default async function ProfilePage() {
             <Field label="Neighborhood" value={account.neighborhood} />
           )}
           {account.bio && <Field label="Bio" value={account.bio} multiline />}
+          {account.linkedin_url && (
+            <div>
+              <dt className="text-[11px] tracking-[0.22em] uppercase text-slate mb-2">
+                LinkedIn
+              </dt>
+              <dd className="font-serif text-lg">
+                <a
+                  href={externalHref(account.linkedin_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mh-link text-ink break-all"
+                >
+                  {account.linkedin_url}
+                </a>
+              </dd>
+            </div>
+          )}
           <Field
             label="Member since"
             value={new Date(account.created_at).toLocaleDateString("en-US", {
@@ -166,6 +201,10 @@ export default async function ProfilePage() {
       </div>
     </main>
   );
+}
+
+function externalHref(value: string): string {
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
 }
 
 function Field({

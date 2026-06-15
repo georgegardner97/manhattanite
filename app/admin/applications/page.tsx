@@ -82,8 +82,49 @@ export default async function AdminApplicationsPage() {
     }
   }
 
-  const sponsorNameFor = (a: ApplicationRow): string | null =>
-    a.sponsor_id ? sponsorNameById.get(a.sponsor_id) ?? null : null;
+  // Match the free-text "Know a member?" referral to a real member (by email or
+  // name). At seed scale, fetch all members and match in JS. A matched referral
+  // is only a SUGGESTION — shown to you and recorded as the sponsor only on
+  // your one-click approval (never auto-trusted: anyone could type any email).
+  // RLS: admin reads all accounts (0002).
+  const { data: allMembers } = await supabase
+    .from("accounts")
+    .select("id, name, email")
+    .eq("is_member", true)
+    .returns<{ id: string; name: string | null; email: string }[]>();
+
+  function matchReferral(
+    ref: string | null
+  ): { id: string; name: string | null } | null {
+    const r = (ref ?? "").trim().toLowerCase();
+    if (!r) return null;
+    const m = (allMembers ?? []).find(
+      (x) =>
+        x.email.toLowerCase() === r ||
+        (x.name !== null && x.name.toLowerCase() === r)
+    );
+    return m ? { id: m.id, name: m.name } : null;
+  }
+
+  type EffectiveSponsor = {
+    id: string;
+    name: string | null;
+    source: "invite" | "referral";
+  };
+
+  // An invite's sponsor_id (the verified inviter) wins; else a matched referral;
+  // else none (→ founder default on approval).
+  function effectiveSponsor(a: ApplicationRow): EffectiveSponsor | null {
+    if (a.sponsor_id) {
+      return {
+        id: a.sponsor_id,
+        name: sponsorNameById.get(a.sponsor_id) ?? null,
+        source: "invite",
+      };
+    }
+    const m = matchReferral(a.sponsor_reference);
+    return m ? { id: m.id, name: m.name, source: "referral" } : null;
+  }
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -111,22 +152,22 @@ export default async function AdminApplicationsPage() {
           <>
             {pending.length > 0 && (
               <ul className="space-y-px">
-                {pending.map((application) => (
-                  <li
-                    key={application.id}
-                    className="border-t border-ink/10 py-10 last:border-b"
-                  >
-                    <ApplicationCard
-                      application={application}
-                      sponsorName={sponsorNameFor(application)}
-                    />
-                    <ApplicationActions
-                      applicationId={application.id}
-                      sponsorId={application.sponsor_id}
-                      sponsorName={sponsorNameFor(application)}
-                    />
-                  </li>
-                ))}
+                {pending.map((application) => {
+                  const sp = effectiveSponsor(application);
+                  return (
+                    <li
+                      key={application.id}
+                      className="border-t border-ink/10 py-10 last:border-b"
+                    >
+                      <ApplicationCard application={application} sponsor={sp} />
+                      <ApplicationActions
+                        applicationId={application.id}
+                        sponsorId={sp?.id ?? null}
+                        sponsorName={sp?.name ?? null}
+                      />
+                    </li>
+                  );
+                })}
               </ul>
             )}
 
@@ -146,7 +187,7 @@ export default async function AdminApplicationsPage() {
                     >
                       <ApplicationCard
                         application={application}
-                        sponsorName={sponsorNameFor(application)}
+                        sponsor={effectiveSponsor(application)}
                       />
                       {application.reviewer_note && (
                         <p className="mt-4 text-sm text-slate">
@@ -170,10 +211,10 @@ export default async function AdminApplicationsPage() {
 
 function ApplicationCard({
   application,
-  sponsorName,
+  sponsor,
 }: {
   application: ApplicationRow;
-  sponsorName: string | null;
+  sponsor: { name: string | null; source: "invite" | "referral" } | null;
 }) {
   return (
     <div>
@@ -198,21 +239,35 @@ function ApplicationCard({
         </p>
       )}
 
-      {sponsorName && (
+      {sponsor && sponsor.source === "invite" && (
         <p className="mt-4 text-sm text-ink">
           <span className="text-[11px] tracking-[0.22em] uppercase text-slate">
             Invited by:&nbsp;
           </span>
-          {sponsorName}
+          {sponsor.name ?? "a member"}
         </p>
       )}
 
-      {application.sponsor_reference && (
+      {sponsor && sponsor.source === "referral" && (
+        <p className="mt-4 text-sm text-ink">
+          <span className="text-[11px] tracking-[0.22em] uppercase text-slate">
+            Referred by:&nbsp;
+          </span>
+          {sponsor.name ?? "a member"}
+          <span className="font-serif italic text-slate">
+            &nbsp;— a member; approve to record as sponsor
+          </span>
+        </p>
+      )}
+
+      {/* A referral that doesn't match any member — just an unverified hint. */}
+      {!sponsor && application.sponsor_reference && (
         <p className="mt-4 text-sm text-slate">
           <span className="text-[11px] tracking-[0.22em] uppercase">
             Says they know:&nbsp;
           </span>
           {application.sponsor_reference}
+          <span className="font-serif italic">&nbsp;(not a member yet)</span>
         </p>
       )}
     </div>

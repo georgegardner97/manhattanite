@@ -15,6 +15,7 @@ import {
   updateProfile,
   type UpdateProfileState,
 } from "@/lib/profile/update";
+import AvatarUpload from "@/app/components/AvatarUpload";
 
 const FIELD_BASE =
   "w-full bg-transparent border-b border-ink/20 pb-3 text-base text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
@@ -25,15 +26,23 @@ const HINT =
 const INITIAL: UpdateProfileState = { error: null };
 
 type ProfileEditFormProps = {
+  userId: string;
   initialName: string | null;
   initialNeighborhood: string | null;
   initialBio: string | null;
+  initialAvatarPath: string | null;
+  initialAvatarUrl: string | null;
+  initialLinkedin: string | null;
 };
 
 export default function ProfileEditForm({
+  userId,
   initialName,
   initialNeighborhood,
   initialBio,
+  initialAvatarPath,
+  initialAvatarUrl,
+  initialLinkedin,
 }: ProfileEditFormProps) {
   const [state, formAction, isPending] = useActionState(
     updateProfile,
@@ -42,6 +51,13 @@ export default function ProfileEditForm({
 
   return (
     <form action={formAction} className="space-y-12">
+      {/* ---------- Profile photo ---------- */}
+      <AvatarUpload
+        userId={userId}
+        initialPath={initialAvatarPath}
+        initialUrl={initialAvatarUrl}
+      />
+
       {/* ---------- Name ---------- */}
       <div>
         <label htmlFor="name" className={LABEL}>
@@ -90,6 +106,23 @@ export default function ProfileEditForm({
           rows={4}
           placeholder="What members might want to know about you."
           className={`${FIELD_BASE} resize-none`}
+        />
+      </div>
+
+      {/* ---------- LinkedIn (optional) ---------- */}
+      <div>
+        <label htmlFor="linkedin_url" className={LABEL}>
+          LinkedIn
+          <span className={HINT}>(optional)</span>
+        </label>
+        <input
+          type="text"
+          id="linkedin_url"
+          name="linkedin_url"
+          defaultValue={initialLinkedin ?? ""}
+          maxLength={200}
+          placeholder="linkedin.com/in/you"
+          className={FIELD_BASE}
         />
       </div>
 

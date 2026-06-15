@@ -21,6 +21,8 @@ type EditableAccount = {
   name: string | null;
   neighborhood: string | null;
   bio: string | null;
+  avatar_path: string | null;
+  linkedin_url: string | null;
 };
 
 export default async function ProfileEditPage() {
@@ -37,9 +39,15 @@ export default async function ProfileEditPage() {
   // RLS "accounts: read own row" allows this without a service role.
   const { data: account } = await supabase
     .from("accounts")
-    .select("name, neighborhood, bio")
+    .select("name, neighborhood, bio, avatar_path, linkedin_url")
     .eq("id", user.id)
     .single<EditableAccount>();
+
+  // Public bucket → a plain URL, no signing.
+  const avatarUrl = account?.avatar_path
+    ? supabase.storage.from("avatars").getPublicUrl(account.avatar_path).data
+        .publicUrl
+    : null;
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -62,9 +70,13 @@ export default async function ProfileEditPage() {
         </div>
 
         <ProfileEditForm
+          userId={user.id}
           initialName={account?.name ?? null}
           initialNeighborhood={account?.neighborhood ?? null}
           initialBio={account?.bio ?? null}
+          initialAvatarPath={account?.avatar_path ?? null}
+          initialAvatarUrl={avatarUrl}
+          initialLinkedin={account?.linkedin_url ?? null}
         />
       </div>
     </main>

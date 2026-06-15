@@ -110,10 +110,10 @@ export default function ApplicationForm({
         />
       </div>
 
-      {/* ---------- Referred by (optional) ---------- */}
+      {/* ---------- Know a member? (optional) ---------- */}
       <div>
         <label htmlFor="sponsor_reference" className={LABEL}>
-          Referred by
+          Know a member?
           <span className={HINT}>(optional)</span>
         </label>
         <input
@@ -121,7 +121,7 @@ export default function ApplicationForm({
           id="sponsor_reference"
           name="sponsor_reference"
           maxLength={200}
-          placeholder="If a member sent you, who?"
+          placeholder="Their email, so they can vouch for you"
           className={FIELD_BASE}
         />
       </div>
