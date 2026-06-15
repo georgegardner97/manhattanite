@@ -31,8 +31,14 @@ type Mode = "idle" | "approve" | "decline" | "needs_info";
 
 export default function ApplicationActions({
   applicationId,
+  sponsorId,
+  sponsorName,
 }: {
   applicationId: string;
+  // The inviter, when this applicant came in through an invite — passed to the
+  // approve action so the real sponsor is recorded (not the George default).
+  sponsorId?: string | null;
+  sponsorName?: string | null;
 }) {
   const [mode, setMode] = useState<Mode>("idle");
   const [approveState, approveAction, approving] = useActionState(
@@ -71,9 +77,12 @@ export default function ApplicationActions({
       {mode === "approve" && (
         <form action={approveAction} className="space-y-4">
           <input type="hidden" name="id" value={applicationId} />
+          {sponsorId && (
+            <input type="hidden" name="sponsor_id" value={sponsorId} />
+          )}
           <p className="font-serif italic text-[15px] text-ink">
-            Bring them in? Membership is immediate, sponsored by George, and the
-            welcome email goes out.
+            Bring them in? Membership is immediate, sponsored by{" "}
+            {sponsorName ?? "George"}, and the welcome email goes out.
           </p>
           <div className="flex items-center gap-10">
             <button type="submit" disabled={busy} className={CONFIRM_CONTROL}>

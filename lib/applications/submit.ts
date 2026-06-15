@@ -128,6 +128,12 @@ export async function submitApplication(
   }
 
   // ---- 2. Insert the application row. RLS is the real gate. ----
+  // If this account arrived via an invite, attach the inviter as the sponsor —
+  // derived server-side from the invite (inviter_for_me), never from user
+  // input. Null for a walk-up applicant; approval then defaults to the founder,
+  // exactly as before.
+  const { data: inviterId } = await supabase.rpc("inviter_for_me");
+
   // Select the new id back so the reviewer ping can embed it (the approve
   // command in the email is keyed on this id).
   const { data: inserted, error: insertError } = await supabase
@@ -138,6 +144,7 @@ export async function submitApplication(
       about,
       sponsor_reference: sponsorReference,
       neighborhood,
+      sponsor_id: (inviterId as string | null) ?? null,
       // status defaults to 'pending' in the schema.
     })
     .select("id")

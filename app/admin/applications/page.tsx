@@ -24,6 +24,7 @@ type ApplicationRow = {
   occupation: string | null;
   about: string | null;
   sponsor_reference: string | null;
+  sponsor_id: string | null;
   neighborhood: string | null;
   reviewer_note: string | null;
   created_at: string;
@@ -44,7 +45,7 @@ export default async function AdminApplicationsPage() {
   const { data: applications } = await supabase
     .from("applications")
     .select(
-      "id, status, occupation, about, sponsor_reference, neighborhood, reviewer_note, created_at, accounts(name, email)"
+      "id, status, occupation, about, sponsor_reference, sponsor_id, neighborhood, reviewer_note, created_at, accounts(name, email)"
     )
     .in("status", ["pending", "needs_info"])
     .order("created_at", { ascending: true })
@@ -54,6 +55,32 @@ export default async function AdminApplicationsPage() {
   const needsInfo = (applications ?? []).filter(
     (a) => a.status === "needs_info"
   );
+
+  // Resolve inviter names in one extra query (no PostgREST FK embed — a second
+  // FK to accounts is exactly what broke the member directory before). Map of
+  // sponsor account id → name, used to show "Invited by …" and to label the
+  // approve confirm.
+  const sponsorIds = [
+    ...new Set(
+      (applications ?? [])
+        .map((a) => a.sponsor_id)
+        .filter((x): x is string => Boolean(x))
+    ),
+  ];
+  const sponsorNameById = new Map<string, string>();
+  if (sponsorIds.length > 0) {
+    const { data: sponsors } = await supabase
+      .from("accounts")
+      .select("id, name")
+      .in("id", sponsorIds)
+      .returns<{ id: string; name: string | null }[]>();
+    for (const s of sponsors ?? []) {
+      if (s.name) sponsorNameById.set(s.id, s.name);
+    }
+  }
+
+  const sponsorNameFor = (a: ApplicationRow): string | null =>
+    a.sponsor_id ? sponsorNameById.get(a.sponsor_id) ?? null : null;
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -86,8 +113,15 @@ export default async function AdminApplicationsPage() {
                     key={application.id}
                     className="border-t border-ink/10 py-10 last:border-b"
                   >
-                    <ApplicationCard application={application} />
-                    <ApplicationActions applicationId={application.id} />
+                    <ApplicationCard
+                      application={application}
+                      sponsorName={sponsorNameFor(application)}
+                    />
+                    <ApplicationActions
+                      applicationId={application.id}
+                      sponsorId={application.sponsor_id}
+                      sponsorName={sponsorNameFor(application)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -107,7 +141,10 @@ export default async function AdminApplicationsPage() {
                       key={application.id}
                       className="border-t border-ink/10 py-10 last:border-b"
                     >
-                      <ApplicationCard application={application} />
+                      <ApplicationCard
+                        application={application}
+                        sponsorName={sponsorNameFor(application)}
+                      />
                       {application.reviewer_note && (
                         <p className="mt-4 text-sm text-slate">
                           <span className="text-[11px] tracking-[0.22em] uppercase">
@@ -128,7 +165,13 @@ export default async function AdminApplicationsPage() {
   );
 }
 
-function ApplicationCard({ application }: { application: ApplicationRow }) {
+function ApplicationCard({
+  application,
+  sponsorName,
+}: {
+  application: ApplicationRow;
+  sponsorName: string | null;
+}) {
   return (
     <div>
       <div className="flex items-baseline justify-between gap-6">
@@ -149,6 +192,15 @@ function ApplicationCard({ application }: { application: ApplicationRow }) {
       {application.about && (
         <p className="mt-5 font-serif text-lg text-ink leading-relaxed whitespace-pre-wrap">
           {application.about}
+        </p>
+      )}
+
+      {sponsorName && (
+        <p className="mt-4 text-sm text-ink">
+          <span className="text-[11px] tracking-[0.22em] uppercase text-slate">
+            Invited by:&nbsp;
+          </span>
+          {sponsorName}
         </p>
       )}
 
