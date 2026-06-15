@@ -18,6 +18,7 @@
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import AccountMenu from "@/app/components/AccountMenu";
 
 type Viewer = "guest" | "account" | "member";
 
@@ -35,18 +36,21 @@ export default async function SiteNav() {
 
   let viewer: Viewer = "guest";
   let isAdmin = false;
+  let name: string | null = null;
   if (user) {
     // RLS "read own row" allows this. A missing row (signup race) falls back
     // to 'account' — logged in but not yet confirmed a member.
     const { data: account } = await supabase
       .from("accounts")
-      .select("is_member, role")
+      .select("is_member, role, name")
       .eq("id", user.id)
-      .single<{ is_member: boolean; role: string }>();
+      .single<{ is_member: boolean; role: string; name: string | null }>();
     viewer = account?.is_member ? "member" : "account";
-    // Admin rides on top of the tier — the link only renders for role='admin'.
-    // The /admin routes gate themselves (and RLS underneath); this is just nav.
+    // Admin rides on top of the tier — the Admin link lives in the account
+    // menu and only renders for role='admin'. The /admin routes gate
+    // themselves (and RLS underneath); this is just nav.
     isAdmin = account?.role === "admin";
+    name = account?.name ?? null;
   }
 
   return (
@@ -80,56 +84,27 @@ export default async function SiteNav() {
 
           {viewer === "account" && (
             <>
-              {/* The conversion CTA for Tier 1 — emphasized. */}
+              {/* The conversion CTA for Tier 1 — emphasized. Profile + log out
+                  live in the account menu. */}
               <Link href="/apply" className={LINK_EMPHASIS}>
                 Apply for membership
               </Link>
-              <Link href="/profile" className={LINK_QUIET}>
-                Profile
-              </Link>
-              {/* Defensive: an admin who isn't flagged a member still gets in. */}
-              {isAdmin && (
-                <Link href="/admin" className={LINK_QUIET}>
-                  Admin
-                </Link>
-              )}
-              <SignOutButton />
+              <AccountMenu name={name} isMember={false} isAdmin={isAdmin} />
             </>
           )}
 
           {viewer === "member" && (
             <>
+              {/* Primary action stays in the bar; My listings / Profile /
+                  Admin / Log out move into the account menu. */}
               <Link href="/listings/new" className={LINK_QUIET}>
                 Post a listing
               </Link>
-              <Link href="/listings/mine" className={LINK_QUIET}>
-                My listings
-              </Link>
-              <Link href="/profile" className={LINK_QUIET}>
-                Profile
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className={LINK_QUIET}>
-                  Admin
-                </Link>
-              )}
-              <SignOutButton />
+              <AccountMenu name={name} isMember={true} isAdmin={isAdmin} />
             </>
           )}
         </div>
       </nav>
     </header>
-  );
-}
-
-// Log out posts to the existing /auth/sign-out route (POST so a prefetch or
-// bot can't sign anyone out). Same pattern already used on /profile.
-function SignOutButton() {
-  return (
-    <form action="/auth/sign-out" method="post">
-      <button type="submit" className={`${LINK_QUIET} cursor-pointer`}>
-        Log out
-      </button>
-    </form>
   );
 }

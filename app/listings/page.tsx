@@ -22,7 +22,7 @@ type ListingImage = { path: string };
 
 type ListingCard = {
   id: string;
-  type: "apartment" | "furniture";
+  type: "apartment" | "furniture" | "other" | "service";
   title: string;
   description: string;
   price_cents: number;

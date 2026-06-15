@@ -49,9 +49,10 @@ export default function LoginPage() {
       return;
     }
 
-    // Hard refresh of the router cache so the Server Component at /profile
-    // sees the fresh session cookie on first render.
-    router.push("/profile");
+    // Land signed-in users on the network (the listings are the value), not
+    // their profile. Hard refresh so the Server Components see the fresh
+    // session cookie on first render.
+    router.push("/listings");
     router.refresh();
   }
 

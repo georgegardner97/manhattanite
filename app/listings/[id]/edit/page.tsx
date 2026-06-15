@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic"; // session state varies per request.
 type ListingRow = {
   id: string;
   author_id: string;
-  type: "apartment" | "furniture";
+  type: "apartment" | "furniture" | "other" | "service";
   title: string;
   description: string;
   price_cents: number;

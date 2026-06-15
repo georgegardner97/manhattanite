@@ -83,7 +83,7 @@ export async function updateListing(
   const description = String(formData.get("description") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "").trim();
 
-  if (type !== "apartment" && type !== "furniture") {
+  if (!["apartment", "furniture", "other", "service"].includes(type)) {
     return { error: "Pick a listing type to get started." };
   }
   if (!title) {
@@ -107,7 +107,9 @@ export async function updateListing(
       error:
         type === "apartment"
           ? "Add a monthly rent, in dollars."
-          : "Add an asking price, in dollars.",
+          : type === "service"
+            ? "Add a rate or price, in dollars."
+            : "Add an asking price, in dollars.",
     };
   }
   const price_cents = Math.round(priceDollars * 100);
@@ -131,7 +133,7 @@ export async function updateListing(
       details.bathrooms = Number(bathrooms);
     }
     if (availableFrom) details.available_from = availableFrom;
-  } else {
+  } else if (type === "furniture") {
     const condition = String(formData.get("condition") ?? "").trim();
     const dimensions = String(formData.get("dimensions") ?? "").trim();
     const brand = String(formData.get("brand") ?? "").trim();
@@ -139,6 +141,16 @@ export async function updateListing(
     if (condition) details.condition = condition;
     if (dimensions) details.dimensions = dimensions;
     if (brand) details.brand = brand;
+  } else if (type === "other") {
+    const condition = String(formData.get("condition") ?? "").trim();
+    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
+
+    if (condition) details.condition = condition;
+    if (neighborhood) details.neighborhood = neighborhood;
+  } else {
+    // service — area served (reuses the neighborhood field)
+    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
+    if (neighborhood) details.neighborhood = neighborhood;
   }
 
   // ---- Images ----

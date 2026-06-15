@@ -34,7 +34,7 @@ type ListingImage = { path: string };
 
 type GlimpseListing = {
   id: string;
-  type: "apartment" | "furniture";
+  type: "apartment" | "furniture" | "other" | "service";
   title: string;
   price_cents: number;
   images: ListingImage[] | null;
@@ -63,8 +63,9 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    // Already through the gate — don't show the pitch again.
-    redirect("/profile");
+    // Already through the gate — don't show the pitch again. Land them on the
+    // network (the listings are the value), not their profile.
+    redirect("/listings");
   }
 
   // The glimpse: 3 most recent live listings, shown as a restrained image band

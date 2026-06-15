@@ -22,7 +22,7 @@ type ListingFormState = { error: string | null };
 // where price formatting and image-URL signing happen).
 export type ListingFormInitial = {
   id: string;
-  type: "apartment" | "furniture";
+  type: "apartment" | "furniture" | "other" | "service";
   title: string;
   description: string;
   price: string; // dollars, as the input shows it
@@ -65,9 +65,9 @@ export default function NewListingForm({
 
   // Drives which type-specific fields render. Defaults to apartment so the
   // form is never in an unselected state.
-  const [type, setType] = useState<"apartment" | "furniture">(
-    initial?.type ?? "apartment"
-  );
+  const [type, setType] = useState<
+    "apartment" | "furniture" | "other" | "service"
+  >(initial?.type ?? "apartment");
 
   return (
     <form action={formAction} className="space-y-12">
@@ -78,7 +78,7 @@ export default function NewListingForm({
       <div>
         <p className={LABEL}>What are you listing?</p>
         <div className="flex gap-8">
-          {(["apartment", "furniture"] as const).map((opt) => (
+          {(["apartment", "furniture", "other", "service"] as const).map((opt) => (
             <label
               key={opt}
               className="flex items-center gap-3 text-[15px] text-ink cursor-pointer group capitalize"
@@ -114,7 +114,11 @@ export default function NewListingForm({
           placeholder={
             type === "apartment"
               ? "e.g. Two-bedroom in the West Village"
-              : "e.g. Ceccotti walnut dining table"
+              : type === "furniture"
+                ? "e.g. Ceccotti walnut dining table"
+                : type === "service"
+                  ? "e.g. Piano lessons on the Upper West Side"
+                  : "e.g. Trek hybrid bike, barely used"
           }
           className={FIELD_BASE}
         />
@@ -140,7 +144,11 @@ export default function NewListingForm({
       {/* ---------- Price ---------- */}
       <div>
         <label htmlFor="price" className={LABEL}>
-          {type === "apartment" ? "Monthly rent ($)" : "Asking price ($)"}
+          {type === "apartment"
+            ? "Monthly rent ($)"
+            : type === "service"
+              ? "Rate ($)"
+              : "Asking price ($)"}
         </label>
         <input
           type="number"
@@ -151,7 +159,9 @@ export default function NewListingForm({
           step="any"
           inputMode="decimal"
           defaultValue={initial?.price}
-          placeholder={type === "apartment" ? "5400" : "1200"}
+          placeholder={
+            type === "apartment" ? "5400" : type === "service" ? "75" : "1200"
+          }
           className={FIELD_BASE}
         />
       </div>
@@ -275,6 +285,64 @@ export default function NewListingForm({
             />
           </div>
         </>
+      )}
+
+      {/* ---------- Other-specific ---------- */}
+      {type === "other" && (
+        <>
+          <div>
+            <label htmlFor="condition" className={LABEL}>
+              Condition
+            </label>
+            <select
+              id="condition"
+              name="condition"
+              defaultValue={detailString(initial?.details, "condition")}
+              className={`${FIELD_BASE} mh-select appearance-none cursor-pointer capitalize`}
+            >
+              <option value="" disabled>
+                Select a condition
+              </option>
+              {CONDITIONS.map((c) => (
+                <option key={c} value={c} className="capitalize">
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="neighborhood" className={LABEL}>
+              Neighborhood
+              <span className={HINT}>(for pickup)</span>
+            </label>
+            <input
+              type="text"
+              id="neighborhood"
+              name="neighborhood"
+              defaultValue={detailString(initial?.details, "neighborhood")}
+              placeholder="e.g. Lower East Side"
+              className={FIELD_BASE}
+            />
+          </div>
+        </>
+      )}
+
+      {/* ---------- Service-specific ---------- */}
+      {type === "service" && (
+        <div>
+          <label htmlFor="neighborhood" className={LABEL}>
+            Area served
+          </label>
+          <input
+            type="text"
+            id="neighborhood"
+            name="neighborhood"
+            defaultValue={detailString(initial?.details, "neighborhood")}
+            placeholder="e.g. Manhattan, or your neighborhood"
+            className={FIELD_BASE}
+          />
+        </div>
       )}
 
       {/* ---------- Photos ---------- */}
