@@ -93,6 +93,16 @@ export default function AccountMenu({
               My listings
             </Link>
           )}
+          {isMember && (
+            <Link
+              href="/invite"
+              role="menuitem"
+              className={ITEM}
+              onClick={() => setOpen(false)}
+            >
+              Invite someone
+            </Link>
+          )}
           {isAdmin && (
             <Link
               href="/admin"

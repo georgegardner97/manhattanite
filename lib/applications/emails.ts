@@ -125,6 +125,39 @@ export async function sendMemberWelcome({ to }: { to: string }): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// 3b. Member invite — a member bringing someone in, sent to the invitee. The
+//     cold-start growth path: the invitee clicks through to /join/[token],
+//     signs up, and lands in review pre-vouched by the inviter.
+// ---------------------------------------------------------------------------
+export async function sendInviteEmail({
+  to,
+  inviterName,
+  inviteeName,
+  token,
+}: {
+  to: string;
+  inviterName: string;
+  inviteeName: string | null;
+  token: string;
+}): Promise<void> {
+  const greeting = inviteeName ? `Hi ${inviteeName},` : "Hi,";
+  const joinUrl = `https://manhattanite.com/join/${token}`;
+
+  const inner = `
+    <p style="margin:0 0 20px;">${greeting}</p>
+    <p style="margin:0 0 20px;"><strong>${inviterName}</strong> would like to bring you into Manhattanite — a private marketplace for New Yorkers, where everyone is brought in by someone who already belongs.</p>
+    <p style="margin:0 0 28px;">It's why there are no scams, no spam, and no strangers. ${inviterName} is your way in.</p>
+    <p style="margin:0;"><a href="${joinUrl}" style="color:#1a1a1a;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;">Accept your invitation &rarr;</a></p>`;
+
+  await resend.emails.send({
+    from: APPLICATIONS_FROM,
+    to,
+    subject: `${inviterName} invited you to Manhattanite`,
+    html: shell(inner),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // 4. Listing contact — a member reaching out to a lister, sent to the lister.
 //    Reply-To is set to the SENDER's address: this is what realizes "the lister
 //    chooses whether to reply directly" — they just hit reply and it reaches the
