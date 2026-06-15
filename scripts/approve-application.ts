@@ -67,7 +67,9 @@ async function main(): Promise<void> {
   // ---- 2. Read the approved account's email + name. ----
   const { data: application, error: lookupError } = await supabase
     .from("applications")
-    .select("account_id, accounts(email, name)")
+    // Name the applicant FK — applications has two FKs to accounts now
+    // (account_id + sponsor_id), so a bare accounts(...) embed is ambiguous.
+    .select("account_id, accounts!applications_account_id_fkey(email, name)")
     .eq("id", applicationId)
     .single<{
       account_id: string;

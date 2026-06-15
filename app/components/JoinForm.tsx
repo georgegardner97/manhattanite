@@ -48,7 +48,7 @@ export default function JoinForm({
 
     if (signUpError) {
       const friendly = signUpError.message.toLowerCase().includes("already")
-        ? "An account with that email already exists. Sign in instead."
+        ? "You already have an account with that email. Sign in, then open this invitation again to accept it."
         : signUpError.message;
       setStatus({ kind: "error", message: friendly });
       return;

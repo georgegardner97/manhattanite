@@ -99,9 +99,11 @@ export async function approveApplication(
 
   // Welcome email, best-effort — mirrors scripts/approve-application.ts.
   // The admin read-all policy lets this query see the applicant's account.
+  // Name the applicant FK: applications has two FKs to accounts now
+  // (account_id + sponsor_id), so a bare accounts(...) embed is ambiguous.
   const { data: application } = await supabase
     .from("applications")
-    .select("accounts(email)")
+    .select("accounts!applications_account_id_fkey(email)")
     .eq("id", id)
     .single<{ accounts: { email: string } | null }>();
   if (application?.accounts?.email) {

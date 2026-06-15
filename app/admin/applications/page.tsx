@@ -45,7 +45,10 @@ export default async function AdminApplicationsPage() {
   const { data: applications } = await supabase
     .from("applications")
     .select(
-      "id, status, occupation, about, sponsor_reference, sponsor_id, neighborhood, reviewer_note, created_at, accounts(name, email)"
+      // Disambiguate the embed: applications now has TWO FKs to accounts
+      // (account_id = applicant, sponsor_id = inviter), so a bare accounts(...)
+      // is ambiguous and PostgREST errors. Name the applicant FK explicitly.
+      "id, status, occupation, about, sponsor_reference, sponsor_id, neighborhood, reviewer_note, created_at, accounts!applications_account_id_fkey(name, email)"
     )
     .in("status", ["pending", "needs_info"])
     .order("created_at", { ascending: true })

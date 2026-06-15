@@ -230,7 +230,7 @@ async function main(): Promise<void> {
     console.log("\nTest 1 — admin reads (queue + dashboard counts):");
     const { data: queue, error: queueErr } = await adminClient
       .from("applications")
-      .select("id, status, occupation, about, sponsor_reference, neighborhood, created_at, accounts(name, email)")
+      .select("id, status, occupation, about, sponsor_reference, neighborhood, created_at, accounts!applications_account_id_fkey(name, email)")
       .in("status", ["pending", "needs_info"])
       .order("created_at", { ascending: true });
     checkTrue("admin can read the review queue (0007 policy live in prod)",
