@@ -51,7 +51,11 @@ export default async function AdminMembersPage() {
   const { data: members } = await supabase
     .from("accounts")
     .select(
-      "id, name, neighborhood, created_at, sponsor_id, applications(status, occupation, reviewed_at)"
+      // Disambiguate the reverse embed: applications now has TWO FKs to
+      // accounts (account_id = applicant, sponsor_id = inviter, added in 0020),
+      // so a bare applications(...) is ambiguous and PostgREST drops the whole
+      // result. Join via the applicant FK — these are the member's OWN apps.
+      "id, name, neighborhood, created_at, sponsor_id, applications!applications_account_id_fkey(status, occupation, reviewed_at)"
     )
     .eq("is_member", true)
     .order("created_at", { ascending: true })
