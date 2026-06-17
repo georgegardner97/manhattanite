@@ -103,10 +103,10 @@ export default async function MyListingsPage({
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
+          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
             My listings
-          </p>
-          <span className="block w-8 h-px bg-ink/30 mx-auto" />
+          </h1>
+          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
         </div>
 
         {submitted === "1" && (

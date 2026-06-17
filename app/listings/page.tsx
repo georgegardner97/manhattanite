@@ -8,8 +8,9 @@
 //     query (intentional for MVP — viewing is a funnel, not the moat).
 //   - account / member: full browse (limit 50), unchanged.
 //
-// Read-only this slice: no filters, search, or sort. Posting, contact, and
-// sponsor display are other slices.
+// Category filter (All / Apartments / Furniture) is server-driven via the
+// ?type= search param. Search and sort are still later slices. Posting,
+// contact, and sponsor display are other slices.
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -37,25 +38,54 @@ function formatPrice(cents: number, type: ListingCard["type"]): string {
   return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
 }
 
-export default async function ListingsPage() {
+// The category filter — kept to the two launch categories. Server-driven via
+// the ?type= param; an absent or unknown value means "All".
+const FILTERS = [
+  { label: "All", value: null },
+  { label: "Apartments", value: "apartment" },
+  { label: "Furniture", value: "furniture" },
+] as const;
+
+type FilterValue = (typeof FILTERS)[number]["value"];
+
+function normalizeType(raw: string | undefined): FilterValue {
+  return raw === "apartment" || raw === "furniture" ? raw : null;
+}
+
+export default async function ListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Next 16: searchParams is async. Validate to a known enum value or null.
+  const { type: rawType } = await searchParams;
+  const activeType = normalizeType(rawType);
+
   const isGuest = !user;
   const TEASER_LIMIT = 6;
 
   // Published rows are readable by signed-in users (listings_read_published_for_accounts)
   // and, after migration 0010, by anon too. Guests are capped at the teaser set
-  // in the query below; accounts/members get the full feed.
-  const { data: listings } = await supabase
+  // in the query below; accounts/members get the full feed. The category filter
+  // narrows by type when one is selected.
+  let query = supabase
     .from("listings")
     .select(
       "id, type, title, description, price_cents, images, author_name, sponsor_names, is_example"
     )
-    .eq("status", "published")
+    .eq("status", "published");
+
+  if (activeType) {
+    query = query.eq("type", activeType);
+  }
+
+  const { data: listings } = await query
     .order("created_at", { ascending: false })
     .limit(isGuest ? TEASER_LIMIT : 50)
     .returns<ListingCard[]>();
@@ -70,15 +100,17 @@ export default async function ListingsPage() {
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
+        <div className="text-center mb-10">
+          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
             Listings
-          </p>
-          <span className="block w-8 h-px bg-ink/30 mx-auto" />
+          </h1>
+          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
         </div>
 
+        <FilterBar activeType={activeType} />
+
         {!listings || listings.length === 0 ? (
-          <EmptyState />
+          <EmptyState filtered={activeType !== null} />
         ) : (
           <ul className="space-y-px">
             {listings.map((listing) => {
@@ -113,6 +145,31 @@ export default async function ListingsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+// Editorial segmented filter — small-caps links, active tab in ink. Selecting
+// a category reloads the page with the ?type= param (server-rendered, shareable).
+function FilterBar({ activeType }: { activeType: FilterValue }) {
+  return (
+    <div className="flex items-center justify-center gap-6 sm:gap-8 mb-16">
+      {FILTERS.map((f) => {
+        const isActive = f.value === activeType;
+        const href = f.value ? `/listings?type=${f.value}` : "/listings";
+        return (
+          <Link
+            key={f.label}
+            href={href}
+            aria-current={isActive ? "page" : undefined}
+            className={`mh-link text-[11px] tracking-[0.22em] uppercase ${
+              isActive ? "text-ink" : "text-slate hover:text-ink"
+            }`}
+          >
+            {f.label}
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 
@@ -167,7 +224,21 @@ function ExampleBadge() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ filtered = false }: { filtered?: boolean }) {
+  if (filtered) {
+    return (
+      <div className="text-center max-w-md mx-auto py-10">
+        <p className="font-serif text-2xl leading-relaxed text-ink">
+          Nothing in this category yet.
+        </p>
+        <p className="mt-6 text-slate leading-relaxed">
+          Try another category, or bring in someone who has the perfect piece —
+          they can post it directly.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="text-center max-w-md mx-auto py-10">
       <p className="font-serif text-2xl leading-relaxed text-ink">

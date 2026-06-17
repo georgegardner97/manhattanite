@@ -1,9 +1,9 @@
 // / — the public landing page. (Phase 1.5 landing rework, mockup v3.)
 //
 // Server Component. Before rendering, validate the session: a signed-in user
-// is already through the gate, so we send them straight to /profile rather
-// than show them the pitch again (the reverse of what /profile does for
-// logged-out visitors).
+// is already through the gate, so we send them straight to /listings (the feed
+// is the home of the marketplace) rather than show them the pitch again — the
+// reverse of what /profile does for logged-out visitors.
 //
 // v3 replaces the thin Slice 3.5 gating page with the narrative landing —
 // plainer, warmer, trust-first (Gens de Confiance-aligned: benefit →

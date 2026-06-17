@@ -18,6 +18,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
+import ContactModal from "@/app/components/ContactModal";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -110,6 +111,22 @@ export default async function ListingDetailPage({
     .map((p) => urlByPath.get(p))
     .filter((u): u is string => Boolean(u));
 
+  // The contact CTA needs the viewer's tier. Only fetch for a logged-in
+  // non-owner — the owner sees Edit, guests see "Sign in to message". RLS
+  // read-own returns just this viewer's row.
+  const isOwner = !!user && listing.author_id === user.id;
+  let viewerIsMember = false;
+  let viewerName: string | null = null;
+  if (user && !isOwner) {
+    const { data: viewer } = await supabase
+      .from("accounts")
+      .select("is_member, name")
+      .eq("id", user.id)
+      .single<{ is_member: boolean; name: string | null }>();
+    viewerIsMember = viewer?.is_member ?? false;
+    viewerName = viewer?.name ?? null;
+  }
+
   return (
     <main className="min-h-screen px-6 py-20">
       <div className="max-w-2xl mx-auto">
@@ -182,26 +199,34 @@ export default async function ListingDetailPage({
           {renderByline(listing.author_name, listing.sponsor_names)}
         </p>
 
-        {/* Contact lives on a member-gated page (/contact does the gating +
-            explains for logged-in accounts). Three cases:
+        {/* Contact opens in an on-page modal (ContactModal) — the gating still
+            happens, just inline instead of on a separate route. Four cases:
               - owner → Edit (you can't message yourself; the fn rejects it too)
-              - logged-in non-owner → Message the lister (/contact gates it)
+              - member → the contact form, in the modal
+              - logged-in account (Tier 1) → the members-only gate, in the modal
               - guest → "Sign in to message" → /login, so the label sets the
-                expectation instead of bouncing them to a bare login screen. */}
-        {user && listing.author_id === user.id ? (
+                expectation instead of bouncing them to a bare login screen.
+            The /listings/[id]/contact route stays live as a no-JS fallback. */}
+        {isOwner ? (
           <Link
             href={`/listings/${listing.id}/edit`}
             className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
           >
             Edit listing
           </Link>
+        ) : viewerIsMember ? (
+          <ContactModal
+            mode="form"
+            listingId={listing.id}
+            listerName={listing.author_name ?? "this member"}
+            senderName={viewerName}
+            senderEmail={user?.email ?? ""}
+          />
         ) : user ? (
-          <Link
-            href={`/listings/${listing.id}/contact`}
-            className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
-          >
-            Message the lister
-          </Link>
+          <ContactModal
+            mode="gate"
+            listerName={listing.author_name ?? "this member"}
+          />
         ) : (
           <Link
             href="/login"

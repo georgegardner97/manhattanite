@@ -26,6 +26,16 @@ type AccountRow = {
   created_at: string;
 };
 
+// One side of the member's trust web, from get_my_connections() (migration 0024).
+//   sponsor  — this person sponsors me ("Sponsored by")
+//   sponsee  — I sponsor this person ("You've sponsored")
+type Connection = {
+  direction: "sponsor" | "sponsee";
+  account_id: string;
+  name: string;
+  is_primary: boolean;
+};
+
 export default async function ProfilePage() {
   const supabase = await createClient();
 
@@ -70,6 +80,14 @@ export default async function ProfilePage() {
     ? supabase.storage.from("avatars").getPublicUrl(account.avatar_path).data
         .publicUrl
     : null;
+
+  // The member's sponsorship web, scoped to themselves by the SECURITY DEFINER
+  // function (auth.uid()). Fails soft: if the migration isn't applied yet, the
+  // rpc errors and we simply render no connections section — nothing breaks.
+  const { data: connectionsData } = await supabase.rpc("get_my_connections");
+  const connections = (connectionsData ?? []) as Connection[];
+  const sponsoredBy = connections.filter((c) => c.direction === "sponsor");
+  const sponsored = connections.filter((c) => c.direction === "sponsee");
 
   return (
     <main className="min-h-screen px-6 py-20">
@@ -128,6 +146,23 @@ export default async function ProfilePage() {
             })}
           />
         </dl>
+
+        {/* Connections — the member's trust web, both directions. On-brand:
+            trust is the product, so we surface who vouched for whom. Hidden
+            entirely when there's nothing to show (or before migration 0024). */}
+        {(sponsoredBy.length > 0 || sponsored.length > 0) && (
+          <div className="mt-16 border-t border-ink/10 pt-12 max-w-md mx-auto">
+            <p className="text-[11px] tracking-[0.22em] uppercase text-slate text-center mb-10">
+              Connections
+            </p>
+            {sponsoredBy.length > 0 && (
+              <ConnectionGroup label="Sponsored by" people={sponsoredBy} />
+            )}
+            {sponsored.length > 0 && (
+              <ConnectionGroup label="You've sponsored" people={sponsored} />
+            )}
+          </div>
+        )}
 
         {/* Member view — the in-product door to the posting form. Without
             this CTA, members have no entry point to /listings/new. */}
@@ -200,6 +235,35 @@ export default async function ProfilePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function ConnectionGroup({
+  label,
+  people,
+}: {
+  label: string;
+  people: Connection[];
+}) {
+  return (
+    <div className="mb-10 last:mb-0 text-center">
+      <p className="text-[11px] tracking-[0.22em] uppercase text-slate mb-4">
+        {label}
+      </p>
+      <ul className="space-y-2">
+        {people.map((p) => (
+          <li key={p.account_id} className="font-serif text-lg text-ink">
+            {p.name}
+            {/* Mark the inviter — the primary sponsor who first brought you in. */}
+            {p.direction === "sponsor" && p.is_primary && (
+              <span className="ml-3 text-[10px] tracking-[0.22em] uppercase text-slate">
+                Inviter
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
