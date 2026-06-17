@@ -82,8 +82,8 @@ export default function SignupPage() {
           </h1>
           <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
           <p className="font-serif text-lg text-slate leading-relaxed mt-10">
-            Manhattanite is a private marketplace for New Yorkers. Create a
-            free account to browse the network. To post a listing or contact a
+            Manhattanite is a private marketplace for New Yorkers. Create an
+            account to browse the network. To post a listing or contact a
             member, you&apos;ll need to be approved.
           </p>
         </div>

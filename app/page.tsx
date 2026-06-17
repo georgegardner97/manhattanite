@@ -163,11 +163,11 @@ export default async function Home() {
               href="/signup"
               className="mh-link mh-link-park text-[13px] tracking-[0.22em] uppercase text-ink"
             >
-              Create a free account &rarr;
+              Create an account &rarr;
             </Link>
           </div>
           <p className="mh-fade-in-delay mt-6 text-[11px] tracking-[0.18em] uppercase text-slate">
-            Free to join
+            No application to browse
           </p>
         </section>
 
@@ -264,15 +264,16 @@ export default async function Home() {
               Start with an account.
             </h2>
             <p className="text-lg leading-[1.8] text-slate max-w-[460px] mx-auto mt-5">
-              It&apos;s free, and it lets you browse the whole network. Posting,
-              messaging, and sponsoring come later, once you&apos;re a member.
+              An account lets you browse the whole network, no application.
+              Posting, messaging, and sponsoring come later, once you&apos;re a
+              member.
             </p>
             <div className="mt-9">
               <Link
                 href="/signup"
                 className="mh-link mh-link-park text-[13px] tracking-[0.22em] uppercase text-ink"
               >
-                Create a free account &rarr;
+                Create an account &rarr;
               </Link>
             </div>
           </div>

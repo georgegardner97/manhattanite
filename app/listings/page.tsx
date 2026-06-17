@@ -137,8 +137,8 @@ export default async function ListingsPage({
         {isGuest && listings && listings.length > 0 && (
           <div className="mt-16 border-t border-ink/10 pt-12 text-center">
             <p className="font-serif text-xl leading-relaxed text-ink">
-              This is a glimpse. Create a free account to see every listing in
-              the network.
+              This is a glimpse. Create an account to see every listing in the
+              network.
             </p>
             <Link
               href="/signup"
