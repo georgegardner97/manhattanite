@@ -121,7 +121,7 @@ export default function ApplicationForm({
           id="sponsor_reference"
           name="sponsor_reference"
           maxLength={200}
-          placeholder="Their email, so they can vouch for you"
+          placeholder="Their email — we'll ask them to vouch for you"
           className={FIELD_BASE}
         />
       </div>

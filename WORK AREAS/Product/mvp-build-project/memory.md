@@ -4,7 +4,41 @@ Chronological log. Newest entries at the top.
 
 ---
 
-## 2026-06-12 · Example listings SEEDED to prod — 17 live with photos, Example badge shipped
+## 2026-06-16 (later still) · Sponsorship-request flow built + landing "two ways in" simplified
+
+**Landing simplified (George's call).** Killed the "Two ways in" Account/Member two-column section — it framed membership as a velvet rope before signup. Replaced with a single account-first closing CTA ("Start with an account"). Also rewrote the "How it works" body plainer/less clever (dropped "genuinely" + the em-dash clause) and bumped the privacy subline from 13px → 16px (George said it looked too small). All in `app/page.tsx`.
+
+**Sponsorship requests — applicant-initiated, sponsor-confirmed (NEW feature, migration 0025 pending prod).** This is the scoped, density-safe version of the deferred "request a sponsor" flow. The decision chain with George: account→member was fuzzy; he wanted the named-member to actually be asked and to confirm/deny by email; we agreed (a) only fire if the named email/name matches a real member (no cold-emailing strangers), (b) the email links to a confirm PAGE not a one-click link (mail clients pre-fetch links), (c) **sponsor confirming does NOT auto-admit — George's one-tap approval stays the moat** at ~5 members.
+- **Flow:** apply + name a member in "Know a member?" → if it matches a member, `request_sponsorship` (DEFINER) creates a `sponsorship_requests` row + we email the member (`sendSponsorshipRequest`) → member opens `/sponsor-request/[token]`, signs in, Confirms/Declines (`respond_to_sponsorship_request`, enforces auth.uid()=sponsor_id) → the admin queue shows "Sponsor confirmed/declined/awaiting" → George approves as before, recording that sponsor.
+- **Files:** migration `0025_sponsorship_requests.sql` (table + RLS [admin-read + sponsor-read-own] + 3 DEFINER fns); `lib/applications/emails.ts` (+sendSponsorshipRequest); `lib/applications/submit.ts` (rpc + email, best-effort, fails soft pre-migration); `lib/sponsorship/respond.ts`; `app/sponsor-request/[token]/page.tsx`; `app/components/SponsorRequestActions.tsx`; `app/admin/applications/page.tsx` (status line); ApplicationForm placeholder updated.
+- **Everything fails soft before 0025 is applied** (rpc/table missing → no request, apply behaves as today). tsc + eslint clean.
+- **PENDING: George must run `0025_sponsorship_requests.sql` in the Supabase SQL editor** (same as 0024). Verify queries are at the bottom of the file. Not committed (sandbox can't push) — bundle with the rest for Claude Code.
+- **Login note:** `/login` hardcodes its post-sign-in redirect to /listings (ignores any `next`), so the confirm page handles not-signed-in by telling the member to sign in and reopen the durable token link. A `next`-param on login is a future nicety.
+
+---
+
+## 2026-06-16 (later) · Duplicate apply-email niggle RESOLVED (was a false alarm) + filter now all 4 categories
+
+**Duplicate apply email — investigated, nothing to fix.** The 2026-06-09 flag (two "near-identical" application emails) does NOT reflect a double-send in the current code. The two emails were **29 min apart with different subjects** — 15:08 "New Manhattanite application" (the old Slice A reviewer-ping subject) and 15:37 "New membership application" (the Slice C subject). That's two separate test submissions straddling the Slice A→C deploy, not one request firing twice. The current `lib/applications/submit.ts` calls `sendApplicantConfirmation` exactly once and `sendReviewerPing` exactly once; the old "New Manhattanite application:" subject exists nowhere in the codebase (removed when Slice C refactored). tsc + eslint clean. **The niggle line in CLAUDE.md Part 2 ("appears to fire two near-identical confirmation emails") is now stale — safe for Claude Code to delete.** Optional future hardening (not done, not needed): a Resend idempotency key on the sends to guard against any accidental retry/double-click.
+
+**Listings filter expanded to all four categories.** George's call: the filter should include every live type, not just the two launch categories. `FILTERS` in `app/listings/page.tsx` now = All · Apartments · Furniture · Other · Services (the full type enum), validated against a `VALID_TYPES` set; the bar wraps on small screens.
+
+---
+
+## 2026-06-16 · UX pass — listings filter, serif headings, profile connections, contact modal
+
+Five George-initiated UX improvements. tsc + eslint clean. **All code-only except one migration that needs hand-running in prod.**
+
+**Shipped (frontend, no DB change):**
+- **Category filter on `/listings`** — segmented bar (All / Apartments / Furniture) via a `?type=` search param (server-rendered, shareable). Query adds `.eq("type", …)` when set; filter-aware empty state. Held price/neighborhood filters for v1.5.
+- **Serif page headings** — `/listings` and `/listings/mine` had eyebrow-only labels (small-caps Inter); gave them Instrument Serif `<h1>`s to match the wordmark + the other pages (George's ask: "titles in the same font as the logo"). new/edit/contact already had serif h1s.
+- **Home redirect** — confirmed `app/page.tsx` already sends logged-in users to `/listings` (not `/profile`); only a stale header comment was fixed.
+- **Contact modal** — "Message the lister" now opens an on-page modal (`app/components/ContactModal.tsx`) instead of routing to `/listings/[id]/contact`. Reuses the existing `ContactForm` → `sendContact` → Resend mechanic (NO real chat — still out of MVP scope). Two modes set server-side: `form` (member) / `gate` (Tier-1 account); guests still link to `/login`. Detail page now fetches viewer `is_member`+`name`. The `/contact` route is KEPT as a no-JS fallback.
+
+**Needs prod action — migration `0024_my_connections.sql` (written, NOT yet applied):**
+- **Profile connections** — profile now shows "Sponsored by" + "You've sponsored" blocks (on-brand: trust is the product). The `sponsorships` table is RLS-locked with zero client policies, so reads go through a new `get_my_connections()` SECURITY DEFINER fn keyed on `auth.uid()` (returns only the caller's own web; granted to authenticated). Profile **fails soft** — if the migration isn't applied, the rpc errors and the section just doesn't render, nothing breaks. **George must run 0024 in the Supabase SQL editor for connections to appear.**
+
+**Next:** George to run migration 0024 in prod; Claude Code to commit + push (sandbox has no push). Inviter shown with an "Inviter" tag. No profile-to-profile links yet (no public `/members/[id]` route exists). — 17 live with photos, Example badge shipped
 
 The seed inventory is live: 10 apartments (A1–A6, A8, A9, A11, A12 from `outputs/Manhattanite_Seed-Listings_v1.md`; A7 + A10 left out) + 7 furniture (FM1–FM7 from `outputs/Manhattanite_Seed-Listings-Furniture-Matched_v1.md`), all `is_example=true`, `status='published'`, every one with photos (commit `c31a6e8`). The named-designer furniture (F1–F15) stays deferred per the matched doc.
 

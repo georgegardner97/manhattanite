@@ -6,6 +6,39 @@ Newest entries at the top.
 
 ---
 
+## 2026-06-12 · Invite slice built (cold-start growth engine) + quick wins + GDC logged-in research
+
+**Strategy call — invite-led, not request-led.** George (logged into a live GDC member account) and I decoded GDC's actual mechanism: request sponsorship from people you know → sponsor accepts → moderators validate; 3 sponsors required; a status ladder (Débutante → Confirmée) gated by how many you sponsor, rate-limited by status. George's sharp pushback: a request-a-sponsor flow needs density we don't have (5 members). **Resolution: build invite-led growth** (a member brings someone in, vouching by inviting), floor stays at **1**, the newcomer still needs George's one-tap approval. Request flow / floor>1 / status ladder are explicitly **deferred** to when there's density. Full reasoning: `outputs/Manhattanite_GDC-Mechanics-and-Recommendations_v1.md`.
+
+**Invite slice — built end to end (3 stages), both migrations applied to prod, awaiting one deploy push:**
+- **0020:** `invites` table (+ RLS: inviter manages own) and `applications.sponsor_id` (the inviter, carried to approval; null = founder default, unchanged).
+- **0021:** `get_invite` (anon read by token), `accept_invite` (invitee links self), `inviter_for_me` (apply reads it to set sponsor_id) — all SECURITY DEFINER.
+- **Flow:** member → `/invite` (in the account menu) sends an invite email → invitee clicks `/join/[token]`, sets a password, `accept_invite` links them → `/apply` attaches the inviter as sponsor → admin queue shows **"Invited by [member]"** and approval records the real sponsor (not George). Trust wall intact; friction moved to the inviter.
+- tsc + eslint clean throughout. Commits: Stage 1 `e082e95` (committed, **unpushed**); Stages 2+3 staged (sandbox git lock blocked the commit — Claude Code to commit + push).
+
+**Quick wins (shipped earlier same session, commits `670ec8c` + `540c972`, live):** login/signup/root → `/listings`; added **Other** + **Service** listing categories (migration 0019, the type CHECK + form + actions); **avatar-menu nav declutter** (My listings/Profile/Admin/Log out moved under the avatar); and the **hand-drawn NYC skyline** restored to the landing hero (from the parked v4 mockup) — confirmed live.
+
+**Open / next:** push the invite commits (Claude Code) to ship the slice. Then: test the full invite loop on prod; consider an "invites you've sent" view (Stage 4-ish); the request-flow + status-ladder remain parked until density.
+
+---
+
+## 2026-06-12 · Landing image band + full QA walkthrough + Terms/Privacy shipped + John Robinson cleared
+
+**Worked on:**
+- **Landing "On the network" band.** Replaced the text-only glimpse with a real image band (GDC-style proof — confirmed GDC leads with real listing cards), moved it directly under the hero, then shrank it on George's feedback to a quiet 672px column of small 4/3 landscape thumbnails with stacked captions. Commits `1045d15` → `da27013`, live. Added migration `0018` (anon read of `listing-images`) so guest covers render; committed it so prod/repo no longer drift. Interleaved the example listings' `created_at` so the teaser leads apartment → furniture mixed (was all-furniture).
+- **Full QA walkthrough on prod** (guest via server-fetch + member/admin via browser). Everything loads; the trust gate holds at every layer. Verified the whole **post → in-review → approve → outcome-email → archive** loop end to end (two-step confirms on approve + remove are a nice touch) using a throwaway listing, and the contact form (member → lister, logs `listing_contacts` + Resend). Report: `outputs/Manhattanite_QA-Walkthrough_Report_v1.md`.
+- **Fixed the two real findings.** (1) `/terms` + `/privacy` were hard 404s linked in the landing footer → built real plain-English **working-draft** pages grounded in `legal-and-policy.md`, each with a visible "pending counsel review" notice (commit `7d26651`). (2) Cleared the fake **'John Robinson'** sponsor from the 2 founder listings (`update listings set sponsor_names='{}' where 'John Robinson' = any(sponsor_names)`) → they now read "Listed by George Gardner". This closes a thread open since the 0006 byline work.
+- **Polish sweep.** Guest listing-detail CTA is now "Sign in to message" → /login (was a "Message the lister" button that bounced guests to a bare login screen); fixed a "Membership is" spacing bug on /terms. Signup copy checked — already consistent ("Create an account" everywhere; "Join the network" is just an on-brand headline), no change.
+
+**Flagged:**
+- T&P are working drafts. A NY attorney should review both (Tier-1 legal item), especially the fair-housing listing-standards language, before any non-George apartment listing goes public. Worth adding to the Legal project.
+- An archived "QA TEST" listing remains in the founder's My Listings (off the public network; Cowork can't hard-delete — George can drop the row if he wants it gone).
+- Contact email **delivery** to seed members unverified (the test message went to seed member Lila, who may have a placeholder email). Confirm a real send before relying on it in a live demo.
+
+**Next:** site is demo-ready — every flow works, legal pages exist, no fake data on bylines. Bigger tracks open: launch-gating legal (entity formation, attorney review of T&P + fair housing) or next features (member invite / add-a-sponsor flow, profile photos, listing search).
+
+---
+
 ## 2026-06-12 · Example listings SEEDED — 17 live on prod with photos, Example badge shipped
 
 **Worked on:**

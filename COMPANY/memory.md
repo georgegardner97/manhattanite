@@ -142,3 +142,11 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 - George has no registered entity yet. Recommended NY LLC by default; Delaware C-Corp only if raising/equity within ~12–18 months. Flagged Manhattan LLC publication cost (~$1,200–2,000).
 - Three do-now items: form entity, Terms+Privacy live before real users, fair-housing guardrails before non-George apartment listings.
 - Output: `Manhattanite_Legal-Roadmap_v1.md`.
+
+## 2026-06-12 — Demo-ready milestone (landing band + QA + legal pages + John Robinson cleared)
+- **Landing:** "On the network" is now a small, chic image band under the hero (not the old text list). Migration `0018` (anon image read) lets guest covers render. Teaser ordering interleaved apartment/furniture.
+- **Full QA walkthrough passed on prod.** Post → moderation → approve → outcome-email → archive loop and the contact form both verified end to end. Report in `mvp-build-project/outputs/Manhattanite_QA-Walkthrough_Report_v1.md`.
+- **`/terms` + `/privacy` now exist** — real plain-English working drafts (still need attorney review; fair-housing language especially). Killed the footer 404s.
+- **'John Robinson' placeholder REMOVED** from the founder's 2 listings — they now read "Listed by George Gardner". This long-open thread is closed.
+- **Polish:** guest "Sign in to message" CTA; Terms spacing fix.
+- **State: the MVP is demo-ready.** Remaining before *real users* (not demo): entity formation + attorney review of T&P/fair-housing. Leftovers: one archived QA-test listing to hard-delete; verify a real contact email lands.

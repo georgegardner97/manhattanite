@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manhattanite — landing mockup v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bone:#F5F0E8; --ink:#0F0E0C; --slate:#5A5A5A; --park:#13241B;
+    --hair:rgba(15,14,12,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bone); color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+  .ital{font-style:italic}
+  .wrap{max-width:680px;margin:0 auto;padding:0 28px}
+  .label{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--slate)}
+  .hair{height:1px;background:var(--hair);border:0}
+  .cta{
+    display:inline-block;font-size:13px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink);text-decoration:none;padding-bottom:6px;position:relative;
+  }
+  .cta::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--ink);transform:scaleX(1);transform-origin:left;transition:transform .35s ease}
+  .cta.muted{color:var(--slate);font-size:12px}
+  .cta.muted::after{background:var(--slate)}
+  .cta.accent::after{height:2px;background:var(--park)}
+  .cta:hover::after{transform:scaleX(0)}
+
+  /* HERO */
+  .hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 28px}
+  .word{font-size:clamp(64px,13vw,140px);line-height:.92;letter-spacing:-.02em}
+  .hero-line{font-size:clamp(22px,3.4vw,30px);line-height:1.35;color:var(--ink);margin-top:38px;max-width:540px}
+  .hero-sub{font-size:16px;color:var(--slate);margin-top:20px;max-width:440px;line-height:1.7}
+  .hero-cta{margin-top:46px}
+  .scrollhint{margin-top:64px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--slate)}
+
+  /* SECTIONS */
+  section.band{padding:108px 0}
+  .center{text-align:center}
+  .eyebrow{margin-bottom:26px}
+  .h2{font-size:clamp(30px,5vw,46px);line-height:1.12;letter-spacing:-.01em;max-width:600px}
+  .lead{font-size:19px;line-height:1.75;color:var(--slate);margin-top:26px;max-width:560px}
+  .lead .ink{color:var(--ink)}
+
+  /* HOW — three statements */
+  .pillars{margin-top:8px}
+  .pillar{padding:40px 0;border-top:1px solid var(--hair)}
+  .pillar:last-child{border-bottom:1px solid var(--hair)}
+  .pillar .n{font-size:12px;letter-spacing:.24em;color:var(--park);text-transform:uppercase}
+  .pillar h3{font-size:clamp(24px,3.6vw,32px);line-height:1.2;margin-top:14px;font-weight:400}
+  .pillar p{font-size:16px;color:var(--slate);margin-top:12px;max-width:520px;line-height:1.7}
+
+  /* TWO TIERS */
+  .tiers{display:grid;grid-template-columns:1fr;gap:0;margin-top:18px;border-top:1px solid var(--hair)}
+  .tier{padding:38px 0;border-bottom:1px solid var(--hair)}
+  .tier .k{font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+  .tier .d{font-size:17px;color:var(--slate);margin-top:12px;line-height:1.7;max-width:540px}
+  .tier-cta{margin-top:22px}
+
+  footer{border-top:1px solid var(--hair);padding:72px 28px;text-align:center}
+  .foot-word{font-size:34px;letter-spacing:-.01em}
+  .foot-meta{margin-top:14px;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--slate)}
+  .foot-links{margin-top:34px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+  .foot-links a{color:var(--slate);text-decoration:none}
+  .foot-links a:hover{color:var(--ink)}
+
+  .note{max-width:680px;margin:0 auto 0;padding:14px 28px 40px;text-align:center;font-size:11px;color:var(--slate);letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <header class="hero">
+    <h1 class="serif word">Manhattan<span class="ital">ite</span></h1>
+    <p class="serif hero-line">A private marketplace for New York.</p>
+    <p class="hero-sub">Every member is vouched for. Every listing is read by a person before it reaches you. The opposite of shouting into the void.</p>
+    <div class="hero-cta"><a class="cta accent" href="#">Create a free account &rarr;</a></div>
+    <div class="scrollhint">Scroll</div>
+  </header>
+
+  <!-- THE PROBLEM -->
+  <section class="band">
+    <div class="wrap center">
+      <p class="label eyebrow">Why it exists</p>
+      <h2 class="serif h2">The good listings never make it to the open web.</h2>
+      <p class="lead">They move through group chats. A friend of a friend. A text to the three people who'd actually know. <span class="ink">The signal was always in the network</span> — we just built the marketplace around it, instead of around strangers.</p>
+    </div>
+  </section>
+
+  <hr class="hair" />
+
+  <!-- HOW IT WORKS -->
+  <section class="band">
+    <div class="wrap">
+      <div class="center"><p class="label eyebrow">How it works</p>
+        <h2 class="serif h2" style="margin:0 auto">Trust, built in &mdash; not patched on.</h2>
+      </div>
+      <div class="pillars">
+        <div class="pillar">
+          <span class="n">01</span>
+          <h3 class="serif">Everyone's been vouched for.</h3>
+          <p>Each member is someone's referral, and their sponsor is named in the open. Nobody enters the network anonymously.</p>
+        </div>
+        <div class="pillar">
+          <span class="n">02</span>
+          <h3 class="serif">Every listing passes a person.</h3>
+          <p>Nothing goes public automatically. Each one is read and approved first. The bar is taste, not a list of rules.</p>
+        </div>
+        <div class="pillar">
+          <span class="n">03</span>
+          <h3 class="serif">Bad actors don't get policed.</h3>
+          <p>They don't get in. Quality compounds because the network polices itself &mdash; every cohort raises the bar for the next.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hair" />
+
+  <!-- TWO TIERS -->
+  <section class="band">
+    <div class="wrap">
+      <div class="center"><p class="label eyebrow">Two ways in</p>
+        <h2 class="serif h2" style="margin:0 auto">Browse freely. Earn the rest.</h2>
+      </div>
+      <div class="tiers">
+        <div class="tier">
+          <p class="k">Account &mdash; free</p>
+          <p class="d">Anyone with an email. Browse every listing in the network, no application needed. The lobby, not the building.</p>
+          <div class="tier-cta"><a class="cta" href="#">Create an account &rarr;</a></div>
+        </div>
+        <div class="tier">
+          <p class="k">Member &mdash; by application</p>
+          <p class="d">Apply when you're ready, or be brought in by someone already inside. Members post listings, contact sellers, and sponsor the next person in.</p>
+          <div class="tier-cta"><a class="cta muted" href="#">Apply for membership &rarr;</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hair" />
+
+  <!-- WHAT YOU'LL FIND -->
+  <section class="band">
+    <div class="wrap center">
+      <p class="label eyebrow">What's inside</p>
+      <h2 class="serif h2" style="margin:0 auto">Apartments and furniture, to start.</h2>
+      <p class="lead">A south-facing one-bed off Bleecker. A walnut table worth keeping. Jobs, sublets, and more as the network grows &mdash; each one an entry worth reading, not a classified to scroll past.</p>
+    </div>
+  </section>
+
+  <hr class="hair" />
+
+  <!-- THE FEELING / CLOSE -->
+  <section class="band">
+    <div class="wrap center">
+      <p class="label eyebrow">The idea</p>
+      <h2 class="serif h2" style="margin:0 auto">Like a tip from a well-connected friend.</h2>
+      <p class="lead">The one who always knows the apartment before it's listed, the piece worth buying, the person worth meeting. <span class="ink">Now it's a place.</span></p>
+      <div style="margin-top:42px"><a class="cta accent" href="#">Create a free account &rarr;</a></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p class="serif foot-word">Manhattan<span class="ital">ite</span></p>
+    <p class="foot-meta">For New Yorkers</p>
+    <div class="foot-links">
+      <a href="#">Contact</a><span>New York City</span><a href="#">Privacy</a><a href="#">Terms</a><span>&copy; 2026</span>
+    </div>
+  </footer>
+
+  <p class="note">Mockup v1 &mdash; copy + layout proposal for the Phase 1.5 landing rework. Black + bone, Instrument Serif + Inter, park-green accent. Not yet built into the app.</p>
+
+</body>
+</html>

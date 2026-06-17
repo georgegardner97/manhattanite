@@ -233,9 +233,9 @@ export default async function Home() {
               Everyone here was vouched for.
             </h2>
             <p className="text-lg leading-[1.8] text-slate max-w-[500px] mx-auto mt-6">
-              A member brings you in and stands behind you &mdash; accountable
-              for you, too, so people only vouch for those they genuinely
-              trust. And every listing is read by hand before it goes live.{" "}
+              A member has to bring you in and vouch for you. So everyone here is
+              someone another member trusts, and every listing is checked by a
+              person before it goes live.{" "}
               <span className="text-ink">
                 Nothing reaches you that a person hasn&apos;t checked first.
               </span>
@@ -248,50 +248,32 @@ export default async function Home() {
           <p className="font-serif text-2xl md:text-[26px] leading-[1.4] text-ink max-w-[460px] mx-auto">
             Private, in the literal sense.
           </p>
-          <p className="text-[13px] text-slate mt-3.5">
+          <p className="text-base leading-[1.7] text-slate mt-4 max-w-[440px] mx-auto">
             The network is closed to search engines. What&apos;s here stays
             between members.
           </p>
         </div>
 
-        {/* ============ TWO WAYS IN ============ */}
+        {/* ============ CLOSING CTA — one door: start with an account ============
+            Replaces the old "Two ways in" Account/Member split. George's call
+            (2026-06-16): don't advertise two doors up front. Membership is a
+            later step you discover once you're in, not a parallel entrance. */}
         <section className="py-26">
-          <div className="max-w-[600px] mx-auto px-7">
-            <p className={`${LABEL} mb-6 text-center`}>Two ways in</p>
-            <div className="border-t border-ink/10">
-              <div className="py-8 border-b border-ink/10">
-                <p className="text-[13px] tracking-[0.2em] uppercase text-ink">
-                  Account
-                </p>
-                <p className="text-slate leading-[1.7] max-w-[480px] mt-2.5">
-                  Free, no application. Browse every listing in the network.
-                </p>
-                <div className="mt-4">
-                  <Link
-                    href="/signup"
-                    className="mh-link text-[13px] tracking-[0.22em] uppercase text-ink"
-                  >
-                    Create an account &rarr;
-                  </Link>
-                </div>
-              </div>
-              <div className="py-8 border-b border-ink/10">
-                <p className="text-[13px] tracking-[0.2em] uppercase text-ink">
-                  Member
-                </p>
-                <p className="text-slate leading-[1.7] max-w-[480px] mt-2.5">
-                  Post, contact, and sponsor. Apply when you&apos;re ready
-                  &mdash; or ask a member to bring you in.
-                </p>
-                <div className="mt-4">
-                  <Link
-                    href="/apply"
-                    className="mh-link text-[12px] tracking-[0.22em] uppercase text-slate"
-                  >
-                    Apply for membership &rarr;
-                  </Link>
-                </div>
-              </div>
+          <div className="max-w-[560px] mx-auto px-7 text-center">
+            <h2 className="font-serif font-light text-3xl md:text-[34px] leading-[1.2] tracking-tight text-ink">
+              Start with an account.
+            </h2>
+            <p className="text-lg leading-[1.8] text-slate max-w-[460px] mx-auto mt-5">
+              It&apos;s free, and it lets you browse the whole network. Posting,
+              messaging, and sponsoring come later, once you&apos;re a member.
+            </p>
+            <div className="mt-9">
+              <Link
+                href="/signup"
+                className="mh-link mh-link-park text-[13px] tracking-[0.22em] uppercase text-ink"
+              >
+                Create a free account &rarr;
+              </Link>
             </div>
           </div>
         </section>

@@ -38,18 +38,23 @@ function formatPrice(cents: number, type: ListingCard["type"]): string {
   return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
 }
 
-// The category filter — kept to the two launch categories. Server-driven via
-// the ?type= param; an absent or unknown value means "All".
+// The category filter — every live listing type (the type enum: apartment,
+// furniture, other, service). Server-driven via the ?type= param; an absent or
+// unknown value means "All".
 const FILTERS = [
   { label: "All", value: null },
   { label: "Apartments", value: "apartment" },
   { label: "Furniture", value: "furniture" },
+  { label: "Other", value: "other" },
+  { label: "Services", value: "service" },
 ] as const;
 
 type FilterValue = (typeof FILTERS)[number]["value"];
 
+const VALID_TYPES = new Set(["apartment", "furniture", "other", "service"]);
+
 function normalizeType(raw: string | undefined): FilterValue {
-  return raw === "apartment" || raw === "furniture" ? raw : null;
+  return raw && VALID_TYPES.has(raw) ? (raw as FilterValue) : null;
 }
 
 export default async function ListingsPage({
@@ -152,7 +157,7 @@ export default async function ListingsPage({
 // a category reloads the page with the ?type= param (server-rendered, shareable).
 function FilterBar({ activeType }: { activeType: FilterValue }) {
   return (
-    <div className="flex items-center justify-center gap-6 sm:gap-8 mb-16">
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:gap-x-8 mb-16">
       {FILTERS.map((f) => {
         const isActive = f.value === activeType;
         const href = f.value ? `/listings?type=${f.value}` : "/listings";

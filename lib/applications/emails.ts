@@ -158,6 +158,40 @@ export async function sendInviteEmail({
 }
 
 // ---------------------------------------------------------------------------
+// 3c. Sponsorship request — an applicant named this member as a vouch. Sent to
+//     the member, who confirms or declines on the linked page (NOT a one-click
+//     link in the body: mail clients pre-fetch links, so the action lives behind
+//     an explicit button on the page). The founder still gives final approval.
+// ---------------------------------------------------------------------------
+export async function sendSponsorshipRequest({
+  to,
+  sponsorName,
+  requesterName,
+  token,
+}: {
+  to: string;
+  sponsorName: string | null;
+  requesterName: string;
+  token: string;
+}): Promise<void> {
+  const greeting = sponsorName ? `Hi ${sponsorName},` : "Hi,";
+  const reviewUrl = `https://manhattanite.com/sponsor-request/${token}`;
+
+  const inner = `
+    <p style="margin:0 0 20px;">${greeting}</p>
+    <p style="margin:0 0 20px;"><strong>${requesterName}</strong> is applying to join Manhattanite and named you as someone who would vouch for them.</p>
+    <p style="margin:0 0 28px;">If you know them and you're happy to sponsor them, confirm it below. If not, you can decline — they won't be told who declined.</p>
+    <p style="margin:0;"><a href="${reviewUrl}" style="color:#1a1a1a;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;">Review the request &rarr;</a></p>`;
+
+  await resend.emails.send({
+    from: APPLICATIONS_FROM,
+    to,
+    subject: `${requesterName} asked you to vouch for them`,
+    html: shell(inner),
+  });
+}
+
+// ---------------------------------------------------------------------------
 // 4. Listing contact — a member reaching out to a lister, sent to the lister.
 //    Reply-To is set to the SENDER's address: this is what realizes "the lister
 //    chooses whether to reply directly" — they just hit reply and it reaches the

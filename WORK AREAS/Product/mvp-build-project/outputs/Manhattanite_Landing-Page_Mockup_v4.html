@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manhattanite — landing mockup v4 (magazine)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bone:#F5F0E8; --ink:#0F0E0C; --slate:#5A5A5A; --park:#13241B; --hair:rgba(15,14,12,.12); }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bone);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
+  .serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+  .ital{font-style:italic}
+  .wrap{max-width:600px;margin:0 auto;padding:0 28px}
+  .label{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--slate)}
+  .cta{display:inline-block;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding-bottom:6px;position:relative}
+  .cta::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--ink);transform:scaleX(1);transform-origin:left;transition:transform .35s ease}
+  .cta.accent::after{height:2px;background:var(--park)}
+  .cta.muted{color:var(--slate);font-size:12px}
+  .cta.muted::after{background:var(--slate)}
+  .cta:hover::after{transform:scaleX(0)}
+
+  /* EDITORIAL TOP NAV — small spread uppercase links (Sigma-style) */
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:24px 28px;border-bottom:1px solid var(--hair)}
+  .topnav .brand{font-family:"Instrument Serif",serif;font-size:22px;letter-spacing:-.01em}
+  .topnav .links{display:flex;gap:30px}
+  .topnav a{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);text-decoration:none}
+  .topnav a:hover{color:var(--ink)}
+
+  /* HERO — masthead + line illustration */
+  .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:74px 28px 96px}
+  .edition{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--slate);margin-bottom:30px}
+  .word{font-size:clamp(60px,12vw,134px);line-height:.92;letter-spacing:-.02em}
+  .illus{margin:34px auto 6px;width:min(440px,84%);color:var(--ink)}
+  .illus svg{width:100%;height:auto;display:block}
+  .hero-line{font-size:clamp(21px,3vw,27px);line-height:1.35;margin-top:26px}
+  .hero-sub{font-size:16px;color:var(--slate);margin-top:16px;max-width:420px;line-height:1.75}
+  .hero-cta{margin-top:40px}
+  .hero-micro{margin-top:20px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate)}
+
+  section.band{padding:100px 0}
+  .center{text-align:center}
+  /* centered serif "masthead" section headers */
+  .mast{margin-bottom:30px;text-align:center}
+  .mast .label{display:block;margin-bottom:18px}
+  .mast h2{font-family:"Instrument Serif",serif;font-weight:400;font-size:clamp(30px,4.6vw,42px);line-height:1.12;letter-spacing:-.01em;max-width:520px;margin:0 auto}
+  .lead{font-size:18px;line-height:1.8;color:var(--slate);margin:0 auto;max-width:500px;text-align:center}
+  .lead .ink{color:var(--ink)}
+
+  .feed{margin-top:8px;border-top:1px solid var(--hair)}
+  .row{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:22px 2px;border-bottom:1px solid var(--hair)}
+  .row .place{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate);white-space:nowrap}
+  .row .title{font-size:clamp(19px,2.6vw,23px);line-height:1.25;text-align:right}
+  .feed-cta{margin-top:32px;text-align:center}
+
+  .aside{padding:88px 28px;text-align:center}
+  .aside p{font-family:"Instrument Serif",serif;font-size:clamp(20px,3vw,26px);line-height:1.4;max-width:460px;margin:0 auto}
+  .aside .sm{font-family:"Inter",sans-serif;font-size:13px;color:var(--slate);margin-top:14px}
+
+  .tiers{margin-top:8px;border-top:1px solid var(--hair)}
+  .tier{padding:34px 0;border-bottom:1px solid var(--hair)}
+  .tier .k{font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+  .tier .d{font-size:16px;color:var(--slate);margin-top:10px;line-height:1.7;max-width:480px}
+  .tier-cta{margin-top:18px}
+
+  footer{border-top:1px solid var(--hair);padding:60px 28px;text-align:center}
+  .foot-mark{width:74px;margin:0 auto 18px;color:var(--ink)}
+  .foot-mark svg{width:100%;height:auto;display:block}
+  .foot-word{font-family:"Instrument Serif",serif;font-size:30px;letter-spacing:-.01em}
+  .foot-meta{margin-top:10px;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--slate)}
+  .foot-links{margin-top:28px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+  .foot-links a{color:var(--slate);text-decoration:none}
+  .foot-links a:hover{color:var(--ink)}
+  .note{max-width:600px;margin:0 auto;padding:14px 28px 40px;text-align:center;font-size:11px;color:var(--slate)}
+</style>
+</head>
+<body>
+
+  <!-- EDITORIAL TOP NAV -->
+  <nav class="topnav">
+    <span class="brand">Manhattan<span class="ital">ite</span></span>
+    <span class="links">
+      <a href="#">Listings</a>
+      <a href="#">How it works</a>
+      <a href="#">Log in</a>
+      <a href="#">Create account</a>
+    </span>
+  </nav>
+
+  <!-- HERO — masthead + NYC line illustration -->
+  <header class="hero">
+    <p class="edition">A members' marketplace &mdash; New York</p>
+    <h1 class="serif word">Manhattan<span class="ital">ite</span></h1>
+
+    <div class="illus" aria-hidden="true">
+      <svg viewBox="0 0 480 150" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter">
+        <!-- ground line -->
+        <line x1="6" y1="140" x2="474" y2="140"/>
+        <!-- brownstone row (stepped roofline) -->
+        <path d="M30 140 V70 H92 V58 H150 V84 H210 V64 H276 V52 H338 V80 H398 V66 H452 V140"/>
+        <!-- cornice ticks -->
+        <line x1="30" y1="76" x2="92" y2="76"/>
+        <line x1="92" y1="64" x2="150" y2="64"/>
+        <line x1="150" y1="90" x2="210" y2="90"/>
+        <line x1="210" y1="70" x2="276" y2="70"/>
+        <line x1="276" y1="58" x2="338" y2="58"/>
+        <line x1="338" y1="86" x2="398" y2="86"/>
+        <line x1="398" y1="72" x2="452" y2="72"/>
+        <!-- windows -->
+        <rect x="44" y="92" width="12" height="16"/><rect x="66" y="92" width="12" height="16"/>
+        <rect x="44" y="116" width="12" height="16"/><rect x="66" y="116" width="12" height="16"/>
+        <rect x="108" y="80" width="12" height="16"/><rect x="128" y="80" width="12" height="16"/>
+        <rect x="108" y="104" width="12" height="16"/><rect x="128" y="104" width="12" height="16"/>
+        <rect x="232" y="86" width="12" height="16"/><rect x="252" y="86" width="12" height="16"/>
+        <rect x="232" y="110" width="12" height="16"/><rect x="252" y="110" width="12" height="16"/>
+        <rect x="356" y="100" width="12" height="16"/><rect x="376" y="100" width="12" height="16"/>
+        <rect x="416" y="88" width="12" height="16"/>
+        <!-- water tower on a roof -->
+        <g>
+          <path d="M296 52 l9 -16 h26 l9 16 Z"/>   <!-- conical roof -->
+          <rect x="298" y="52" width="34" height="20"/> <!-- tank -->
+          <line x1="302" y1="72" x2="300" y2="80"/>
+          <line x1="328" y1="72" x2="330" y2="80"/>
+        </g>
+        <!-- second smaller water tower -->
+        <g>
+          <path d="M118 58 l7 -12 h20 l7 12 Z"/>
+          <rect x="120" y="58" width="28" height="16"/>
+        </g>
+      </svg>
+    </div>
+
+    <p class="serif hero-line">A private marketplace for New York.</p>
+    <p class="hero-sub">You're brought in by someone who vouches for you. It's why there are no scams, no spam, and no strangers.</p>
+    <div class="hero-cta"><a class="cta accent" href="#">Create a free account &rarr;</a></div>
+    <p class="hero-micro">Free to join</p>
+  </header>
+
+  <!-- HOW IT WORKS -->
+  <section class="band">
+    <div class="wrap">
+      <div class="mast"><span class="label">How it works</span><h2>Everyone here was vouched for.</h2></div>
+      <p class="lead">A member brings you in and stands behind you &mdash; accountable for you, too, so people only vouch for those they genuinely trust. And every listing is read by hand before it goes live. <span class="ink">Nothing reaches you that a person hasn't checked first.</span></p>
+    </div>
+  </section>
+
+  <!-- ON THE NETWORK -->
+  <section class="band">
+    <div class="wrap">
+      <div class="mast"><span class="label">On the network</span></div>
+      <div class="feed">
+        <div class="row"><span class="place">West Village</span><span class="serif title">Sunny one-bed off Bleecker</span></div>
+        <div class="row"><span class="place">Tribeca</span><span class="serif title">Ceccotti walnut dining table</span></div>
+        <div class="row"><span class="place">Upper East Side</span><span class="serif title">Sublet, June through August</span></div>
+        <div class="row"><span class="place">SoHo</span><span class="serif title">Mid-century lounge chair</span></div>
+        <div class="row"><span class="place">East Village</span><span class="serif title">Spare room, flexible dates</span></div>
+      </div>
+      <div class="feed-cta"><a class="cta muted" href="#">Browse the network &rarr;</a></div>
+    </div>
+  </section>
+
+  <!-- PRIVACY ASIDE -->
+  <div class="aside">
+    <p class="serif">Private, in the literal sense.</p>
+    <p class="sm">The network is closed to search engines. What's here stays between members.</p>
+  </div>
+
+  <!-- TWO WAYS IN -->
+  <section class="band">
+    <div class="wrap">
+      <div class="mast"><span class="label">Two ways in</span></div>
+      <div class="tiers">
+        <div class="tier">
+          <p class="k">Account</p>
+          <p class="d">Free, no application. Browse every listing in the network.</p>
+          <div class="tier-cta"><a class="cta" href="#">Create an account &rarr;</a></div>
+        </div>
+        <div class="tier">
+          <p class="k">Member</p>
+          <p class="d">Post, contact, and sponsor. Apply when you're ready &mdash; or ask a member to bring you in.</p>
+          <div class="tier-cta"><a class="cta muted" href="#">Apply for membership &rarr;</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER with small illustration echo -->
+  <footer>
+    <div class="foot-mark" aria-hidden="true">
+      <svg viewBox="0 0 120 40" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="square">
+        <line x1="4" y1="36" x2="116" y2="36"/>
+        <path d="M16 36 V20 H40 V14 H64 V24 H88 V18 H104 V36"/>
+        <path d="M70 24 l5 -9 h14 l5 9 Z"/><rect x="72" y="24" width="20" height="10"/>
+      </svg>
+    </div>
+    <p class="foot-word">Manhattan<span class="ital">ite</span></p>
+    <p class="foot-meta">For New Yorkers</p>
+    <div class="foot-links">
+      <a href="#">Contact</a><span>New York City</span><a href="#">Privacy</a><a href="#">Terms</a><span>&copy; 2026</span>
+    </div>
+  </footer>
+
+  <p class="note">Mockup v4 &mdash; magazine pass: editorial top nav, masthead hero with a hand-drawn New York line illustration (no photo needed), centered serif section headers. Same copy as v3.</p>
+
+</body>
+</html>

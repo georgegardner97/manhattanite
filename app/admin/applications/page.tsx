@@ -93,6 +93,31 @@ export default async function AdminApplicationsPage() {
     .eq("is_member", true)
     .returns<{ id: string; name: string | null; email: string }[]>();
 
+  // Sponsorship-request status per application (migration 0025). Admin reads all
+  // via the sponsorship_requests_admin_read policy. Shown next to a referral so
+  // George sees whether the named member has actually confirmed the vouch. Fails
+  // soft before the migration is applied (the table is missing → no rows → no
+  // status shown, queue behaves exactly as today).
+  const requestStatusByApp = new Map<
+    string,
+    "pending" | "confirmed" | "declined"
+  >();
+  {
+    const appIds = (applications ?? []).map((a) => a.id);
+    if (appIds.length > 0) {
+      const { data: reqs } = await supabase
+        .from("sponsorship_requests")
+        .select("application_id, status")
+        .in("application_id", appIds)
+        .returns<
+          { application_id: string; status: "pending" | "confirmed" | "declined" }[]
+        >();
+      for (const r of reqs ?? []) {
+        requestStatusByApp.set(r.application_id, r.status);
+      }
+    }
+  }
+
   function matchReferral(
     ref: string | null
   ): { id: string; name: string | null } | null {
@@ -159,7 +184,13 @@ export default async function AdminApplicationsPage() {
                       key={application.id}
                       className="border-t border-ink/10 py-10 last:border-b"
                     >
-                      <ApplicationCard application={application} sponsor={sp} />
+                      <ApplicationCard
+                        application={application}
+                        sponsor={sp}
+                        requestStatus={
+                          requestStatusByApp.get(application.id) ?? null
+                        }
+                      />
                       <ApplicationActions
                         applicationId={application.id}
                         sponsorId={sp?.id ?? null}
@@ -188,6 +219,9 @@ export default async function AdminApplicationsPage() {
                       <ApplicationCard
                         application={application}
                         sponsor={effectiveSponsor(application)}
+                        requestStatus={
+                          requestStatusByApp.get(application.id) ?? null
+                        }
                       />
                       {application.reviewer_note && (
                         <p className="mt-4 text-sm text-slate">
@@ -212,9 +246,11 @@ export default async function AdminApplicationsPage() {
 function ApplicationCard({
   application,
   sponsor,
+  requestStatus,
 }: {
   application: ApplicationRow;
   sponsor: { name: string | null; source: "invite" | "referral" } | null;
+  requestStatus: "pending" | "confirmed" | "declined" | null;
 }) {
   return (
     <div>
@@ -251,11 +287,21 @@ function ApplicationCard({
       {sponsor && sponsor.source === "referral" && (
         <p className="mt-4 text-sm text-ink">
           <span className="text-[11px] tracking-[0.22em] uppercase text-slate">
-            Referred by:&nbsp;
+            {requestStatus === "confirmed"
+              ? "Sponsor confirmed: "
+              : requestStatus === "declined"
+                ? "Sponsor declined: "
+                : "Referred by: "}
           </span>
           {sponsor.name ?? "a member"}
           <span className="font-serif italic text-slate">
-            &nbsp;— a member; approve to record as sponsor
+            {requestStatus === "confirmed"
+              ? " — they vouched; approve to record as sponsor"
+              : requestStatus === "declined"
+                ? " — they declined the request"
+                : requestStatus === "pending"
+                  ? " — asked to vouch, awaiting their reply"
+                  : " — a member; approve to record as sponsor"}
           </span>
         </p>
       )}

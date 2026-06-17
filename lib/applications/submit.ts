@@ -26,6 +26,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   sendApplicantConfirmation,
   sendReviewerPing,
+  sendSponsorshipRequest,
 } from "@/lib/applications/emails";
 
 export type SubmitApplicationState = { error: string | null };
@@ -191,6 +192,35 @@ export async function submitApplication(
     });
   } catch (error) {
     console.error("Reviewer notification email failed (application saved):", error);
+  }
+
+  // ---- 4. Sponsorship request (best-effort). ----
+  // If the applicant named someone in "Know a member?", ask that member to
+  // vouch. request_sponsorship (0025) only creates a request when the reference
+  // matches a real member, and returns the sponsor's details so we can email
+  // them; they confirm/decline on /sponsor-request/[token]. Fails soft — incl.
+  // before the 0025 migration is applied — so a miss never touches the saved
+  // application. The token is the 122-bit secret in the email link.
+  if (sponsorReference) {
+    try {
+      const token = crypto.randomUUID();
+      const { data: sponsorRows } = await supabase.rpc("request_sponsorship", {
+        p_application_id: inserted.id,
+        p_reference: sponsorReference,
+        p_token: token,
+      });
+      const sponsor = Array.isArray(sponsorRows) ? sponsorRows[0] : null;
+      if (sponsor?.sponsor_email) {
+        await sendSponsorshipRequest({
+          to: sponsor.sponsor_email,
+          sponsorName: sponsor.sponsor_name ?? null,
+          requesterName: name,
+          token,
+        });
+      }
+    } catch (error) {
+      console.error("Sponsorship request failed (application saved):", error);
+    }
   }
 
   // Success — a pending row now exists, so /apply renders the confirmation state.

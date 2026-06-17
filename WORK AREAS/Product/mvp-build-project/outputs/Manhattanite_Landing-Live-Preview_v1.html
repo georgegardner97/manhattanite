@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manhattanite — landing (preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#F5F0E8; --ink:#0F0E0C; --slate:#5A5A5A; --park:#13241B;
+    --serif:"Instrument Serif",Georgia,serif; --sans:"Inter",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bone);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .label{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--slate)}
+
+  nav{display:flex;align-items:center;justify-content:space-between;padding:26px 28px;max-width:1200px;margin:0 auto}
+  nav .brand{font-family:var(--serif);font-size:26px}
+  nav .brand i{font-style:italic}
+  nav .links{display:flex;gap:30px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--slate)}
+  nav .links a.cta{color:var(--ink)}
+
+  .hero{min-height:74vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 24px 26px}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(76px,13vw,150px);letter-spacing:-.04em;line-height:.9}
+  .hero h1 i{font-style:italic}
+  .hero .lede{font-family:var(--serif);font-size:28px;line-height:1.35;margin-top:36px}
+  .hero .sub{max-width:430px;color:var(--slate);line-height:1.75;margin-top:20px;font-size:15px}
+  .hero .act{margin-top:44px}
+  .hero .act a{font-size:13px;letter-spacing:.22em;text-transform:uppercase;border-bottom:1px solid var(--park);padding-bottom:4px}
+  .hero .free{margin-top:24px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate)}
+
+  .band{padding:6px 0 90px}
+  .band .inner{max-width:672px;margin:0 auto;padding:0 28px}
+  .band .label{display:block;text-align:center;margin-bottom:36px}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .card .ph{aspect-ratio:4/3;overflow:hidden;background:rgba(15,14,12,.05)}
+  .card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .place{margin-top:14px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate)}
+  .card h3{margin-top:4px;font-family:var(--serif);font-weight:400;font-size:15px;line-height:1.3}
+  .card .price{margin-top:2px;font-size:13px;color:var(--slate)}
+  .band .browse{margin-top:48px;text-align:center}
+  .band .browse a{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--slate);border-bottom:1px solid rgba(15,14,12,.25);padding-bottom:3px}
+
+  .how{padding:84px 0;text-align:center}
+  .how .inner{max-width:600px;margin:0 auto;padding:0 28px}
+  .how .label{margin-bottom:24px;display:block}
+  .how h2{font-family:var(--serif);font-weight:400;font-size:42px;line-height:1.15;max-width:520px;margin:0 auto}
+  .how p{font-size:18px;line-height:1.8;color:var(--slate);max-width:500px;margin:24px auto 0}
+  .how p .em{color:var(--ink)}
+
+  .priv{padding:76px 0;text-align:center}
+  .priv h3{font-family:var(--serif);font-size:26px;line-height:1.4;max-width:460px;margin:0 auto}
+  .priv p{font-size:13px;color:var(--slate);margin-top:14px}
+
+  footer{border-top:1px solid rgba(15,14,12,.1);padding:60px 24px;text-align:center}
+  footer .fmark{font-family:var(--serif);font-size:30px}
+  footer .fmark i{font-style:italic}
+  footer .ftag{margin-top:12px;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--slate)}
+  footer .frow{margin-top:36px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+
+  .note{max-width:1040px;margin:0 auto;padding:14px 28px;font-size:12px;color:var(--slate);border-bottom:1px solid rgba(15,14,12,.08)}
+  @media(max-width:640px){.cards{grid-template-columns:1fr;gap:30px;max-width:300px;margin:0 auto}.hero{min-height:auto}}
+</style>
+</head>
+<body>
+  <div class="note">Preview of the revised landing (logged-out view) — smaller, quieter image band. Photos are the real seed listings.</div>
+
+  <nav>
+    <div class="brand">Manhattan<i>ite</i></div>
+    <div class="links"><a>Listings</a><a>Log in</a><a class="cta">Create account</a></div>
+  </nav>
+
+  <section class="hero">
+    <h1>Manhattan<i>ite</i></h1>
+    <p class="lede">A private marketplace for New York.</p>
+    <p class="sub">You&rsquo;re brought in by someone who vouches for you. It&rsquo;s why there are no scams, no spam, and no strangers.</p>
+    <div class="act"><a>Create a free account &rarr;</a></div>
+    <p class="free">Free to join</p>
+  </section>
+
+  <section class="band">
+    <div class="inner">
+      <span class="label">On the network</span>
+      <div class="cards">
+        <div class="card">
+          <div class="ph"><img alt="" src="https://tjelmwbbyqfbtwnewadt.supabase.co/storage/v1/object/sign/listing-images/955fea18-978c-4f49-88fa-583e94d99501/e6e1ba4a-8e5a-41bf-a42b-edd336228929.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iZWYyOTBlNy0zMzA3LTRjN2MtODYwMC0wOThmOGE2ZWYwNjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsaXN0aW5nLWltYWdlcy85NTVmZWExOC05NzhjLTRmNDktODhmYS01ODNlOTRkOTk1MDEvZTZlMWJhNGEtOGU1YS00MWJmLWE0MmItZWRkMzM2MjI4OTI5LmpwZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODEzMDIwMjMsImV4cCI6MTc4MTMwNTYyM30.BkxedNJPENs9kUy9rhLr5ZL8Jp26XICJCE1880m5IIQ"></div>
+          <p class="place">Upper East Side</p>
+          <h3>One-bedroom &middot; Upper East Side</h3>
+          <p class="price">$4,200/mo</p>
+        </div>
+        <div class="card">
+          <div class="ph"><img alt="" src="https://tjelmwbbyqfbtwnewadt.supabase.co/storage/v1/object/sign/listing-images/2623aa16-2acd-41d5-b63a-e26ef9bb0c3f/a361f2e5-4432-4f92-b664-e122aa1eaf5c.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iZWYyOTBlNy0zMzA3LTRjN2MtODYwMC0wOThmOGE2ZWYwNjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsaXN0aW5nLWltYWdlcy8yNjIzYWExNi0yYWNkLTQxZDUtYjYzYS1lMjZlZjliYjBjM2YvYTM2MWYyZTUtNDQzMi00ZjkyLWI2NjQtZTEyMmFhMWVhZjVjLmpwZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODEzMDIwMjMsImV4cCI6MTc4MTMwNTYyM30.-OOLBEOivO_wDf9mt-baIFt4TRWi-3qyqkCpuXQoQnY"></div>
+          <p class="place">Lower East Side</p>
+          <h3>Reclaimed-wood coffee table</h3>
+          <p class="price">$220</p>
+        </div>
+        <div class="card">
+          <div class="ph"><img alt="" src="https://tjelmwbbyqfbtwnewadt.supabase.co/storage/v1/object/sign/listing-images/afed3b39-f303-4fc9-a7e4-395020628a89/f843bd5f-064e-4f6a-83f0-559b3942badc.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iZWYyOTBlNy0zMzA3LTRjN2MtODYwMC0wOThmOGE2ZWYwNjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsaXN0aW5nLWltYWdlcy9hZmVkM2IzOS1mMzAzLTRmYzktYTdlNC0zOTUwMjA2MjhhODkvZjg0M2JkNWYtMDY0ZS00ZjZhLTgzZjAtNTU5YjM5NDJiYWRjLmpwZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODEzMDIwMjMsImV4cCI6MTc4MTMwNTYyM30.zQ1pFLLjuT6AEpuNTQPFI6WyY7IyYyfe5ozDXS-SifE"></div>
+          <p class="place">Yorkville</p>
+          <h3>One-bedroom &middot; Yorkville</h3>
+          <p class="price">$3,400/mo</p>
+        </div>
+      </div>
+      <div class="browse"><a>Browse the network &rarr;</a></div>
+    </div>
+  </section>
+
+  <section class="how">
+    <div class="inner">
+      <span class="label">How it works</span>
+      <h2>Everyone here was vouched for.</h2>
+      <p>A member brings you in and stands behind you &mdash; accountable for you, too, so people only vouch for those they genuinely trust. And every listing is read by hand before it goes live. <span class="em">Nothing reaches you that a person hasn&rsquo;t checked first.</span></p>
+    </div>
+  </section>
+
+  <section class="priv">
+    <h3>Private, in the literal sense.</h3>
+    <p>The network is closed to search engines. What&rsquo;s here stays between members.</p>
+  </section>
+
+  <footer>
+    <div class="fmark">Manhattan<i>ite</i></div>
+    <div class="ftag">For New Yorkers</div>
+    <div class="frow"><span>Contact</span><span>New York City</span><span>Privacy</span><span>Terms</span><span>&copy; 2026</span></div>
+  </footer>
+</body>
+</html>

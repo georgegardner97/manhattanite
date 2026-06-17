@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manhattanite — landing mockup v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bone:#F5F0E8; --ink:#0F0E0C; --slate:#5A5A5A; --park:#13241B; --hair:rgba(15,14,12,.12); }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bone);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
+  .serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+  .ital{font-style:italic}
+  .wrap{max-width:600px;margin:0 auto;padding:0 28px}
+  .label{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--slate)}
+  .cta{display:inline-block;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding-bottom:6px;position:relative}
+  .cta::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--ink);transform:scaleX(1);transform-origin:left;transition:transform .35s ease}
+  .cta.accent::after{height:2px;background:var(--park)}
+  .cta.muted{color:var(--slate);font-size:12px}
+  .cta.muted::after{background:var(--slate)}
+  .cta:hover::after{transform:scaleX(0)}
+
+  .hero{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 28px}
+  .word{font-size:clamp(66px,13vw,142px);line-height:.92;letter-spacing:-.02em}
+  .hero-line{font-size:clamp(22px,3.2vw,28px);line-height:1.35;margin-top:36px}
+  .hero-sub{font-size:16.5px;color:var(--slate);margin-top:18px;max-width:430px;line-height:1.75}
+  .hero-cta{margin-top:44px}
+  .hero-micro{margin-top:22px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate)}
+
+  section.band{padding:104px 0}
+  .center{text-align:center}
+  .h2{font-size:clamp(30px,4.6vw,42px);line-height:1.15;letter-spacing:-.01em;margin:0 auto;max-width:520px}
+  .lead{font-size:18px;line-height:1.8;color:var(--slate);margin:24px auto 0;max-width:500px}
+  .lead .ink{color:var(--ink)}
+  .eyebrow{margin-bottom:24px}
+
+  .feed{margin-top:14px;border-top:1px solid var(--hair)}
+  .row{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:22px 2px;border-bottom:1px solid var(--hair)}
+  .row .place{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate);white-space:nowrap}
+  .row .title{font-size:clamp(19px,2.6vw,23px);line-height:1.25;text-align:right}
+  .feed-cta{margin-top:34px;text-align:center}
+
+  .tiers{margin-top:16px;border-top:1px solid var(--hair)}
+  .tier{padding:34px 0;border-bottom:1px solid var(--hair)}
+  .tier .k{font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+  .tier .d{font-size:16px;color:var(--slate);margin-top:10px;line-height:1.7;max-width:480px}
+  .tier-cta{margin-top:18px}
+
+  /* quiet privacy aside */
+  .aside{padding:84px 28px;text-align:center}
+  .aside p{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(20px,3vw,26px);line-height:1.4;color:var(--ink);max-width:460px;margin:0 auto}
+  .aside .sm{font-family:"Inter",sans-serif;font-size:13px;color:var(--slate);margin-top:14px;letter-spacing:.02em}
+
+  footer{border-top:1px solid var(--hair);padding:64px 28px;text-align:center}
+  .foot-word{font-size:32px;letter-spacing:-.01em}
+  .foot-meta{margin-top:12px;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--slate)}
+  .foot-links{margin-top:30px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+  .foot-links a{color:var(--slate);text-decoration:none}
+  .foot-links a:hover{color:var(--ink)}
+  .note{max-width:600px;margin:0 auto;padding:14px 28px 40px;text-align:center;font-size:11px;color:var(--slate)}
+</style>
+</head>
+<body>
+
+  <!-- HERO — benefit → mechanism → reassurance -->
+  <header class="hero">
+    <h1 class="serif word">Manhattan<span class="ital">ite</span></h1>
+    <p class="serif hero-line">A private marketplace for New York.</p>
+    <p class="hero-sub">You're brought in by someone who vouches for you. It's why there are no scams, no spam, and no strangers.</p>
+    <div class="hero-cta"><a class="cta accent" href="#">Create a free account &rarr;</a></div>
+    <p class="hero-micro">Free to join</p>
+  </header>
+
+  <!-- HOW IT WORKS — plain, warm, with the accountability teeth -->
+  <section class="band">
+    <div class="wrap center">
+      <p class="label eyebrow">How it works</p>
+      <h2 class="serif h2">Everyone here was vouched for.</h2>
+      <p class="lead">A member brings you in and stands behind you &mdash; accountable for you, too, so people only vouch for those they genuinely trust. And every listing is read by hand before it goes live. <span class="ink">Nothing reaches you that a person hasn't checked first.</span></p>
+    </div>
+  </section>
+
+  <!-- ON THE NETWORK — shown, not capped -->
+  <section class="band">
+    <div class="wrap">
+      <div class="center"><p class="label eyebrow">On the network</p></div>
+      <div class="feed">
+        <div class="row"><span class="place">West Village</span><span class="serif title">Sunny one-bed off Bleecker</span></div>
+        <div class="row"><span class="place">Tribeca</span><span class="serif title">Ceccotti walnut dining table</span></div>
+        <div class="row"><span class="place">Upper East Side</span><span class="serif title">Sublet, June through August</span></div>
+        <div class="row"><span class="place">SoHo</span><span class="serif title">Mid-century lounge chair</span></div>
+        <div class="row"><span class="place">East Village</span><span class="serif title">Spare room, flexible dates</span></div>
+      </div>
+      <div class="feed-cta"><a class="cta muted" href="#">Browse the network &rarr;</a></div>
+    </div>
+  </section>
+
+  <!-- QUIET PRIVACY FLEX -->
+  <div class="aside">
+    <p>Private, in the literal sense.</p>
+    <p class="sm">The network is closed to search engines. What's here stays between members.</p>
+  </div>
+
+  <!-- TWO WAYS IN — reassuring -->
+  <section class="band">
+    <div class="wrap">
+      <div class="center"><p class="label eyebrow">Two ways in</p></div>
+      <div class="tiers">
+        <div class="tier">
+          <p class="k">Account</p>
+          <p class="d">Free, no application. Browse every listing in the network.</p>
+          <div class="tier-cta"><a class="cta" href="#">Create an account &rarr;</a></div>
+        </div>
+        <div class="tier">
+          <p class="k">Member</p>
+          <p class="d">Post, contact, and sponsor. Apply when you're ready &mdash; or ask a member to bring you in.</p>
+          <div class="tier-cta"><a class="cta muted" href="#">Apply for membership &rarr;</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p class="serif foot-word">Manhattan<span class="ital">ite</span></p>
+    <p class="foot-meta">For New Yorkers</p>
+    <div class="foot-links">
+      <a href="#">Contact</a><span>New York City</span><a href="#">Privacy</a><a href="#">Terms</a><span>&copy; 2026</span>
+    </div>
+  </footer>
+
+  <p class="note">Mockup v3 &mdash; plainer + warmer, GDC-aligned: benefit &rarr; mechanism &rarr; reassurance, accountability stated calmly, listings shown not capped, quiet privacy note.</p>
+
+</body>
+</html>
