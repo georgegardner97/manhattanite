@@ -13,10 +13,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/app/components/Turnstile";
 
 type Status =
   | { kind: "idle" }
@@ -28,10 +29,14 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  // The single-use Turnstile token. Held until signUp; the button stays gated
+  // until a token is present, and we reset the widget after any failed signUp.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    if (!email.trim() || !password || !captchaToken) return;
     if (password.length < 8) {
       setStatus({
         kind: "error",
@@ -46,12 +51,23 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: { captchaToken },
     });
 
     if (error) {
-      const friendly = error.message.toLowerCase().includes("already")
-        ? "An account with that email already exists. Try signing in instead."
-        : error.message;
+      // The token is now spent — reset the widget and clear it so the user can
+      // get a fresh challenge and retry.
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
+
+      const lower = error.message.toLowerCase();
+      let friendly = error.message;
+      if (lower.includes("already")) {
+        friendly =
+          "An account with that email already exists. Try signing in instead.";
+      } else if (lower.includes("captcha")) {
+        friendly = "Couldn't verify you're human — please try again.";
+      }
       setStatus({ kind: "error", message: friendly });
       return;
     }
@@ -133,6 +149,14 @@ export default function SignupPage() {
             />
           </div>
 
+          {/* Turnstile — proves a human, not a bot, before we let signup run. */}
+          <Turnstile
+            ref={turnstileRef}
+            onVerify={setCaptchaToken}
+            onExpire={() => setCaptchaToken("")}
+            onError={() => setCaptchaToken("")}
+          />
+
           {status.kind === "error" && (
             <p className="text-sm text-red-700">{status.message}</p>
           )}
@@ -140,7 +164,10 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={
-              status.kind === "submitting" || !email.trim() || !password
+              status.kind === "submitting" ||
+              !email.trim() ||
+              !password ||
+              !captchaToken
             }
             className="w-full mh-link text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-left"
           >
