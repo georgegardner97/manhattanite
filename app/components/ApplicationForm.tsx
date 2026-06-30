@@ -14,7 +14,7 @@
 
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   submitApplication,
   type SubmitApplicationState,
@@ -42,8 +42,42 @@ export default function ApplicationForm({
     INITIAL
   );
 
+  // Timestamp set once when the form mounts. The server action drops any
+  // submission that arrives faster than a human could plausibly fill the form
+  // (see the dwell-time check in submitApplication). Lazy initializer so it's
+  // captured at mount, not on every render.
+  const [loadedAt] = useState(() => Date.now());
+
   return (
     <form action={formAction} className="space-y-12">
+      {/* ---------- Honeypot (anti-spam) ----------
+          A field no human ever sees or focuses, but a dumb bot will dutifully
+          fill. Hidden from sighted users AND assistive tech via off-screen
+          positioning (not display:none — some bots skip display:none fields),
+          aria-hidden, tabIndex=-1 and autoComplete off. If "company" arrives
+          non-empty, the server silently drops the submission. "form_loaded_at"
+          powers the dwell-time check. */}
+      <div
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
+        }}
+        aria-hidden="true"
+      >
+        <label htmlFor="company">Company</label>
+        <input
+          type="text"
+          id="company"
+          name="company"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+      <input type="hidden" name="form_loaded_at" value={loadedAt} />
+
       {/* ---------- Name ---------- */}
       <div>
         <label htmlFor="name" className={LABEL}>

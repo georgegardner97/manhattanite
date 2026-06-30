@@ -53,6 +53,23 @@ export async function submitApplication(
   _prevState: SubmitApplicationState,
   formData: FormData
 ): Promise<SubmitApplicationState> {
+  // ---- 0. Spam guard (silent drop). ----
+  // Two free, no-friction bot traps from ApplicationForm. We run them BEFORE
+  // any DB write or email so a bot costs us nothing:
+  //   - honeypot: a hidden "company" field a human never sees but a dumb bot
+  //     fills in;
+  //   - dwell time: a real applicant takes more than a couple of seconds to
+  //     fill the form; a bot posts almost instantly.
+  // On a hit we do nothing and redirect to /apply — the exact same outcome a
+  // genuine submission produces — so the bot can't tell it was dropped and
+  // won't adapt. No error, no log noise, no signal back to the attacker.
+  const honeypot = formData.get("company");
+  const loadedAt = Number(formData.get("form_loaded_at"));
+  const tooFast = Number.isFinite(loadedAt) && Date.now() - loadedAt < 2500;
+  if ((typeof honeypot === "string" && honeypot.trim() !== "") || tooFast) {
+    redirect("/apply");
+  }
+
   const supabase = await createClient();
 
   const {
