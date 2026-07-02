@@ -9,10 +9,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/app/components/Turnstile";
 
 type Status =
   | { kind: "idle" }
@@ -24,10 +25,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  // The single-use Turnstile token. Held until signInWithPassword; the button
+  // stays gated until a token is present, and we reset the widget after any
+  // failed sign-in so a retry gets a fresh token.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    if (!email.trim() || !password || !captchaToken) return;
 
     setStatus({ kind: "submitting" });
 
@@ -35,16 +41,26 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
+      options: { captchaToken },
     });
 
     if (error) {
+      // The token is now spent — reset the widget and clear it so the user can
+      // get a fresh challenge and retry.
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
+
       // Supabase returns "Invalid login credentials" for both wrong-password
       // and unknown-email. Rewriting so it doesn't leak account existence
       // and reads like Manhattanite, not like Supabase.
-      const friendly =
-        error.message.toLowerCase().includes("invalid login")
-          ? "That email and password don't match. Try again, or reset your password below."
-          : error.message;
+      const lower = error.message.toLowerCase();
+      let friendly = error.message;
+      if (lower.includes("invalid login")) {
+        friendly =
+          "That email and password don't match. Try again, or reset your password below.";
+      } else if (lower.includes("captcha")) {
+        friendly = "Couldn't verify you're human — please try again.";
+      }
       setStatus({ kind: "error", message: friendly });
       return;
     }
@@ -123,6 +139,14 @@ export default function LoginPage() {
             />
           </div>
 
+          {/* Turnstile — proves a human, not a bot, before we let sign-in run. */}
+          <Turnstile
+            ref={turnstileRef}
+            onVerify={setCaptchaToken}
+            onExpire={() => setCaptchaToken("")}
+            onError={() => setCaptchaToken("")}
+          />
+
           {status.kind === "error" && (
             <p className="text-sm text-red-700">{status.message}</p>
           )}
@@ -130,7 +154,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={
-              status.kind === "submitting" || !email.trim() || !password
+              status.kind === "submitting" ||
+              !email.trim() ||
+              !password ||
+              !captchaToken
             }
             className="w-full mh-link text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-left"
           >

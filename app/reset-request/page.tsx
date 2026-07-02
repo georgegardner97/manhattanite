@@ -16,9 +16,10 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/app/components/Turnstile";
 
 type Status =
   | { kind: "idle" }
@@ -29,23 +30,37 @@ type Status =
 export default function ResetRequestPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  // The single-use Turnstile token. Held until resetPasswordForEmail; the
+  // button stays gated until a token is present, and we reset the widget after
+  // any failed request so a retry gets a fresh token.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !captchaToken) return;
 
     setStatus({ kind: "submitting" });
 
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      captchaToken,
     });
 
     // Show the same generic confirmation whether or not the email exists, so
     // the page can't be used to probe who's in the network. Genuine transport
     // errors (rate limit, network) still surface.
     if (error) {
-      setStatus({ kind: "error", message: error.message });
+      // The token is now spent — reset the widget and clear it so the user can
+      // get a fresh challenge and retry.
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
+
+      const friendly = error.message.toLowerCase().includes("captcha")
+        ? "Couldn't verify you're human — please try again."
+        : error.message;
+      setStatus({ kind: "error", message: friendly });
       return;
     }
 
@@ -116,13 +131,23 @@ export default function ResetRequestPage() {
                 />
               </div>
 
+              {/* Turnstile — proves a human, not a bot, before we send a link. */}
+              <Turnstile
+                ref={turnstileRef}
+                onVerify={setCaptchaToken}
+                onExpire={() => setCaptchaToken("")}
+                onError={() => setCaptchaToken("")}
+              />
+
               {status.kind === "error" && (
                 <p className="text-sm text-red-700">{status.message}</p>
               )}
 
               <button
                 type="submit"
-                disabled={status.kind === "submitting" || !email.trim()}
+                disabled={
+                  status.kind === "submitting" || !email.trim() || !captchaToken
+                }
                 className="w-full mh-link text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-left"
               >
                 {status.kind === "submitting" ? "Sending…" : "Send the link"}
