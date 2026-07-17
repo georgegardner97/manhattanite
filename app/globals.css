@@ -16,9 +16,19 @@
 
   /* Pure paper, used sparingly for inverted surfaces. */
   --color-paper: #FFFFFF;
+}
 
-  /* Type system — display (Instrument Serif) and body (Inter). Display does
-     the personality lifting; body stays quiet and crisp. */
+/* Type system — display (Instrument Serif) and body (Inter). Display does
+   the personality lifting; body stays quiet and crisp.
+
+   These live in `@theme inline` (not the plain `@theme` above) because they
+   reference `--font-inter` / `--font-instrument-serif`, which next/font sets
+   on <body>, not :root. A plain `@theme` would emit --font-sans/--font-serif
+   as :root custom properties whose var() references resolve against :root —
+   where the next/font variables don't exist — collapsing every font-family
+   that uses them. `@theme inline` inlines the var() reference into each
+   utility instead, so it resolves at the element where <body>'s vars apply. */
+@theme inline {
   --font-serif: var(--font-instrument-serif);
   --font-sans: var(--font-inter);
 }
@@ -30,7 +40,12 @@ html {
 body {
   background-color: var(--color-bone);
   color: var(--color-ink);
-  font-family: var(--font-sans), system-ui, sans-serif;
+
+  /* Reference the next/font variable directly (not --font-sans). next/font sets
+     --font-inter on this <body> element, so var() resolves here. --font-sans is
+     an @theme-inline token that only exists inlined into utility classes, not as
+     a :root custom property, so a raw var(--font-sans) here would resolve empty. */
+  font-family: var(--font-inter), system-ui, sans-serif;
 
   /* Tighten Inter very slightly so it stops reading as the Vercel default.
      A negative tracking like -0.011em is imperceptible per-character but
