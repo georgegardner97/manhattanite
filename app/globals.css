@@ -16,6 +16,11 @@
 
   /* Pure paper, used sparingly for inverted surfaces. */
   --color-paper: #FFFFFF;
+
+  /* Warm off-bone used for secondary text on the dark (park) surface. Bone at
+     full strength shouts on green; cream is the quieter sibling that ArrowLink
+     and other secondary actions use "outside". */
+  --color-cream: #E9E2D3;
 }
 
 /* Type system — display (Instrument Serif) and body (Inter). Display does
@@ -35,6 +40,99 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* ============================================================================
+   EDITORIAL SECTION GRAMMAR (design foundation, Slice 1)
+   ----------------------------------------------------------------------------
+   Every section on the site is built from the same three parts, lifted from the
+   v8 mockup (In Common With structure): a full-width hairline rule on top, a
+   220px label column, and a content column beside it. Compose as:
+
+     <section class="mh-gutter">
+       <div class="mh-rule mh-section-grid">
+         <p class="mh-label">On the network</p>
+         <div> …content… </div>
+       </div>
+     </section>
+
+   Under 860px the two columns stack and the label sits above its content.
+   ========================================================================== */
+
+/* Page gutter — 40px desktop, 22px mobile. The site is full-bleed (no centered
+   max-width container); the gutter is what holds the margins. */
+.mh-gutter {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+/* The hairline that opens a section. `ink` at 16% on light, `bone` at 16% on
+   dark — the dark override rides on the .mh-dark surface class below. */
+.mh-rule {
+  border-top: 1px solid rgba(15, 14, 12, 0.16);
+  padding-top: 14px;
+}
+
+.mh-section-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 40px;
+}
+
+/* The small-caps label: 11px Inter 500, uppercase, +0.14em tracking. Used for
+   section labels, card kickers, nav links, and footer column heads — one
+   typographic voice for every piece of structural furniture on the page. */
+.mh-label {
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Dark surface ("outside"): the landing page and, later, auth + apply. Setting
+   this class flips the hairline color for every rule nested inside it, so the
+   grammar utilities above work on both surfaces without a variant per rule. */
+.mh-dark {
+  background-color: var(--color-park);
+  color: var(--color-bone);
+}
+
+.mh-dark .mh-rule {
+  border-top-color: rgba(245, 240, 232, 0.16);
+}
+
+/* The editorial card grid — two columns, 56px apart, 72px between rows. */
+.mh-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 56px;
+  row-gap: 72px;
+}
+
+/* Two-line clamp for card descriptions. */
+.mh-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 860px) {
+  .mh-gutter {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .mh-section-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .mh-card-grid {
+    grid-template-columns: 1fr;
+    row-gap: 56px;
+  }
 }
 
 body {
