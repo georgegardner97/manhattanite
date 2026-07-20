@@ -12,22 +12,32 @@
 //   - account (Tier 1)     : Listings · Apply for membership · Profile · Log out
 //   - member  (Tier 2)     : Listings · Post a listing · My listings · Profile · Log out
 //
-// Visual: matches the editorial look — bone surface, ink wordmark in font-serif,
-// mh-link hover underline on the small-caps links. This is structure, not a
-// restyle.
+// Visual (design foundation, Slice 1): the light "inside" product nav from the
+// v8 mockup — full-bleed 40px gutter, 22px vertical, wordmark left, small-caps
+// links and the avatar right, closed by a 1px ink/16% hairline. Restyle only;
+// the links and the tier logic below are untouched.
+//
+// The nav stands down entirely on "/" — the dark landing carries its own nav
+// overlaid on the hero photograph. The pathname arrives as the x-pathname
+// request header, set in proxy.ts (Server Components can't read the URL).
 
 import Link from "next/link";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import AccountMenu from "@/app/components/AccountMenu";
 
 type Viewer = "guest" | "account" | "member";
 
 // Shared small-caps link treatment used across the app's secondary links.
-const LINK_BASE = "mh-link text-[11px] tracking-[0.22em] uppercase";
-const LINK_QUIET = `${LINK_BASE} text-slate hover:text-ink`;
+const LINK_BASE = "mh-label transition-colors";
+const LINK_QUIET = `${LINK_BASE} text-ink/70 hover:text-ink`;
 const LINK_EMPHASIS = `${LINK_BASE} text-ink`; // the tier's conversion CTA
 
 export default async function SiteNav() {
+  // The landing page brings its own nav; don't stack a second one on top of it.
+  const pathname = (await headers()).get("x-pathname");
+  if (pathname === "/") return null;
+
   const supabase = await createClient();
 
   const {
@@ -54,18 +64,18 @@ export default async function SiteNav() {
   }
 
   return (
-    <header className="border-b border-ink/10">
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between gap-6">
+    <header className="border-b border-ink/16">
+      <nav className="mh-gutter py-[22px] flex items-center justify-between gap-6">
         {/* Wordmark — the single canonical wordmark now that interior pages
-            drop their centered one. */}
+            drop their centered one. Clicking it takes you back "outside". */}
         <Link
           href="/"
-          className="font-serif text-2xl tracking-tighter leading-none text-ink"
+          className="font-serif text-[24px] leading-none text-ink"
         >
           Manhattan<span className="italic">ite</span>
         </Link>
 
-        <div className="flex items-center gap-5 sm:gap-7 flex-wrap justify-end">
+        <div className="flex items-center gap-6 sm:gap-[34px] flex-wrap justify-end">
           {/* Listings is visible to every tier (guests get the teaser). */}
           <Link href="/listings" className={LINK_QUIET}>
             Listings
