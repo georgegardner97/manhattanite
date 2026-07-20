@@ -25,17 +25,38 @@ const SURFACE = {
 
 export type Surface = keyof typeof SURFACE;
 
+// The class string on its own, for the two places that need the BoxButton LOOK
+// on an element this component can't render: ContactModal's trigger (a client
+// onClick, which a Server Component must not be handed) and any future
+// third-party control. Prefer the component; reach for this only when the
+// element itself has to live in the caller.
+export function boxButtonClass(surface: Surface = "light"): string {
+  return `${BASE} ${SURFACE[surface]}`;
+}
+
+// Disabled styling is shared by every form submit in the system: fade it, and
+// stop the hover fill from firing on a button that won't do anything.
+const DISABLED =
+  "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent";
+
+const DISABLED_TEXT = {
+  light: "disabled:hover:text-ink",
+  dark: "disabled:hover:text-bone",
+} as const;
+
 export default function BoxButton({
   children,
   href,
   surface = "light",
   type = "button",
+  disabled = false,
   className = "",
 }: {
   children: ReactNode;
   href?: string;
   surface?: Surface;
   type?: "button" | "submit";
+  disabled?: boolean;
   className?: string;
 }) {
   const classes = `${BASE} ${SURFACE[surface]} ${className}`;
@@ -56,7 +77,11 @@ export default function BoxButton({
   }
 
   return (
-    <button type={type} className={classes}>
+    <button
+      type={type}
+      disabled={disabled}
+      className={`${classes} ${DISABLED} ${DISABLED_TEXT[surface]}`}
+    >
       {children}
     </button>
   );

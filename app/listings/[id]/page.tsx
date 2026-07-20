@@ -8,17 +8,30 @@
 // (the 6 most recent published). Any other detail → redirect to /signup. Logged-in
 // accounts and members view any published listing.
 //
-// Read-only this slice. The "Message the lister" CTA is intentionally not built
-// — contact is a separate member-gated slice (dead-link rule: commented, not
-// linked). Type-specific detail layouts come later; for now the jsonb details
-// render as plain key/value pairs.
+// Layout (design foundation, Slice 2 — steal 10, "anchor rail + statement", in
+// its light form): the label column of the section grammar becomes the rail
+// (the LISTING label and the way back), and the content column carries the
+// whole listing — kicker, statement title with price, the lead photograph at
+// full content width, description, metadata, byline, and one boxed action.
+//
+// The lead photo is deliberately NOT the card's 4:3. A detail page is where you
+// look properly at the thing; cropping it to the same ratio as the thumbnail
+// wastes the one screen that exists to show it. It runs to the content width
+// and is capped at 640px tall so a portrait shot can't push everything else
+// below the fold.
+//
+// Type-specific detail layouts come later; for now the jsonb details render as
+// label/value rows, hairline-separated.
 
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
+import { formatPostedDate } from "@/lib/listings/card";
 import ContactModal from "@/app/components/ContactModal";
+import ArrowLink from "@/app/components/ArrowLink";
+import BoxButton from "@/app/components/BoxButton";
+import SiteFooter from "@/app/components/SiteFooter";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -30,12 +43,20 @@ type ListingDetail = {
   title: string;
   description: string;
   price_cents: number;
+  created_at: string;
   details: Record<string, unknown>;
   images: ListingImage[];
   author_id: string;
   author_name: string | null;
   sponsor_names: string[];
   is_example: boolean;
+};
+
+const TYPE_LABEL: Record<ListingDetail["type"], string> = {
+  apartment: "Apartment",
+  furniture: "Furniture",
+  other: "Everything else",
+  service: "Service",
 };
 
 function formatPrice(cents: number, type: ListingDetail["type"]): string {
@@ -88,7 +109,9 @@ export default async function ListingDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, details, images, author_id, author_name, sponsor_names, is_example"
+      // created_at joins the select for the kicker's posted date — same row,
+      // same RLS policy, no new reach.
+      "id, type, title, description, price_cents, created_at, details, images, author_id, author_name, sponsor_names, is_example"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -99,6 +122,23 @@ export default async function ListingDetailPage({
   }
 
   const detailEntries = Object.entries(listing.details ?? {});
+
+  // The kicker's place slot, same rule as the card: neighborhood when there is
+  // one, otherwise nothing (the category is already in the row beside it).
+  const rawNeighborhood = listing.details?.neighborhood;
+  const neighborhood =
+    typeof rawNeighborhood === "string" && rawNeighborhood.trim()
+      ? rawNeighborhood.trim()
+      : null;
+
+  // EXAMPLE tag first, then the plain facts. Assembled as an array so the
+  // middot separators fall between whatever actually exists — a listing with no
+  // neighborhood must not render a dangling divider.
+  const kickerFacts = [
+    TYPE_LABEL[listing.type],
+    neighborhood,
+    formatPostedDate(listing.created_at),
+  ].filter((f): f is string => Boolean(f));
 
   // Sign every image path in one round-trip. Map order is preserved by the
   // paths we pass in; we re-walk listing.images so display order is the
@@ -128,114 +168,133 @@ export default async function ListingDetailPage({
   }
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/listings"
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Listings
-        </Link>
+    <>
+      <main className="mh-gutter pt-14 max-[860px]:pt-9">
+        <div className="mh-section-grid">
+          {/* The rail: what this page is, and the way back. */}
+          <aside>
+            <p className="mh-label text-ink">Listing</p>
+            <ArrowLink
+              href="/listings"
+              direction="back"
+              className="mt-3.5 max-[860px]:mt-2"
+            >
+              Listings
+            </ArrowLink>
+          </aside>
 
-        <div className="mt-12 flex items-baseline justify-between gap-6">
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            {listing.title}
-          </h1>
-          <p className="font-serif text-2xl text-ink whitespace-nowrap">
-            {formatPrice(listing.price_cents, listing.type)}
-          </p>
-        </div>
+          <div className="min-w-0">
+            {/* Kicker — the facts, quietly, above the statement. */}
+            <div className="mh-label flex flex-wrap items-center gap-x-3.5 gap-y-2 text-slate mb-[18px]">
+              {/* Honest label on seed content — looks like the network, isn't
+                  a live deal. Full contrast against the muted row around it. */}
+              {listing.is_example && (
+                <span className="border border-ink/45 px-[7px] py-[2px] text-ink">
+                  Example
+                </span>
+              )}
+              {kickerFacts.map((fact, i) => (
+                <span key={fact} className="flex items-center gap-x-3.5">
+                  {i > 0 && <span aria-hidden="true">&middot;</span>}
+                  {fact}
+                </span>
+              ))}
+            </div>
 
-        <p className="mt-4 flex items-center gap-3 text-[11px] tracking-[0.22em] uppercase text-slate">
-          {humanizeKey(listing.type)}
-          {/* Honest label on seed content — looks like the network, isn't a live deal. */}
-          {listing.is_example && (
-            <span className="inline-block border border-ink/20 px-2 py-[3px] text-[10px]">
-              Example
-            </span>
-          )}
-        </p>
+            {/* The statement: title left, price right, closed by a hairline. */}
+            <div className="flex items-baseline justify-between gap-8 max-[860px]:flex-col max-[860px]:gap-2 border-b border-ink/16 pb-7">
+              <h1 className="font-serif font-normal text-[46px] max-[860px]:text-[32px] leading-[1.08] text-ink">
+                {listing.title}
+              </h1>
+              <p className="text-[17px] font-medium tabular-nums whitespace-nowrap text-ink">
+                {formatPrice(listing.price_cents, listing.type)}
+              </p>
+            </div>
 
-        <span className="block w-8 h-px bg-ink/30 mt-10 mb-10" />
-
-        {imageUrls.length > 0 && (
-          <div className="mb-12 space-y-3">
-            {imageUrls.map((url, idx) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={url}
-                src={url}
-                alt=""
-                className={
-                  idx === 0
-                    ? "w-full aspect-[4/3] object-cover bg-ink/5"
-                    : "w-full object-cover bg-ink/5"
-                }
-              />
-            ))}
-          </div>
-        )}
-
-        <p className="font-serif text-lg text-ink leading-relaxed whitespace-pre-wrap">
-          {listing.description}
-        </p>
-
-        {detailEntries.length > 0 && (
-          <dl className="mt-12 space-y-6">
-            {detailEntries.map(([key, value]) => (
-              <div key={key}>
-                <dt className="text-[11px] tracking-[0.22em] uppercase text-slate mb-1">
-                  {humanizeKey(key)}
-                </dt>
-                <dd className="font-serif text-lg text-ink">
-                  {formatDetailValue(value)}
-                </dd>
+            {/* The lead photograph, then any others beneath it at the same
+                width. Signed URLs, in the poster's chosen order — unchanged. */}
+            {imageUrls.length > 0 && (
+              <div className="mt-9 space-y-4">
+                {imageUrls.map((url) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={url}
+                    src={url}
+                    alt=""
+                    className="w-full max-h-[640px] object-cover block bg-[#EAE4D8]"
+                  />
+                ))}
               </div>
-            ))}
-          </dl>
-        )}
+            )}
 
-        <p className="mt-14 text-[11px] tracking-[0.22em] uppercase text-slate">
-          {renderByline(listing.author_name, listing.sponsor_names)}
-        </p>
+            <p className="font-serif text-[20px] leading-[1.55] max-w-[62ch] mt-10 text-ink whitespace-pre-wrap">
+              {listing.description}
+            </p>
 
-        {/* Contact opens in an on-page modal (ContactModal) — the gating still
-            happens, just inline instead of on a separate route. Four cases:
-              - owner → Edit (you can't message yourself; the fn rejects it too)
-              - member → the contact form, in the modal
-              - logged-in account (Tier 1) → the members-only gate, in the modal
-              - guest → "Sign in to message" → /login, so the label sets the
-                expectation instead of bouncing them to a bare login screen.
-            The /listings/[id]/contact route stays live as a no-JS fallback. */}
-        {isOwner ? (
-          <Link
-            href={`/listings/${listing.id}/edit`}
-            className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
-          >
-            Edit listing
-          </Link>
-        ) : viewerIsMember ? (
-          <ContactModal
-            mode="form"
-            listingId={listing.id}
-            listerName={listing.author_name ?? "this member"}
-            senderName={viewerName}
-            senderEmail={user?.email ?? ""}
-          />
-        ) : user ? (
-          <ContactModal
-            mode="gate"
-            listerName={listing.author_name ?? "this member"}
-          />
-        ) : (
-          <Link
-            href="/login"
-            className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
-          >
-            Sign in to message
-          </Link>
-        )}
-      </div>
-    </main>
+            {detailEntries.length > 0 && (
+              <dl className="mt-11 max-w-[520px]">
+                {detailEntries.map(([key, value], i) => (
+                  <div
+                    key={key}
+                    // items-baseline, not the default stretch: the 11px label
+                    // and the 15px value sit on the same line, and without it
+                    // the caps ride visibly high against the value beside them.
+                    className={`grid grid-cols-[180px_1fr] items-baseline gap-4 py-[13px] border-t border-ink/16 max-[860px]:grid-cols-1 max-[860px]:gap-1 ${
+                      i === detailEntries.length - 1
+                        ? "border-b border-ink/16"
+                        : ""
+                    }`}
+                  >
+                    <dt className="mh-label text-slate">{humanizeKey(key)}</dt>
+                    <dd className="text-ink">{formatDetailValue(value)}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
+            <p className="mh-label mt-10 text-slate">
+              {renderByline(listing.author_name, listing.sponsor_names)}
+            </p>
+
+            {/* The page's single primary action, boxed. The gating is
+                unchanged — four cases, decided server-side:
+                  - owner → Edit (you can't message yourself; the fn rejects it)
+                  - member → the contact form, in the modal
+                  - logged-in account (Tier 1) → the members-only gate, in the modal
+                  - guest → "Sign in to message" → /login, so the label sets the
+                    expectation instead of bouncing them to a bare login screen.
+                The /listings/[id]/contact route stays live as a no-JS fallback. */}
+            {/* No bottom margin — SiteFooter brings its own 120px, and the
+                two together left a hole twice the size of any other gap. */}
+            <div className="mt-[22px]">
+              {isOwner ? (
+                <BoxButton href={`/listings/${listing.id}/edit`} surface="light">
+                  Edit listing
+                </BoxButton>
+              ) : viewerIsMember ? (
+                <ContactModal
+                  mode="form"
+                  listingId={listing.id}
+                  listerName={listing.author_name ?? "this member"}
+                  senderName={viewerName}
+                  senderEmail={user?.email ?? ""}
+                />
+              ) : user ? (
+                <ContactModal
+                  mode="gate"
+                  listerName={listing.author_name ?? "this member"}
+                />
+              ) : (
+                <BoxButton href="/login" surface="light">
+                  Sign in to message
+                </BoxButton>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <SiteFooter surface="light" />
+    </>
   );
 }

@@ -110,6 +110,58 @@ html {
   row-gap: 72px;
 }
 
+/* ----------------------------------------------------------------------------
+   BOXED FORM CONTROLS (steal 7)
+   ----------------------------------------------------------------------------
+   Inputs and textareas are the only elements besides BoxButton that get a
+   border-plus-padding treatment. That scarcity is the point: the audit found
+   our primary actions read as disabled labels because everything was naked
+   text. Boxes are now reserved for "you can act here" — a field you type into,
+   and a button you press.
+
+   Replaces the old bottom-rule-only field (border-b + px-0), which read as a
+   dotted line on a form rather than a control.
+
+   One class, both surfaces: the .mh-dark override below flips the palette, so
+   the auth screens and the light product forms share a single definition.
+   -------------------------------------------------------------------------- */
+.mh-input {
+  width: 100%;
+  border: 1px solid rgba(15, 14, 12, 0.35);
+  background-color: transparent;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.mh-input:focus {
+  border-color: var(--color-ink);
+}
+
+.mh-input::placeholder {
+  color: rgba(15, 14, 12, 0.38);
+}
+
+.mh-input:disabled {
+  opacity: 0.5;
+}
+
+.mh-dark .mh-input {
+  border-color: rgba(245, 240, 232, 0.55);
+  color: var(--color-bone);
+}
+
+.mh-dark .mh-input:focus {
+  border-color: var(--color-bone);
+}
+
+.mh-dark .mh-input::placeholder {
+  color: rgba(245, 240, 232, 0.38);
+}
+
 /* Scroll without the scrollbar. For the mobile category row, which swipes
    horizontally — a visible track would be the loudest thing on the page. */
 .mh-no-scrollbar {

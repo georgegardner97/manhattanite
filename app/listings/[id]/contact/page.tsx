@@ -17,10 +17,15 @@
 // name comes from the listing's denormalized author_name byline. American
 // spelling throughout.
 
-import Link from "next/link";
+// Layout (design foundation, Slice 2): the same light editorial grid as the
+// detail page it came from — label column carries CONTACT and the way back,
+// content column carries the statement, the copy and the boxed form.
+
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ContactForm from "@/app/components/ContactForm";
+import ArrowLink from "@/app/components/ArrowLink";
+import SiteFooter from "@/app/components/SiteFooter";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -69,83 +74,73 @@ export default async function ContactPage({
 
   const listerName = listing.author_name ?? "this member";
 
+  const isMember = account?.is_member ?? false;
+
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href={`/listings/${listing.id}`}
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Listing
-        </Link>
+    <>
+      <main className="mh-gutter pt-14 max-[860px]:pt-9 pb-20">
+        <div className="mh-section-grid">
+          <aside>
+            <p className="mh-label text-ink">
+              {isMember ? "Contact" : "Members only"}
+            </p>
+            <ArrowLink
+              href={`/listings/${listing.id}`}
+              direction="back"
+              className="mt-3.5 max-[860px]:mt-2"
+            >
+              Listing
+            </ArrowLink>
+          </aside>
 
-        {account?.is_member ? (
-          /* ---------- Member: contact form ---------- */
-          <>
-            <div className="text-center mt-12 mb-12">
-              <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-                Contact
-              </p>
-              <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-                Message {listerName}.
-              </h1>
-              <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-            </div>
+          <div className="min-w-0">
+            {isMember ? (
+              /* ---------- Member: contact form ---------- */
+              <>
+                <h1 className="font-serif font-normal text-[46px] max-[860px]:text-[32px] leading-[1.08] text-ink border-b border-ink/16 pb-7">
+                  Message {listerName}.
+                </h1>
 
-            <div className="max-w-md mx-auto mb-16 text-center">
-              <p className="font-serif text-lg leading-relaxed text-slate">
-                Your note goes straight to their inbox. They&apos;ll see your name
-                and can reply to you directly.
-              </p>
-            </div>
+                <p className="max-w-[52ch] mt-8 mb-10 leading-relaxed text-slate">
+                  Your note goes straight to their inbox. They&apos;ll see your
+                  name and can reply to you directly.
+                </p>
 
-            <ContactForm
-              listingId={listing.id}
-              listerName={listerName}
-              senderName={account?.name ?? null}
-              senderEmail={user.email ?? ""}
-            />
-          </>
-        ) : (
-          /* ---------- Tier-1: interaction gate ----------
-             Copy verbatim from voice-and-copy.md, "Interaction gate — account
-             holder tries to contact a member." */
-          <>
-            <div className="text-center mt-12 mb-12">
-              <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-                Members only
-              </p>
-              <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-            </div>
+                <div className="max-w-[520px]">
+                  <ContactForm
+                    listingId={listing.id}
+                    listerName={listerName}
+                    senderName={account?.name ?? null}
+                    senderEmail={user.email ?? ""}
+                  />
+                </div>
+              </>
+            ) : (
+              /* ---------- Tier-1: interaction gate ----------
+                 Copy verbatim from voice-and-copy.md, "Interaction gate —
+                 account holder tries to contact a member." */
+              <>
+                <p className="font-serif text-[32px] max-[860px]:text-[26px] leading-[1.25] max-w-[26ch] text-ink">
+                  To message {listerName}, you need a member account. Members
+                  are sponsored by an existing member or approved through
+                  application.
+                </p>
 
-            <div className="max-w-md mx-auto text-center space-y-10">
-              <p className="font-serif text-2xl leading-relaxed text-ink">
-                To message {listerName}, you need a member account. Members are
-                sponsored by an existing member or approved through application.
-              </p>
+                <div className="mt-9">
+                  <ArrowLink href="/apply">Apply for membership</ArrowLink>
 
-              <div className="space-y-5">
-                <Link
-                  href="/apply"
-                  className="mh-link block text-[14px] tracking-[0.22em] uppercase text-ink"
-                >
-                  Apply for membership &rarr;
-                </Link>
+                  {/* "I have an invite →" — no /invite route exists yet, so it
+                      stays commented out per the dead-link rule (same as the
+                      gating page). Wire it when the invite flow lands. */}
+                  {/* <ArrowLink href="/invite">I have an invite</ArrowLink> */}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </main>
 
-                {/* "I have an invite →" — no /invite route exists yet, so it
-                    stays commented out per the dead-link rule (same as the
-                    gating page). Wire it when the invite flow lands. */}
-                {/* <Link
-                  href="/invite"
-                  className="mh-link block text-[14px] tracking-[0.22em] uppercase text-slate"
-                >
-                  I have an invite &rarr;
-                </Link> */}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </main>
+      <SiteFooter surface="light" />
+    </>
   );
 }

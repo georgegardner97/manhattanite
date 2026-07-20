@@ -47,7 +47,7 @@ const MEMBERSHIP_BY_TIER: Record<Viewer, FooterLink[]> = {
 type Viewer = "guest" | "account" | "member";
 
 const INFO: FooterLink[] = [
-  { label: "Contact", href: "mailto:hello@manhattanite.com" },
+  { label: "Contact", href: "mailto:info@manhattanite.com" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
 ];
@@ -102,10 +102,10 @@ export default async function SiteFooter({
           </div>
           <div className="text-[14px] leading-[1.7] mt-[22px]">
             <a
-              href="mailto:hello@manhattanite.com"
+              href="mailto:info@manhattanite.com"
               className="hover:underline underline-offset-4"
             >
-              hello@manhattanite.com
+              info@manhattanite.com
             </a>
             <br />
             Made in the East Village,

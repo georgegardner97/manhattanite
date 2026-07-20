@@ -9,6 +9,11 @@
 // its spacing stay identical everywhere. `as="span"` renders the label without
 // its own anchor — for use inside a card that is already one big link, where a
 // nested <a> would be invalid HTML.
+//
+// `direction="back"` flips the glyph to ← and moves it to the LEFT of the label
+// ("← Listings"). Same component because it's the same gesture — a direction,
+// not a button — and back links were otherwise the one secondary action in the
+// system still hand-rolled per page.
 
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -26,23 +31,30 @@ export default function ArrowLink({
   href,
   surface = "light",
   as = "link",
+  direction = "forward",
   className = "",
 }: {
   children: ReactNode;
   href?: string;
   surface?: keyof typeof SURFACE;
   as?: "link" | "span";
+  direction?: "forward" | "back";
   className?: string;
 }) {
   const classes = `${BASE} ${SURFACE[surface]} ${className}`;
 
   // The arrow and its trailing space. A non-breaking space keeps the glyph
   // welded to the first word if the label ever wraps.
-  const label = (
-    <>
-      &#8594;&nbsp; {children}
-    </>
-  );
+  const label =
+    direction === "back" ? (
+      <>
+        &#8592;&nbsp; {children}
+      </>
+    ) : (
+      <>
+        &#8594;&nbsp; {children}
+      </>
+    );
 
   if (as === "span" || !href) {
     // Inside a card-wide link: the whole card is the hit target, so this is

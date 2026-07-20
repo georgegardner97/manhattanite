@@ -11,17 +11,18 @@
 // membership somehow lapses between page load and submit, the action returns
 // "gate" and we render the same gate copy inline.
 //
-// Style classes match ApplicationForm exactly.
+// Styling (Slice 2): the boxed .mh-input control and a BoxButton submit, so the
+// form reads as something you can act on. Renders on the light surface in both
+// of its homes — the /contact route and the on-page modal.
 
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import { sendContact, type ContactState } from "@/lib/listings/contact";
+import BoxButton from "@/app/components/BoxButton";
+import ArrowLink from "@/app/components/ArrowLink";
 
-const FIELD_BASE =
-  "w-full bg-transparent border-b border-ink/20 pb-3 text-base text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
-const LABEL = "block text-[13px] tracking-[0.22em] uppercase text-slate mb-5";
+const LABEL = "mh-label block text-slate mb-2.5";
 
 const INITIAL: ContactState = { status: "idle" };
 
@@ -43,8 +44,10 @@ export default function ContactForm({
   // ---------- Confirmation state ----------
   if (state.status === "sent") {
     return (
-      <div className="max-w-md mx-auto text-center space-y-6">
-        <p className="font-serif text-2xl text-ink">Your message is on its way.</p>
+      <div className="max-w-[52ch] space-y-5">
+        <p className="font-serif text-[26px] leading-[1.2] text-ink">
+          Your message is on its way.
+        </p>
         <p className="font-serif text-lg leading-relaxed text-slate">
           We&apos;ve passed your note to {listerName}. If it&apos;s a fit,
           they&apos;ll reply to you directly.
@@ -56,18 +59,13 @@ export default function ContactForm({
   // ---------- Gate state (defense-in-depth) ----------
   if (state.status === "gate") {
     return (
-      <div className="max-w-md mx-auto text-center space-y-8">
+      <div className="max-w-[52ch] space-y-7">
         <p className="font-serif text-lg leading-relaxed text-ink">
           To message {listerName}, you need a member account. Members are
           sponsored by an existing member or approved through application.
         </p>
-        <div className="space-y-4">
-          <Link
-            href="/apply"
-            className="mh-link block text-[14px] tracking-[0.22em] uppercase text-ink"
-          >
-            Apply for membership &rarr;
-          </Link>
+        <div>
+          <ArrowLink href="/apply">Apply for membership</ArrowLink>
           {/* "I have an invite →" stays commented out per the dead-link rule —
               no /invite route exists yet (same as the gating page). */}
         </div>
@@ -77,13 +75,13 @@ export default function ContactForm({
 
   // ---------- Form ----------
   return (
-    <form action={formAction} className="max-w-md mx-auto space-y-12">
+    <form action={formAction} className="space-y-6">
       <input type="hidden" name="listing_id" value={listingId} />
 
       {/* From — read-only, so the member sees what the lister will see. */}
       <div>
         <p className={LABEL}>From</p>
-        <p className="font-serif text-lg text-ink">
+        <p className="text-ink">
           {senderName ?? "You"}
           <span className="text-slate"> · {senderEmail}</span>
         </p>
@@ -101,7 +99,7 @@ export default function ContactForm({
           rows={5}
           maxLength={2000}
           placeholder="Introduce yourself and say what you're interested in."
-          className={`${FIELD_BASE} resize-none`}
+          className="mh-input resize-none"
         />
       </div>
 
@@ -109,14 +107,10 @@ export default function ContactForm({
         <p className="text-sm text-red-700">{state.message}</p>
       )}
 
-      <div className="pt-4 text-center">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="group inline-block bg-park text-bone px-12 py-4 text-[11px] tracking-[0.32em] uppercase transition-colors duration-300 hover:bg-ink disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {isPending ? "Sending…" : "Send message"}
-        </button>
+      <div className="pt-2">
+        <BoxButton type="submit" surface="light" disabled={isPending}>
+          {isPending ? "Sending…" : "Send"}
+        </BoxButton>
       </div>
     </form>
   );

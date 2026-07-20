@@ -18,9 +18,10 @@
 
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import ContactForm from "@/app/components/ContactForm";
+import { boxButtonClass } from "@/app/components/BoxButton";
+import ArrowLink from "@/app/components/ArrowLink";
 
 type ContactModalProps =
   | {
@@ -52,10 +53,13 @@ export default function ContactModal(props: ContactModalProps) {
 
   return (
     <>
+      {/* The detail page's single primary action. It needs an onClick, which a
+          Server Component can't hand to <BoxButton> — so it borrows the class
+          instead and stays visually identical to every other boxed action. */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer"
+        className={boxButtonClass("light")}
       >
         Message the lister
       </button>
@@ -118,12 +122,7 @@ export default function ContactModal(props: ContactModalProps) {
                   Members are sponsored by an existing member or approved through
                   application.
                 </p>
-                <Link
-                  href="/apply"
-                  className="mh-link block text-[14px] tracking-[0.22em] uppercase text-ink"
-                >
-                  Apply for membership &rarr;
-                </Link>
+                <ArrowLink href="/apply">Apply for membership</ArrowLink>
               </div>
             )}
           </div>
