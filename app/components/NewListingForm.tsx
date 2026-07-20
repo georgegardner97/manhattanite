@@ -79,7 +79,10 @@ export default function NewListingForm({
       {/* ---------- Type ---------- */}
       <div>
         <p className={LABEL}>What are you listing?</p>
-        <div className="flex gap-8">
+        {/* Wraps. Four options at gap-8 need 431px and the content column is
+            346px on a phone — without this, "Service" sits outside the column
+            and can't be reached or tapped at all. */}
+        <div className="flex flex-wrap gap-x-7 gap-y-3">
           {(["apartment", "furniture", "other", "service"] as const).map((opt) => (
             <label
               key={opt}
@@ -185,7 +188,7 @@ export default function NewListingForm({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-5">
             <div>
               <label htmlFor="bedrooms" className={LABEL}>
                 Bedrooms
