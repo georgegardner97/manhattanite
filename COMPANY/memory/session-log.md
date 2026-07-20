@@ -6,21 +6,31 @@ Newest entries at the top.
 
 ---
 
-## 2026-07-20 · Slice 2 SHIPPED — listing detail (light) + the dark threshold
+## 2026-07-20 · Slice 3 SHIPPED — Phase 3 of the design plan is complete
 
-**Commits `d7f1605` + `085c0bb`, live on prod.** Design contract was the v9 mockup (`Manhattanite_Mockup_v9_Detail-and-Dark-Auth.html`), which already covered this slice exactly.
+**Six commits plus four prod-pass fixes, all live.** Every product screen now sits on the same system: post a listing, edit listing, profile, edit profile, my listings, and all four admin pages.
 
-**Listing detail** got steal 10 in its light form: label column as anchor rail, kicker → serif statement title with price → hairline → lead photograph at full content width (dropping the card's 4:3 — the detail page is the one screen that exists to show the thing properly, capped at 640px tall) → metadata as hairline-separated rows → byline → one boxed action → light footer. `/listings/[id]/contact` got the same editorial grid.
+**The two pages the audit graded C+ were fixed structurally, not cosmetically.** On `/listings/mine` the archived QA test listing had been out-shouting the live ones; muting it wasn't enough, because it was still the same object at the same size. Archived listings are now compact hairline rows under their own heading — no image, no card — so one can't outweigh a live listing again. `/profile` moved out of its centered stack into the editorial grid, with sponsorship as a small-caps credential line rather than its own section.
 
-**The five threshold screens** — `/login`, `/signup`, `/reset-request`, `/reset-password`, `/apply` — moved onto the landing's park ground via a shared `AuthShell`, with SiteNav standing down on all five. These are the door, not a room behind it; the existing redirect into the light product IS the transition, so no transition logic was added. Boxed fields and boxed submits throughout, which finally kills the audit's "primary actions read as disabled labels" finding on the auth funnel. `/signup` now reads `?email=` and prefills, closing the loop the landing's membership form opened in Slice 1.
+**Forms** got boxed fields and boxed submits throughout. The photo and avatar uploaders took a *dashed* hairline — solid means "a control you act on", dashed means "a space something goes into" — because as solid boxes they were competing with the actual submit button. The listing submit now reads "Submit for review", which is what it does under pre-moderation, with the moderation notice moved to sit with it.
 
-**Decided:** footer contact is `info@manhattanite.com` — hello@ doesn't exist.
+**Stage 0 (local auth) was attempted and is BLOCKED at Cloudflare.** The real public site key was found and installed, and Cloudflare rejected the `localhost` hostname outright — the widget offers no challenge at all. Reverted to the test key. To finish, George needs to add `localhost` to that widget's allowed hostnames in the Cloudflare dashboard; until then every gated screen must be verified on prod.
 
-**Turnstile on the dark ground works** (real key, dark theme, passing on prod). Its integration was not touched; `theme` is the only lever, since Cloudflare renders its chrome in an iframe CSS can't reach.
+**Worth keeping:** four defects appeared only on the prod pass, not in the build — including a radio row that pushed "Service" outside the content column on a phone, where it couldn't be tapped at all. A clean `npm run build` says nothing about layout.
 
-**Open:** `/apply`'s dark layout is the one screen still unverified — it needs a logged-in NON-member, and George's account is a member+admin, so it redirects to `/profile`. Low risk (built entirely from verified pieces) but unseen.
+**No data behavior changed.** Two selects gained columns already on the row under the same policy (`created_at`, `details`); everything else is styling and copy.
 
-**Two environment findings.** (1) **No auth flow can be tested on localhost, and hasn't been since 2026-06-30**: `.env.local` uses Cloudflare's TEST Turnstile key while Supabase checks the REAL secret, so sign-in fails at the captcha *while the widget shows Success*. Pre-existing, spun out as its own task. (2) A dev server left running across a `globals.css` edit serves a **stale stylesheet** — new utilities silently missing, `touch` insufficient, restart required.
+---
+
+## 2026-07-20 · Slice 2 SHIPPED — detail page editorial, auth crosses to the dark side
+
+**Built by Claude Code, verified live.** Listing detail + contact now use the editorial grid (rail + back link, EXAMPLE kicker, serif title with price opposite, wide lead photo, hairline metadata table, boxed primary action). Login / signup / resets / apply share a new `AuthShell` on park-dark with boxed `.mh-input` fields, dark Turnstile, and submits that read as pressable. Signup prefills from the landing's email form. Footer email corrected to info@.
+
+**Verification:** everything logged-out verified by Claude Code on prod (desktop + 390px); the four member-only paths verified by Cowork through George's signed-in Chrome — message button + modal, Edit on an owned listing, /apply's member redirect. Only the dark /apply *form* remains unseen (needs a Tier-1 session; none exists).
+
+**Findings:** (1) localhost auth broken since 30 June — test Turnstile key in `.env.local` vs real secret in Supabase; fix task queued. (2) Local dev uses the PRODUCTION database — separate dev DB logged as backlog before real members arrive. (3) Serif numeral-1 quirk now visible on profile ("June l, 2026") — evidence for the Phase 2 serif call.
+
+**Next: Slice 3** — forms (post/edit), profile, /listings/mine (archived weight fix), admin tidy, smart-quotes sweep. Then Phase 4 brand lock.
 
 ---
 

@@ -60,12 +60,23 @@
 - Built `outputs/Manhattanite_Mockup_v9_Detail-and-Dark-Auth.html` (3 screens with switcher: listing detail light / sign-in dark / apply dark) at George's request — see before commit.
 - **George's verdict: approved with one change — no subhead on the Apply screen** ("Introduce yourself." stands alone; the tell-a-neighbor line cut). Referral hint copy ("A referral helps, but it isn't required.") approved. Slice 2 prompt updated to name v9 as the design contract. Ready for Claude Code.
 
+## 2026-07-20 — Slice 2 SHIPPED and verified (incl. member paths via George's session)
+
+- Claude Code shipped Slice 2, two commits, live on prod: listing detail + contact in the editorial grid (rail, kicker with EXAMPLE tag, serif title + price, wide capped lead photo, hairline metadata table, boxed action), dark threshold (login, signup, both resets, apply) via a shared `AuthShell`, `.mh-input` shared form grammar (auto-flips on `.mh-dark`), Turnstile `theme="dark"`, signup `?email=` prefill, footer email → info@.
+- New primitives: `AuthShell`, `.mh-input`, `ArrowLink direction="back"`, BoxButton class export for the ContactModal (Server Component can't pass onClick). NavGate now also hides SiteNav on the threshold routes.
+- **Cowork member-path QA via George's signed-in Chrome (all pass):** non-owned listing → boxed MESSAGE THE LISTER + modal (CONTACT kicker, "Message Anna.", boxed textarea, SEND — not sent); owned listing (Studio · Soho) → boxed EDIT LISTING; /apply as member → correct redirect to /profile; member footer shows the Membership column.
+- **Still visually unverified: the dark /apply form** — only a Tier-1 (account, non-member) session can see it, and none exists. Low risk (it shares AuthShell + .mh-input with verified screens). Check when the first real Tier-1 account applies, or via a disposable account someday.
+- **Two findings worth their own line:**
+  1. **Localhost auth is dead** (pre-existing since 30 June): `.env.local` uses Cloudflare's always-pass test Turnstile key while Supabase validates against the real secret — every local sign-in/up/reset fails. One-line fix (put the real public site key in `.env.local`) queued as a separate task.
+  2. **Local dev talks to the production database** — no separate dev DB. Fine at seed scale; becomes real risk once non-George members exist. Logged as a build-backlog candidate: separate Supabase dev project.
+- Observed during QA, for existing open decisions: profile page body values now render in the serif, numeral-1-as-l visible ("June l, 2026") — direct evidence for the Phase 2 serif decision. /listings/mine untouched as planned (archived QA listing still leads; EDIT/REMOVE still old text links) — Slice 3 scope.
+
 ## Next steps
 
 - ~~Font wiring fix~~ — DONE 2026-07-17, live on prod.
 - **PALETTE DECIDED 2026-07-17: dark outside, light inside.** George chose the split after walking the interactive `outputs/Manhattanite_Mockup_v8_Dark-Outside-Light-Inside.html` (dark park landing → click through → light bone browse; wordmark returns you outside). Landing + (from Slice 2) auth/apply live on park-dark; all product screens on bone-light. v7 (all-dark) and v6 (all-light) remain in outputs as the road not taken.
 - **Slice 1 implementation prompt delivered:** `outputs/Manhattanite_ICW-Slice-1_Claude-Code-Prompt_v1.md` — tokens/section grammar, BoxButton + ArrowLink (the two-action system), dark landing rebuild, light browse rebuild with the new ListingCard. Hard requirements in the prompt: EXAMPLE tag stays on cards, gating logic untouched, hero photo from public/ (flag for Phase 4 if weak), auth screens deferred to Slice 2.
-- Slices queued after 1: **Slice 2** = auth + apply (dark side) and listing detail (light, anchor rail); **Slice 3** = forms, profile, mine, admin tidy; then Phase 4 brand lock (wordmark, favicon/OG, photo rules, brand-guide v2 with the split-palette rule) and Phase 5 emails.
+- ~~Slice 2~~ — SHIPPED + verified 2026-07-20. **Slice 3 prompt delivered 2026-07-20** (`outputs/Manhattanite_ICW-Slice-3_Claude-Code-Prompt_v1.md`): Stage 0 = the localhost Turnstile key fix; then post-form, profile ×2, /listings/mine (archived → compact rows), admin tidy, smart-quotes sweep + form states. Doc-git-commit rule baked into the prompt. Then Phase 4 brand lock (wordmark, favicon/OG, photo rules, brand-guide v2 with the split-palette rule) and Phase 5 emails.
 
 ## Decisions still open (to be made on screens, in phase order)
 
@@ -74,25 +85,28 @@
 - Wordmark concept — Phase 4.
 - Mobbin Pro: only if the free cap bites — Phase 1.
 
-## 2026-07-20 — Slice 2 SHIPPED: listing detail (light) + the dark threshold
+## 2026-07-20 — Slice 3 SHIPPED: the last of the screen rework
 
-Live on prod, commits `d7f1605` (detail + contact) and `085c0bb` (auth + apply). Design contract was **v9** (`Manhattanite_Mockup_v9_Detail-and-Dark-Auth.html`), which turned out to exist in outputs/ and cover this slice exactly — the brief named v8, but v9 is the specific artifact and won where the two differ.
+Live on prod. Commits `eb7f91b` (groundwork) → `5aa045c` (post a listing) → `83c3c56` (profile) → `7f4d71f` (my listings) → `c898603` (admin) → `5798e10` (polish), plus four fixes found on the prod pass. **Phase 3 of the design plan is complete** — every product screen now sits on the same system.
 
-**Listing detail (steal 10, light form).** Label column = anchor rail (LISTING + "← Listings"); content column = kicker (EXAMPLE tag · category · neighborhood · posted date) → serif statement title with tabular price right → hairline → lead photograph → description → metadata as hairline-separated label/value rows → byline → one boxed action → light footer. The lead photo deliberately drops the card's 4:3 for full content width capped at 640px tall: the detail page is the one screen that exists to show the thing properly. `created_at` joined the select for the kicker date (same row, same RLS, no new reach).
+**Groundwork.** Three things Slices 1–2 hand-built per page became components once five more screens needed them: `PageShell` (the light frame — editorial grid, label column with the way back, serif statement closed by a hairline), `MetaRows` (the hairline label/value pairs; listing detail now renders through it rather than keeping a second copy), and an optional `href` on `ListingCard` so a card with no public page renders unlinked instead of pointing at a 404.
 
-**The dark threshold.** `/login`, `/signup`, `/reset-request`, `/reset-password` and `/apply` moved onto the landing's park ground via a new shared `AuthShell`. These are the door, not a room behind it. SiteNav now stands down on all five (added to `NavGate`'s set) — a tier-aware product nav on a park page was both a visual seam and a contradiction. No transition logic: the existing redirect into light `/listings` IS the door-to-room moment.
+**The audit's C+ pages, both fixed structurally rather than cosmetically:**
+- `/listings/mine` — the archived QA test listing out-shouted the live ones. Muting it wasn't enough because it was still the same object at the same size. Active listings now use the standard `ListingCard`; **archived ones are compact hairline rows under their own heading** — no image, no card. An archived listing can't outweigh a live one because it is no longer the same kind of element on the page. Status moved into the card kicker's left slot (on your own listings, "In review" is what you came to check).
+- `/profile` — out of the centered stack into the grid: tier + avatar in the label column, name as the statement, fields as `MetaRows`. Sponsorship became a small-caps line ("Sponsored by …") rather than its own centered section: trust is the product, but it's a credential, not a chapter. **No new query** — the connections rpc was already on the page.
 
-**Where the system didn't stretch (first real test beyond the two launch pages):**
-- `ContactModal` couldn't consume `BoxButton` — its trigger needs an `onClick`, which a Server Component parent can't pass. Exported `boxButtonClass()` so the one caller that must own its element still matches. Worth remembering as the general shape of this problem.
-- `ArrowLink` only pointed forward; every back link was hand-rolled per page. Added `direction="back"`.
-- Field styling was duplicated across four files. Now one `.mh-input` utility that flips palette under `.mh-dark`, same pattern as `.mh-rule`. This is what let the auth screens and the light contact form share a definition.
+**Forms.** `/listings/new`, `/listings/[id]/edit` (same component, so it moved with it) and `/profile/edit` all take `.mh-input` + `BoxButton`. The photo and avatar controls got a **dashed** hairline — solid means "a control you act on", dashed means "a space something goes into"; as solid boxes they competed with the real submit. Submit reads "Submit for review" now, because that's what it does under pre-moderation, and the moderation notice sits with the button rather than up the page.
 
-**Decided:** footer contact address is `info@manhattanite.com` (hello@ doesn't exist and never did).
+**Admin** got the same frame and the two-action system (queue verbs as ArrowLink-weight text, the CONFIRM step taking the box). Minimal effort by design — George is the only user.
 
-**Verified on prod:** listing detail (guest + member + owner), contact modal, `/listings/[id]/contact`, login, signup incl. `?email=` prefill, both reset screens; desktop and 375/390px. Turnstile renders dark and passes on the park ground — `theme` is the only lever we have (Cloudflare's chrome is in an iframe CSS can't reach); its integration is untouched.
+**Four things only the prod pass caught**, all worth remembering as a checklist for future screens:
+1. The type-radio row needed 431px inside a 346px column, so "Service" sat **outside the column and could not be tapped at all** on a phone — not merely cropped. Any non-wrapping flex row inside the content column is a mobile risk.
+2. `PageShell`'s title closes with a hairline and `MetaRows` opens with one; two rules seven pixels apart read as an empty row. Hence `omitFirstRule`.
+3. The admin stat grid draws its hairlines as the container showing through a 1px gap, so an **unfilled trailing cell renders as a grey block**.
+4. A `type="date"` input draws its own picker icon, so `mh-select` gave it two chevrons.
 
-**NOT verified — carried forward:** `/apply`'s dark layout. It requires a logged-in NON-member, and George's account is a member+admin, so it redirects to `/profile`. Everything it's built from (AuthShell, `.mh-input`, dark BoxButton) is verified on the four auth screens, so risk is low, but the field labels and the confirmation state have not been seen. **Check when a Tier-1 account next exists.**
+**Smart quotes:** swept `&apos;` → `&rsquo;` across 46 occurrences, all verified to be in JSX text rather than attributes before the sweep. **Placeholders were deliberately left alone** (the slice's rule was text, not attributes) — they still contain straight apostrophes and are visible copy, so they're worth a later pass.
 
-**Environment gotcha found (pre-existing, not from this slice):** no auth flow can be tested on localhost. `.env.local` holds Cloudflare's TEST Turnstile site key while Supabase verifies against the REAL secret, so every sign-in/sign-up/reset dies at the captcha with "Couldn't verify you're human" *while the widget itself shows Success* — two different checks. True since 2026-06-30. Spun out as its own task.
+**Stage 0 — local auth: attempted, BLOCKED at Cloudflare.** The real site key (`0x4AAAAAADtg85GOzu0Ueq50`, public, lifted from the live bundle) was put into `.env.local` and Cloudflare **rejected the localhost hostname** — the widget renders "Unable to connect to website" and offers no challenge at all, which is worse locally than the test key. Reverted to the test key with the real one recorded in a comment above it. **To finish: add `localhost` to the widget's allowed hostnames in the Cloudflare Turnstile dashboard, then swap the two lines.** Until then no local sign-in, and every gated screen has to be verified on prod against George's session.
 
-**Tooling gotcha:** a dev server already running before a `globals.css` edit served a STALE stylesheet — new utilities silently absent, `touch` didn't fix it, restart did. Also: the browser pane's screenshots repeatedly returned blank or half-painted frames after a programmatic resize; measuring the DOM disproved each one. Trust measurements over screenshots when they disagree.
+**Known blemish, not touched (pre-existing, shipped in Slice 1):** a listing with no photo renders the card's empty beige 4:3 media block, which reads as broken. Visible on `/listings` and `/listings/mine`. Changing it alters the shipped browse layout, so it's flagged rather than fixed.
