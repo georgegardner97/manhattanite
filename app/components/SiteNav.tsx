@@ -31,9 +31,14 @@ import AccountMenu from "@/app/components/AccountMenu";
 type Viewer = "guest" | "account" | "member";
 
 // Shared small-caps link treatment used across the app's secondary links.
-const LINK_BASE = "mh-label transition-colors";
-const LINK_QUIET = `${LINK_BASE} text-ink/70 hover:text-ink`;
-const LINK_EMPHASIS = `${LINK_BASE} text-ink`; // the tier's conversion CTA
+//
+// The group-hover/nav variants belong to the header's hover fill: when the bar
+// goes park green, every piece of type on it has to cross to bone or it
+// disappears into the fill. The group is NAMED so AccountMenu — a separate
+// component further down the tree — can join the same transition.
+const LINK_BASE = "mh-label transition-colors duration-[400ms]";
+const LINK_QUIET = `${LINK_BASE} text-ink/70 hover:text-ink group-hover/nav:text-bone/70 group-hover/nav:hover:text-bone`;
+const LINK_EMPHASIS = `${LINK_BASE} text-ink group-hover/nav:text-bone`; // the tier's conversion CTA
 
 export default async function SiteNav() {
   const supabase = await createClient();
@@ -62,13 +67,24 @@ export default async function SiteNav() {
   }
 
   return (
-    <header className="border-b border-ink/16">
-      <nav className="mh-gutter py-[22px] flex items-center justify-between gap-6">
+    <header className="mh-navbar group/nav border-b border-ink/16">
+      {/* The hover fill, ported from In Common With's header: a full-bleed
+          panel, invisible at rest, fading to opaque over 400ms when the
+          pointer enters the bar anywhere.
+
+          Park green rather than a warmer bone: this bar already sits ON bone,
+          so fading in a near-neighbour would be a change nobody sees. Green is
+          also already the site's other surface — the landing and the auth
+          screens — so the nav briefly becoming "outside" is a move the system
+          already knows how to make. */}
+      <div className="mh-navbar-fill bg-park" aria-hidden="true" />
+
+      <nav className="relative mh-gutter py-[22px] flex items-center justify-between gap-6">
         {/* Wordmark — the single canonical wordmark now that interior pages
             drop their centered one. Clicking it takes you back "outside". */}
         <Link
           href="/"
-          className="font-serif text-[24px] leading-none text-ink"
+          className="font-serif text-[24px] leading-none text-ink transition-colors duration-[400ms] group-hover/nav:text-bone"
         >
           Manhattan<span className="italic">ite</span>
         </Link>

@@ -57,10 +57,16 @@ export default function AccountMenu({
         aria-label="Account menu"
         className="flex items-center gap-1.5 cursor-pointer group"
       >
-        <span className="flex items-center justify-center w-8 h-8 rounded-full border border-ink/25 text-[12px] font-serif text-ink group-hover:border-ink transition-colors">
+        {/* group-hover/nav: crosses to bone with the rest of the bar when
+            SiteNav's hover fill comes in. Without it the avatar vanishes into
+            the park green. */}
+        <span className="flex items-center justify-center w-8 h-8 rounded-full border border-ink/25 text-[12px] font-serif text-ink group-hover:border-ink transition-colors duration-[400ms] group-hover/nav:border-bone/40 group-hover/nav:text-bone">
           {initial}
         </span>
-        <span className="text-[10px] text-slate" aria-hidden="true">
+        <span
+          className="text-[10px] text-slate transition-colors duration-[400ms] group-hover/nav:text-bone/60"
+          aria-hidden="true"
+        >
           {open ? "▴" : "▾"}
         </span>
       </button>

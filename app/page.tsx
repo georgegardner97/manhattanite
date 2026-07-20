@@ -68,7 +68,7 @@ export default async function Home() {
   const { data: glimpse } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, created_at, images, details, is_example"
+      "id, type, title, description, price_cents, created_at, images, details, is_example",
     )
     .eq("status", "published")
     .order("created_at", { ascending: false })
@@ -104,28 +104,42 @@ export default async function Home() {
           />
 
           <div className="absolute inset-0 z-10 flex flex-col justify-between px-10 pt-7 pb-14 max-[860px]:px-[22px] max-[860px]:pt-[22px] max-[860px]:pb-10">
-            <nav className="flex items-baseline justify-between gap-6">
-              <span className="font-serif text-[24px] text-bone">
-                Manhattan<span className="italic">ite</span>
-              </span>
-              <div className="flex gap-5 sm:gap-[34px]">
-                <Link href="/listings" className={HERO_LINK}>
-                  Listings
-                </Link>
-                {/* Three links plus the wordmark don't fit on a phone. This one
+            {/* The hover fill (ICW's header panel). This is the case their
+                effect was actually built for — a nav sitting on a photograph,
+                where the panel fading in is what makes the links legible. The
+                negative margins cancel the overlay's padding so the fill runs
+                edge to edge and up to the very top, rather than floating in a
+                padded box. Park at 88% keeps a trace of the image showing
+                through, so it reads as a scrim settling rather than a bar
+                appearing. */}
+            <div className="mh-navbar -mx-10 -mt-7 px-10 pt-7 pb-6 max-[860px]:-mx-[22px] max-[860px]:-mt-[22px] max-[860px]:px-[22px] max-[860px]:pt-[22px]">
+              <div
+                className="mh-navbar-fill bg-park/[0.88]"
+                aria-hidden="true"
+              />
+              <nav className="relative flex items-baseline justify-between gap-6">
+                <span className="font-serif text-[24px] text-bone">
+                  Manhattan<span className="italic">ite</span>
+                </span>
+                <div className="flex gap-5 sm:gap-[34px]">
+                  <Link href="/listings" className={HERO_LINK}>
+                    Listings
+                  </Link>
+                  {/* Three links plus the wordmark don't fit on a phone. This one
                     goes first: the hero's own "Apply for membership" button is
                     the same destination, one thumb-length below. */}
-                <a
-                  href="#membership"
-                  className={`${HERO_LINK} max-[560px]:hidden`}
-                >
-                  Membership
-                </a>
-                <Link href="/login" className={HERO_LINK}>
-                  Sign in
-                </Link>
-              </div>
-            </nav>
+                  <a
+                    href="#membership"
+                    className={`${HERO_LINK} max-[560px]:hidden`}
+                  >
+                    Membership
+                  </a>
+                  <Link href="/login" className={HERO_LINK}>
+                    Sign in
+                  </Link>
+                </div>
+              </nav>
+            </div>
 
             <div className="max-w-[600px] mh-fade-in">
               <h1 className="font-serif font-normal text-[46px] max-[860px]:text-[32px] leading-[1.12] text-bone mb-6">
@@ -158,7 +172,7 @@ export default async function Home() {
                   {listings.map((row) => {
                     const coverPath = row.images?.[0]?.path;
                     const coverUrl = coverPath
-                      ? coverUrlByPath.get(coverPath) ?? null
+                      ? (coverUrlByPath.get(coverPath) ?? null)
                       : null;
                     return (
                       <ListingCard

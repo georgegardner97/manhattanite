@@ -162,6 +162,48 @@ html {
   color: rgba(245, 240, 232, 0.38);
 }
 
+/* ----------------------------------------------------------------------------
+   NAV HOVER FILL (In Common With's header, ported 2026-07-20)
+   ----------------------------------------------------------------------------
+   ICW's header carries a full-bleed background panel that is invisible at rest
+   and fades to opaque when the pointer enters the header — anywhere in it, not
+   just on a link. Their exact spec, read off the live site:
+
+     opacity 0 → 1, 400ms cubic-bezier(.4, 0, .2, 1), desktop only
+
+   The point is the WHOLE BAR answering the pointer as one object, which is why
+   this is a panel behind the links rather than a per-link background: a row of
+   individually-highlighting links reads as a toolbar, and this reads as a
+   surface.
+
+   Compose as:
+
+     <header class="mh-navbar">
+       <div class="mh-navbar-fill"></div>   <- the panel, first child
+       <nav class="relative"> …links… </nav> <- must sit above it
+     </header>
+
+   Pointer-coarse devices get nothing: there is no hover on a phone, and a
+   panel that only appears mid-tap is worse than none.
+   -------------------------------------------------------------------------- */
+.mh-navbar {
+  position: relative;
+}
+
+.mh-navbar-fill {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) and (min-width: 861px) {
+  .mh-navbar:hover .mh-navbar-fill {
+    opacity: 1;
+  }
+}
+
 /* Scroll without the scrollbar. For the mobile category row, which swipes
    horizontally — a visible track would be the loudest thing on the page. */
 .mh-no-scrollbar {
