@@ -6,6 +6,94 @@ Newest entries at the top.
 
 ---
 
+## 2026-07-20 · Slice 2 SHIPPED — listing detail (light) + the dark threshold
+
+**Commits `d7f1605` + `085c0bb`, live on prod.** Design contract was the v9 mockup (`Manhattanite_Mockup_v9_Detail-and-Dark-Auth.html`), which already covered this slice exactly.
+
+**Listing detail** got steal 10 in its light form: label column as anchor rail, kicker → serif statement title with price → hairline → lead photograph at full content width (dropping the card's 4:3 — the detail page is the one screen that exists to show the thing properly, capped at 640px tall) → metadata as hairline-separated rows → byline → one boxed action → light footer. `/listings/[id]/contact` got the same editorial grid.
+
+**The five threshold screens** — `/login`, `/signup`, `/reset-request`, `/reset-password`, `/apply` — moved onto the landing's park ground via a shared `AuthShell`, with SiteNav standing down on all five. These are the door, not a room behind it; the existing redirect into the light product IS the transition, so no transition logic was added. Boxed fields and boxed submits throughout, which finally kills the audit's "primary actions read as disabled labels" finding on the auth funnel. `/signup` now reads `?email=` and prefills, closing the loop the landing's membership form opened in Slice 1.
+
+**Decided:** footer contact is `info@manhattanite.com` — hello@ doesn't exist.
+
+**Turnstile on the dark ground works** (real key, dark theme, passing on prod). Its integration was not touched; `theme` is the only lever, since Cloudflare renders its chrome in an iframe CSS can't reach.
+
+**Open:** `/apply`'s dark layout is the one screen still unverified — it needs a logged-in NON-member, and George's account is a member+admin, so it redirects to `/profile`. Low risk (built entirely from verified pieces) but unseen.
+
+**Two environment findings.** (1) **No auth flow can be tested on localhost, and hasn't been since 2026-06-30**: `.env.local` uses Cloudflare's TEST Turnstile key while Supabase checks the REAL secret, so sign-in fails at the captcha *while the widget shows Success*. Pre-existing, spun out as its own task. (2) A dev server left running across a `globals.css` edit serves a **stale stylesheet** — new utilities silently missing, `touch` insufficient, restart required.
+
+---
+
+## 2026-07-20 · Slices 1 + 1.1 SHIPPED — the ICW redesign is live on prod
+
+**Slice 1 (Claude Code, commits b998215/10412d7/8a5bda3):** foundation utilities + `BoxButton`/`ArrowLink` + `ListingCard` + tier-aware `SiteFooter`; dark park landing at `/` (full-bleed hero, statement, membership block); light bone browse at `/listings`. EXAMPLE tags preserved, gating untouched, verified on prod.
+
+**George's review produced Slice 1.1 (commits c544566/409efb2):** (1) nav-disappears bug — the x-pathname header hiding didn't survive client-side navigation; fixed with a `NavGate` client wrapper on `usePathname()`; (2) browse title → "Today's listings."; (3) categories moved to a **sticky left rail** (ICW All Products pattern, George's reference), mobile keeps the horizontal row. All verified on prod including the landing→browse→detail click path.
+
+**Open:** George's 30-second logged-in check (`/` redirect + member browse); hello@ vs info@ footer email; hero photo retina replacement (Phase 4). **Next: Slice 2** (listing detail light + auth/apply dark, prompt already in outputs/).
+
+**Incident:** this file and design-foundation memory.md were found reverted to last-committed git state (uncommitted doc edits wiped between sessions) — restored by Cowork from its copies. New rule: commit doc changes to git at the end of every session.
+
+---
+
+## 2026-07-17 · ICW direction chosen, palette locked (dark outside / light inside), Slice 1 prompt out
+
+**Phase 1 compressed into a day.** George picked **In Common With** (incommonwith.com) off Mobbin as the primary reference ("very similar, our colours and fonts"). Delivered the 12-pattern steal sheet (`Manhattanite_Steal-Sheet_v1.md`) — headline steals: label-left editorial grid as master layout, the dated "Lately" card as the listing card, boxes reserved exclusively for actions (fixes the CTAs-look-disabled audit finding), accent as text colour only.
+
+**Mockup loop, four rounds same day:** v5 (ICW structure, Manhattanite tokens) → George: yes, but category tiles advertise the two-category launch too loudly → v6 (no categories, 2×2 listing grid) → George shared the pitch-deck slide, asked for its palette → v7 (all park-dark) → v8 interactive (dark landing, click through to light browse). **Decision: dark outside, light inside.** Category tiles parked until 4+ categories.
+
+**Slice 1 Claude Code prompt delivered** (`Manhattanite_ICW-Slice-1_Claude-Code-Prompt_v1.md`): tokens + BoxButton/ArrowLink system, dark landing, light browse with new ListingCard. EXAMPLE tag and tier gating explicitly protected. Auth/detail/forms queued as Slices 2–3.
+
+---
+
+## 2026-07-17 · Font fix shipped same day — Instrument Serif live sitewide
+
+**The Phase 0 headline finding is fixed and deployed**, hours after the audit. Claude Code applied the `@theme inline` fix plus a second subtlety the prompt missed: the `body` base rule used a raw `var(--font-sans)`, which goes dead under `@theme inline` (variables get inlined into utilities, not emitted at `:root`) — repointed it to `var(--font-inter)` directly. Only `app/globals.css` changed. Verified on prod: body → Inter, headings → Instrument Serif, ~50 existing `font-serif` usages now render sitewide with zero component changes.
+
+**Beige-block mystery resolved (not a bug):** re-inspected the Yorkville listing on prod post-deploy — the page has exactly one image, it loads fine (1600×2000), and no empty blocks exist in the DOM. The block in the audit screenshot was the image's transient lazy-load placeholder caught mid-scroll. No action; a nicer loading treatment is optional Phase 3 polish.
+
+**New observation for the Phase 2 serif decision:** listing detail body copy also renders in Instrument Serif (the components use `font-serif` on more than display type), and at body sizes its numeral "1" reads like a lowercase "l" ("August l"). Judge the serif on real screens with this in mind.
+
+---
+
+## 2026-07-17 · Design Foundation Phase 0 — baseline audit shipped (headline: fonts never load)
+
+**Phase 0 of the design-foundation project done in one session.** Captured 16 desktop screenshots of prod (browse, detail, contact, post form, mine, profile, profile-edit, admin ×2, auth ×3, terms) via George's Chrome; graded every screen against the brand guide's do/don't table. Output: `Product/design-foundation-project/outputs/Manhattanite_Design-Audit_v1.md` + `outputs/before-screenshots/`.
+
+**Headline finding — a bug, not taste:** Instrument Serif and Inter are loaded by next/font (variables present on `<body>`) but the Tailwind theme never maps them, so **every element on prod renders in the OS system font**. Verified in the live DOM: zero elements use Instrument Serif or Inter. Recommended fixing this (one line-ish in `app/globals.css`) before Phase 1 even starts.
+
+**Grades:** all screens land B−/B; My listings and Profile at C+. No failures — the layout system (paper, hairlines, caps kickers, whitespace) is consistent and the voice is strong. Cross-cutting gaps: no action/button system (primary CTAs look disabled), listing card undesigned (identical treatment for a $4,200 apartment and a side table), empty beige placeholder block on listing detail (possible bug), archived listings shown at full weight, zero accent colour in practice.
+
+**Couldn't capture:** logged-out landing (George signed in; not worth logging him out) and phone widths (extension window-resize didn't take). Both carried forward.
+
+**Next:** the font fix (Claude Code, one session) → then Phase 1 (Mobbin account + steal sheet).
+
+---
+
+## 2026-07-14 · Monetisation scenarios — Radio H-P vs Gens de Confiance
+
+**Strategy discussion, no decision changed.** Researched both comparators' actual revenue models. Radio H-P (~8k members, founder-run): free membership, pay-per-advert on a sliding scale with property at the top — the direct model for a two-person operation. GDC (~2M members, breakeven 2022): everything free except vacation rentals (€119/6mo, extends free if unrented, ~60% of revenue) + real-estate pro packages — needs volume we won't have.
+
+**Three scenarios sketched:** (1) Cohort 3 @ ~500 members, apartments $49 → ~$500–700/mo, signal not income; (2) 2–5k members, sliding scale (apartments $99–149, jobs $75, furniture free + $15 featured) → ~$100k/yr, the realistic ceiling for two people; (3) 10k+ members, GDC-lite apartments-only $149-until-rented → ~$30k/mo, but manual approval/moderation breaks at that scale — forces a hire-or-loosen decision.
+
+**Refinements flagged (pending confirm):** price apartments high ($99–149 — broker-fee pain makes it cheap); keep furniture free forever (browse liquidity); adopt GDC's "extends free until rented" guarantee; continue resisting pro/broker packages. Confirmed pay-per-post decision (2026-05-17) stands, validated by both comparators.
+
+---
+
+## 2026-07-02 · GTM shift — Seed phase activated, Growth work area created
+
+**Strategy call.** George declared the build "mostly done" and shifted focus to member acquisition. Reviewed `gtm-playbook.md` (2026-05-16, never actioned) — the plan already exists; the job now is execution. **Decision: conversations now, legal in parallel** — outreach and list-building start immediately, but no member approvals until entity formation + attorney review of T&P/fair-housing are done (see decisions.md, Go-to-market).
+
+**Created:** `WORK AREAS/Growth/founding-member-acquisition-project/` (brief, memory, outputs/) with:
+- `Founding-Members_Plan_v1.md` — two-week action plan: week 1 = 30-name brain-dump, start LLC formation, outreach template, load the 27 seed listings, 3 coffees; week 2 = 10 outreaches + 3 meets; from week 3, a 2-day-a-week routine (Mon = outreach batch, Thu = meets).
+- `Founding-Members_List_v1.md` — candidate tracker with Anna/Max/Lila composition scoreboard and a vouched-name bench.
+
+**Revised same session:** George overrode the legal gate — no entity registration until money is about to change hands (triggers: first dollar, ~50+ members, or strangers joining). Approvals unblocked immediately; the surviving guardrail is a fair-housing checklist in the moderation pass for apartment listings. All project files + decisions.md updated to match.
+
+**Open next:** the week-1 actions themselves; confirming the playbook's four open assumptions as they bite.
+
+---
+
 ## 2026-06-12 · Invite slice built (cold-start growth engine) + quick wins + GDC logged-in research
 
 **Strategy call — invite-led, not request-led.** George (logged into a live GDC member account) and I decoded GDC's actual mechanism: request sponsorship from people you know → sponsor accepts → moderators validate; 3 sponsors required; a status ladder (Débutante → Confirmée) gated by how many you sponsor, rate-limited by status. George's sharp pushback: a request-a-sponsor flow needs density we don't have (5 members). **Resolution: build invite-led growth** (a member brings someone in, vouching by inviting), floor stays at **1**, the newcomer still needs George's one-tap approval. Request flow / floor>1 / status ladder are explicitly **deferred** to when there's density. Full reasoning: `outputs/Manhattanite_GDC-Mechanics-and-Recommendations_v1.md`.
