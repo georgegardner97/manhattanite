@@ -14,10 +14,16 @@
 // (the "Application form opening" and "Application received — confirmation"
 // blocks). American spelling throughout.
 
-import Link from "next/link";
+// Visual (design foundation, Slice 2): the dark threshold, via AuthShell. Apply
+// belongs "outside" with the auth screens — it is the second half of the same
+// door, and putting it on the light product ground would have implied the
+// applicant was already through it.
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ApplicationForm from "@/app/components/ApplicationForm";
+import AuthShell, { AuthLink } from "@/app/components/AuthShell";
+import ArrowLink from "@/app/components/ArrowLink";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -60,83 +66,49 @@ export default async function ApplyPage() {
     .limit(1)
     .maybeSingle();
 
+  if (pending) {
+    /* ---------- Confirmation state ---------- */
+    return (
+      <AuthShell
+        kicker="Application received"
+        headline="Thanks for applying."
+        width="wide"
+        footer={<AuthLink href="/profile">Back to your profile</AuthLink>}
+      >
+        <div className="space-y-6 text-center">
+          <p className="font-serif text-lg leading-relaxed text-bone">
+            We read every application personally, which means it&apos;ll take a
+            few days. We&apos;ll be in touch either way.
+          </p>
+          <p className="font-serif text-lg leading-relaxed text-bone/70">
+            In the meantime, if you know a member of Manhattanite who&apos;d
+            vouch for you, ask them to send a note. Sponsored applications move
+            faster.
+          </p>
+          <div className="pt-4">
+            <ArrowLink href="/listings" surface="dark">
+              Browse listings
+            </ArrowLink>
+          </div>
+        </div>
+      </AuthShell>
+    );
+  }
+
+  /* ---------- Application form ----------
+     Opening copy verbatim from voice-and-copy.md, "Application form opening". */
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-
-        {pending ? (
-          /* ---------- Confirmation state ---------- */
-          <>
-            <div className="text-center mb-12">
-              <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-                Application received
-              </p>
-              <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-                Thanks for applying.
-              </h1>
-              <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-            </div>
-
-            <div className="max-w-md mx-auto space-y-6 text-center">
-              <p className="font-serif text-lg leading-relaxed text-ink">
-                We read every application personally, which means it&apos;ll take
-                a few days. We&apos;ll be in touch either way.
-              </p>
-              <p className="font-serif text-lg leading-relaxed text-ink">
-                In the meantime, if you know a member of Manhattanite who&apos;d
-                vouch for you, ask them to send a note. Sponsored applications
-                move faster.
-              </p>
-            </div>
-
-            <div className="mt-16 text-center">
-              <Link
-                href="/listings"
-                className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-              >
-                Browse listings &rarr;
-              </Link>
-            </div>
-          </>
-        ) : (
-          /* ---------- Application form ---------- */
-          <>
-            <Link
-              href="/profile"
-              className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-            >
-              &larr; Profile
-            </Link>
-
-            <div className="text-center mt-12 mb-12">
-              <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-                Apply for membership
-              </p>
-              <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-                Tell us who you are.
-              </h1>
-              <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-            </div>
-
-            {/* Form opening copy — voice-and-copy.md, "Application form opening" */}
-            <div className="max-w-md mx-auto mb-16 space-y-5 text-center">
-              <p className="font-serif text-lg leading-relaxed text-ink">
-                Manhattanite is a private network. We read every application
-                personally, so tell us who you are in your own words.
-              </p>
-              <p className="font-serif text-lg leading-relaxed text-slate">
-                The basics matter: real name, where you live in Manhattan, what
-                you do. The rest is up to you. We&apos;re not looking for a CV.
-              </p>
-            </div>
-
-            <ApplicationForm
-              defaultName={account?.name ?? null}
-              defaultNeighborhood={account?.neighborhood ?? null}
-            />
-          </>
-        )}
-      </div>
-    </main>
+    <AuthShell
+      kicker="Apply for membership"
+      headline="Tell us who you are."
+      width="wide"
+      sub="Manhattanite is a private network. We read every application personally, so tell us who you are in your own words. The basics matter: real name, where you live in Manhattan, what you do. The rest is up to you. We're not looking for a CV."
+      footer={<AuthLink href="/profile">Back to your profile</AuthLink>}
+    >
+      <ApplicationForm
+        defaultName={account?.name ?? null}
+        defaultNeighborhood={account?.neighborhood ?? null}
+      />
+    </AuthShell>
   );
 }

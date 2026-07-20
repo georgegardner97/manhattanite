@@ -2,9 +2,14 @@
 
 // NavGate — decides whether the global nav is on screen, on the client.
 //
-// The landing page carries its own nav overlaid on the hero photograph, so
-// SiteNav must stand down on "/" and only there.
+// SiteNav stands down on the pages that carry their own chrome:
+//   - "/"        the landing, whose nav is overlaid on the hero photograph.
+//   - the five THRESHOLD routes (Slice 2), which sit on the landing's dark side
+//     and carry only the centered wordmark AuthShell renders. The light,
+//     tier-aware product nav on a park-ground page was both a visual seam and a
+//     contradiction: these screens exist because you are not inside yet.
 //
+
 // This has to be a CLIENT decision. The first implementation read the pathname
 // from a header set in proxy.ts, which is correct on a fresh page load and
 // wrong forever after: the root layout is a Server Component and does not
@@ -20,8 +25,20 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+// Exact matches only — no prefix test. "/listings" must keep its nav even
+// though "/login" is in the set, and a prefix rule invites exactly that class
+// of accident as routes are added.
+const NAVLESS = new Set([
+  "/",
+  "/login",
+  "/signup",
+  "/reset-request",
+  "/reset-password",
+  "/apply",
+]);
+
 export default function NavGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/") return null;
+  if (NAVLESS.has(pathname)) return null;
   return <>{children}</>;
 }

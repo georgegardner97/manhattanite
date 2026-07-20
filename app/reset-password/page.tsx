@@ -10,12 +10,15 @@
 // password on the now-authenticated user, then send them to /login to sign in
 // fresh. Same 8-character minimum as signup. American spelling throughout.
 
+// Visual (design foundation, Slice 2): the dark threshold, via AuthShell.
+
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AuthShell from "@/app/components/AuthShell";
+import BoxButton from "@/app/components/BoxButton";
 
 type Status =
   | { kind: "checking" }
@@ -69,72 +72,51 @@ export default function ResetPasswordPage() {
 
   if (status.kind === "checking") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
-        <p className="font-serif text-lg text-slate">One moment…</p>
+      <main className="mh-dark min-h-screen flex items-center justify-center px-6">
+        <p className="font-serif text-lg text-bone/60">One moment…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
-      <div className="w-full max-w-md">
-        {/* Wordmark — links back to home. */}
-        <div className="text-center mb-16">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-5xl md:text-6xl tracking-tighter leading-none text-ink"
+    <AuthShell kicker="Reset password" headline="Set a new one.">
+      <form onSubmit={onSubmit} className="space-y-[22px]">
+        <div>
+          <label
+            htmlFor="password"
+            className="mh-label block text-bone/60 mb-2.5"
           >
-            Manhattan<span className="italic">ite</span>
-          </Link>
+            New password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            autoFocus
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={status.kind === "submitting"}
+            className="mh-input"
+            placeholder="At least 8 characters"
+          />
         </div>
 
-        <div className="text-center mb-12">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Reset password
-          </p>
-          <h1 className="font-serif font-light text-3xl md:text-4xl tracking-tight">
-            Set a new one.
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
+        {status.kind === "error" && (
+          <p className="text-sm text-red-300">{status.message}</p>
+        )}
 
-        <form onSubmit={onSubmit} className="space-y-8">
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-[11px] tracking-[0.22em] uppercase text-slate mb-3"
-            >
-              New password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              autoFocus
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={status.kind === "submitting"}
-              className="w-full bg-transparent border-0 border-b border-ink/30 px-0 py-2 text-ink placeholder-slate/60 focus:border-ink focus:outline-none transition-colors disabled:opacity-50"
-              placeholder="At least 8 characters"
-            />
-          </div>
-
-          {status.kind === "error" && (
-            <p className="text-sm text-red-700">{status.message}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={status.kind === "submitting" || !password}
-            className="w-full mh-link text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-left"
-          >
-            {status.kind === "submitting" ? "Saving…" : "Save new password"}
-          </button>
-        </form>
-      </div>
-    </main>
+        <BoxButton
+          type="submit"
+          surface="dark"
+          className="w-full text-center"
+          disabled={status.kind === "submitting" || !password}
+        >
+          {status.kind === "submitting" ? "Saving…" : "Save new password"}
+        </BoxButton>
+      </form>
+    </AuthShell>
   );
 }

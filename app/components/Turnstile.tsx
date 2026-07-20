@@ -108,10 +108,18 @@ type TurnstileProps = {
   /** Called when the token expires or the widget errors — clear the token. */
   onExpire?: () => void;
   onError?: () => void;
+  /**
+   * Widget palette. Cloudflare renders its own chrome, so this is the only
+   * lever we have over how it sits on the page — CSS can't reach inside the
+   * iframe. "dark" on the park-ground auth screens, "light" everywhere else.
+   * Purely cosmetic: the challenge, the token, and the verification are
+   * identical either way.
+   */
+  theme?: "light" | "dark";
 };
 
 const Turnstile = forwardRef<TurnstileHandle, TurnstileProps>(function Turnstile(
-  { onVerify, onExpire, onError },
+  { onVerify, onExpire, onError, theme = "light" },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -125,6 +133,12 @@ const Turnstile = forwardRef<TurnstileHandle, TurnstileProps>(function Turnstile
   onVerifyRef.current = onVerify;
   onExpireRef.current = onExpire;
   onErrorRef.current = onError;
+
+  // Same trick for the theme: it's read once, at render time, inside the
+  // mount-only effect. A ref keeps the effect's dependency list empty (the
+  // widget must render exactly once) without going stale on the first paint.
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
 
   useImperativeHandle(
     ref,
@@ -162,7 +176,7 @@ const Turnstile = forwardRef<TurnstileHandle, TurnstileProps>(function Turnstile
 
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: SITE_KEY,
-          theme: "light",
+          theme: themeRef.current,
           size: "flexible",
           callback: (token: string) => onVerifyRef.current(token),
           "expired-callback": () => onExpireRef.current?.(),

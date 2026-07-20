@@ -10,7 +10,10 @@
 // are required here (stricter than /profile/edit) — applying is the moment we
 // insist on a real name for the byline convention.
 //
-// Style classes match NewListingForm / ProfileEditForm exactly.
+// Styling (Slice 2): renders on the DARK threshold ground, inside AuthShell —
+// boxed .mh-input controls (which pick up their dark palette from the .mh-dark
+// ancestor) and a dark BoxButton submit. This form has one home, /apply, so the
+// dark treatment lives here rather than behind a surface prop.
 
 "use client";
 
@@ -19,12 +22,10 @@ import {
   submitApplication,
   type SubmitApplicationState,
 } from "@/lib/applications/submit";
+import BoxButton from "@/app/components/BoxButton";
 
-const FIELD_BASE =
-  "w-full bg-transparent border-b border-ink/20 pb-3 text-base text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
-const LABEL = "block text-[13px] tracking-[0.22em] uppercase text-slate mb-5";
-const HINT =
-  "font-serif italic normal-case tracking-normal text-slate/70 ml-1";
+const LABEL = "mh-label block text-bone/60 mb-2.5";
+const HINT = "normal-case tracking-normal font-normal text-bone/45 ml-1.5";
 
 const INITIAL: SubmitApplicationState = { error: null };
 
@@ -49,7 +50,7 @@ export default function ApplicationForm({
   const [loadedAt] = useState(() => Date.now());
 
   return (
-    <form action={formAction} className="space-y-12">
+    <form action={formAction} className="space-y-[22px]">
       {/* ---------- Honeypot (anti-spam) ----------
           A field no human ever sees or focuses, but a dumb bot will dutifully
           fill. Hidden from sighted users AND assistive tech via off-screen
@@ -91,7 +92,7 @@ export default function ApplicationForm({
           defaultValue={defaultName ?? ""}
           maxLength={80}
           placeholder="e.g. George Gardner"
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -108,7 +109,7 @@ export default function ApplicationForm({
           defaultValue={defaultNeighborhood ?? ""}
           maxLength={60}
           placeholder="e.g. West Village"
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -124,7 +125,7 @@ export default function ApplicationForm({
           required
           maxLength={120}
           placeholder="Your work, in a few words."
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -140,7 +141,7 @@ export default function ApplicationForm({
           rows={4}
           maxLength={1500}
           placeholder="Who you are, in your own words. We're not looking for a CV."
-          className={`${FIELD_BASE} resize-none`}
+          className="mh-input resize-none"
         />
       </div>
 
@@ -156,22 +157,23 @@ export default function ApplicationForm({
           name="sponsor_reference"
           maxLength={200}
           placeholder="Their email — we'll ask them to vouch for you"
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
       {/* ---------- Error ---------- */}
-      {state.error && <p className="text-sm text-red-700">{state.error}</p>}
+      {state.error && <p className="text-sm text-red-300">{state.error}</p>}
 
       {/* ---------- Submit ---------- */}
-      <div className="pt-8 text-center">
-        <button
+      <div className="pt-2">
+        <BoxButton
           type="submit"
+          surface="dark"
+          className="w-full text-center"
           disabled={isPending}
-          className="group inline-block bg-park text-bone px-12 py-4 text-[11px] tracking-[0.32em] uppercase transition-colors duration-300 hover:bg-ink disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
-          {isPending ? "Sending…" : "Apply for membership"}
-        </button>
+          {isPending ? "Sending…" : "Submit application"}
+        </BoxButton>
       </div>
     </form>
   );

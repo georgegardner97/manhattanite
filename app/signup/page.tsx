@@ -10,14 +10,27 @@
 // Copy framing pulled from COMPANY/voice-and-copy.md (public-facing gating
 // page). American spelling throughout. CTA is "Create an account" — never
 // "Sign up" or "Register" — even though the route is /signup.
+//
+// Visual (design foundation, Slice 2): the dark threshold, via AuthShell.
+//
+// ?email= prefill: the landing page's membership block submits a plain GET to
+// this route, so an address typed out there arrives here in the query string.
+// Reading it back is what makes that form feel like the first step of one
+// action rather than a field that threw the answer away. It is read from
+// window.location in an effect rather than via useSearchParams — the latter
+// forces this whole page into a Suspense boundary at build time, and an effect
+// avoids a hydration mismatch (the server has no query string to render).
+// Prefill only: the value is still typed into a normal, editable field and
+// still has to pass Turnstile and Supabase. No new capability.
 
 "use client";
 
-import { useRef, useState } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Turnstile, { type TurnstileHandle } from "@/app/components/Turnstile";
+import AuthShell, { AuthLink } from "@/app/components/AuthShell";
+import BoxButton from "@/app/components/BoxButton";
 
 type Status =
   | { kind: "idle" }
@@ -33,6 +46,14 @@ export default function SignupPage() {
   // until a token is present, and we reset the widget after any failed signUp.
   const [captchaToken, setCaptchaToken] = useState("");
   const turnstileRef = useRef<TurnstileHandle>(null);
+
+  // Prefill from ?email=, if the visitor came through the landing's membership
+  // block. Runs once, after mount, and never overwrites anything the visitor
+  // has already typed.
+  useEffect(() => {
+    const fromQuery = new URLSearchParams(window.location.search).get("email");
+    if (fromQuery) setEmail((current) => current || fromQuery.trim());
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -77,114 +98,85 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
-      <div className="w-full max-w-md">
-        {/* Wordmark — links back to home. */}
-        <div className="text-center mb-16">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-5xl md:text-6xl tracking-tighter leading-none text-ink"
+    <AuthShell
+      kicker="Account"
+      headline="Join the network."
+      sub="Manhattanite is a private marketplace for New Yorkers. Create an account to browse the network. To post a listing or contact a member, you'll need to be approved."
+      footer={<AuthLink href="/login">Already a member? Sign in</AuthLink>}
+    >
+      <form onSubmit={onSubmit} className="space-y-[22px]">
+        <div>
+          <label htmlFor="email" className="mh-label block text-bone/60 mb-2.5">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={status.kind === "submitting"}
+            className="mh-input"
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="password"
+            className="mh-label block text-bone/60 mb-2.5"
           >
-            Manhattan<span className="italic">ite</span>
-          </Link>
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={status.kind === "submitting"}
+            className="mh-input"
+            placeholder="At least 8 characters"
+          />
         </div>
 
-        <div className="text-center mb-12">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Account
-          </p>
-          <h1 className="font-serif font-light text-3xl md:text-4xl tracking-tight">
-            Join the network.
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-          <p className="font-serif text-lg text-slate leading-relaxed mt-10">
-            Manhattanite is a private marketplace for New Yorkers. Create an
-            account to browse the network. To post a listing or contact a
-            member, you&apos;ll need to be approved.
-          </p>
-        </div>
-
-        <form onSubmit={onSubmit} className="space-y-8">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-[11px] tracking-[0.22em] uppercase text-slate mb-3"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={status.kind === "submitting"}
-              className="w-full bg-transparent border-0 border-b border-ink/30 px-0 py-2 text-ink placeholder-slate/60 focus:border-ink focus:outline-none transition-colors disabled:opacity-50"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-[11px] tracking-[0.22em] uppercase text-slate mb-3"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={status.kind === "submitting"}
-              className="w-full bg-transparent border-0 border-b border-ink/30 px-0 py-2 text-ink placeholder-slate/60 focus:border-ink focus:outline-none transition-colors disabled:opacity-50"
-              placeholder="At least 8 characters"
-            />
-          </div>
-
-          {/* Turnstile — proves a human, not a bot, before we let signup run. */}
+        {/* Turnstile — proves a human, not a bot, before we let signup run. */}
+        <div className="pt-1">
           <Turnstile
             ref={turnstileRef}
+            theme="dark"
             onVerify={setCaptchaToken}
             onExpire={() => setCaptchaToken("")}
             onError={() => setCaptchaToken("")}
           />
+        </div>
 
-          {status.kind === "error" && (
-            <p className="text-sm text-red-700">{status.message}</p>
-          )}
+        {status.kind === "error" && (
+          <p className="text-sm text-red-300">{status.message}</p>
+        )}
 
-          <button
-            type="submit"
-            disabled={
-              status.kind === "submitting" ||
-              !email.trim() ||
-              !password ||
-              !captchaToken
-            }
-            className="w-full mh-link text-[14px] tracking-[0.22em] uppercase text-ink cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-left"
-          >
-            {status.kind === "submitting"
-              ? "Creating account…"
-              : "Create an account"}
-          </button>
-        </form>
-
-        <p className="mt-16 text-sm text-slate text-center leading-relaxed">
-          Already have an account?{" "}
-          <Link href="/login" className="mh-link text-ink">
-            Sign in
-          </Link>
-          .
-        </p>
-      </div>
-    </main>
+        <BoxButton
+          type="submit"
+          surface="dark"
+          className="w-full text-center"
+          disabled={
+            status.kind === "submitting" ||
+            !email.trim() ||
+            !password ||
+            !captchaToken
+          }
+        >
+          {status.kind === "submitting"
+            ? "Creating account…"
+            : "Create an account"}
+        </BoxButton>
+      </form>
+    </AuthShell>
   );
 }
