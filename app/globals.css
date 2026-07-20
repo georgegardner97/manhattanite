@@ -110,6 +110,17 @@ html {
   row-gap: 72px;
 }
 
+/* Scroll without the scrollbar. For the mobile category row, which swipes
+   horizontally — a visible track would be the loudest thing on the page. */
+.mh-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mh-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Two-line clamp for card descriptions. */
 .mh-clamp-2 {
   display: -webkit-box;

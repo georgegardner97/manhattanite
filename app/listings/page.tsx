@@ -12,10 +12,19 @@
 // server-driven via the ?type= search param. Search and sort are still later
 // slices.
 //
-// Visual (approved mockup v8): this is the first "inside" screen — bone-light
-// after the dark landing. Label-left page head, then the editorial two-column
-// card grid, replacing the old single-column giant-image feed. The gating logic
-// above is untouched; this slice is styling and copy only.
+// Layout (founder review, 2026-07-20 — In Common With's All Products page):
+// the 220px label column the section grammar already reserves becomes a STICKY
+// CATEGORY RAIL, so the categories stay on screen while the grid scrolls. The
+// horizontal filter row is gone on desktop and returns below 860px, where a
+// tall vertical rail would push the listings off the first screen.
+//
+// The rail sticks because the <aside> stretches to the full height of the grid
+// row (grid items stretch by default) and the sticky element is its CHILD.
+// Sticky on the aside itself would do nothing — it is already as tall as the
+// scrolling content.
+//
+// Presentation only: the links, the ?type= behavior, the gating, and the
+// EXAMPLE tags are all unchanged.
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -52,6 +61,10 @@ const VALID_TYPES = new Set(["apartment", "furniture", "other", "service"]);
 
 function normalizeType(raw: string | undefined): FilterValue {
   return raw && VALID_TYPES.has(raw) ? (raw as FilterValue) : null;
+}
+
+function hrefFor(value: FilterValue): string {
+  return value ? `/listings?type=${value}` : "/listings";
 }
 
 export default async function ListingsPage({
@@ -103,27 +116,33 @@ export default async function ListingsPage({
 
   return (
     <>
-      <main>
-        {/* ================= PAGE HEAD ================= */}
-        <div className="mh-gutter pt-16 max-[860px]:pt-10">
-          <div className="mh-section-grid">
-            <p className="mh-label text-ink pt-[10px]">Listings</p>
-            <div>
-              <h1 className="font-serif font-normal text-[52px] max-[860px]:text-[38px] leading-[1.05] text-ink">
-                The network, today.
-              </h1>
-              <FilterBar activeType={activeType} />
+      <main className="mh-gutter pt-16 max-[860px]:pt-10">
+        <div className="mh-section-grid">
+          {/* ================= CATEGORY RAIL (desktop) ================= */}
+          <aside className="max-[860px]:hidden">
+            {/* Sticky on the CHILD — see the note at the top of this file. */}
+            <div className="sticky top-24">
+              <p className="mh-label text-ink">Listings</p>
+              <CategoryRail activeType={activeType} />
             </div>
-          </div>
-        </div>
+          </aside>
 
-        {/* ================= THE FEED ================= */}
-        <div className="mh-gutter mt-14">
-          <div className="mh-rule mh-section-grid">
-            {/* The label column stays empty here — the page head already named
-                the section; the rule and the alignment are what carry over. */}
-            <div aria-hidden="true" />
-            <div>
+          {/* ================= CONTENT =================
+              min-w-0: a grid track defaults to min-width:auto, so the
+              nowrap filter row below would refuse to shrink and push the
+              whole column — and the page — wider than the viewport. */}
+          <div className="min-w-0">
+            <h1 className="font-serif font-normal text-[52px] max-[860px]:text-[38px] leading-[1.05] text-ink">
+              {/* Typographic apostrophe, not the straight one: at 52px in
+                  Instrument Serif the difference is the whole difference
+                  between set type and a text field. */}
+              Today&rsquo;s listings.
+            </h1>
+
+            {/* Below 860px the rail is hidden and this takes over. */}
+            <FilterRow activeType={activeType} />
+
+            <div className="mh-rule mt-14 max-[860px]:mt-9">
               {!hasListings ? (
                 <EmptyState filtered={activeType !== null} />
               ) : (
@@ -174,21 +193,50 @@ export default async function ListingsPage({
   );
 }
 
-// Editorial filter row — small-caps links, active tab in ink with a 1px park
-// underline. Selecting a category reloads the page with the ?type= param
-// (server-rendered, shareable).
-function FilterBar({ activeType }: { activeType: FilterValue }) {
+// The desktop rail: a vertical category list under the section label. Active
+// item is ink with a leading park-green dot; the dot is always in the layout
+// (just transparent when inactive) so the labels never shift sideways.
+function CategoryRail({ activeType }: { activeType: FilterValue }) {
   return (
-    <div className="flex flex-wrap gap-x-[26px] gap-y-3 mt-[26px]">
+    <nav aria-label="Categories" className="mt-7 flex flex-col items-start">
       {FILTERS.map((f) => {
         const isActive = f.value === activeType;
-        const href = f.value ? `/listings?type=${f.value}` : "/listings";
         return (
           <Link
             key={f.label}
-            href={href}
+            href={hrefFor(f.value)}
             aria-current={isActive ? "page" : undefined}
-            className={`mh-label pb-[5px] border-b transition-colors ${
+            className={`flex items-center gap-2.5 py-[7px] text-[14px] leading-[1.5] transition-colors ${
+              isActive ? "text-ink" : "text-slate hover:text-ink"
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`w-1 h-1 shrink-0 rounded-full bg-park transition-opacity ${
+                isActive ? "opacity-100" : "opacity-0"
+              }`}
+            />
+            {f.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+// The mobile fallback: the horizontal small-caps row, scrollable rather than
+// wrapping to two lines. Hidden at 861px and up, where the rail takes over.
+function FilterRow({ activeType }: { activeType: FilterValue }) {
+  return (
+    <div className="hidden max-[860px]:flex min-w-0 gap-x-[26px] mt-[26px] overflow-x-auto whitespace-nowrap mh-no-scrollbar">
+      {FILTERS.map((f) => {
+        const isActive = f.value === activeType;
+        return (
+          <Link
+            key={f.label}
+            href={hrefFor(f.value)}
+            aria-current={isActive ? "page" : undefined}
+            className={`mh-label shrink-0 pb-[5px] border-b transition-colors ${
               isActive
                 ? "text-ink border-park"
                 : "text-slate border-transparent hover:text-ink"
