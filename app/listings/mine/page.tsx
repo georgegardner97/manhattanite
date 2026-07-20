@@ -17,27 +17,41 @@
 //
 // ?submitted=1 (the redirect from posting) renders the review-aware
 // confirmation up top — a pending listing has no public page to land on.
+//
+// Layout (design foundation, Slice 3). The audit graded this page C+ for one
+// specific reason: an ARCHIVED QA test listing rendered at full card weight and
+// out-shouted the live ones. The fix is structural, not cosmetic —
+//
+//   active (pending / published / draft) → the standard ListingCard, so a live
+//     listing looks here exactly as it looks on browse.
+//   archived → compact hairline ROWS beneath a separate heading. Status, title,
+//     price, date, and the moderation note if there is one. No image, no card.
+//
+// An archived listing can never again outweigh a live one, because it is no
+// longer the same object on the page.
 
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
+import {
+  formatPrice,
+  formatPostedDate,
+  type ListingRow,
+} from "@/lib/listings/card";
 import MyListingActions from "@/app/components/MyListingActions";
+import ListingCard from "@/app/components/ListingCard";
+import PageShell from "@/app/components/PageShell";
+import ArrowLink from "@/app/components/ArrowLink";
+import BoxButton from "@/app/components/BoxButton";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
-type ListingImage = { path: string };
-
 export type ListingStatus = "pending" | "published" | "draft" | "archived";
 
-type ListingCard = {
-  id: string;
-  type: "apartment" | "furniture" | "other" | "service";
-  title: string;
-  description: string;
-  price_cents: number;
-  images: ListingImage[];
+// The shared card columns plus what only this page needs: the byline fields,
+// the status, and the moderation note.
+type MyListing = ListingRow & {
   author_name: string | null;
   sponsor_names: string[];
   status: ListingStatus;
@@ -50,11 +64,6 @@ const STATUS_BADGE: Record<ListingStatus, string> = {
   draft: "Needs changes",
   archived: "Archived",
 };
-
-function formatPrice(cents: number, type: ListingCard["type"]): string {
-  const dollars = Math.round(cents / 100).toLocaleString("en-US");
-  return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
-}
 
 export default async function MyListingsPage({
   searchParams,
@@ -84,139 +93,158 @@ export default async function MyListingsPage({
 
   // ALL own listings, newest first. The author_id filter + listings_read_own
   // (0016) together return exactly this member's posts, any status.
+  // created_at and details join the select for the card kicker (posted date,
+  // neighborhood) — same row, same policy, no new reach.
   const { data: listings } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, images, author_name, sponsor_names, status, moderation_note"
+      "id, type, title, description, price_cents, created_at, images, details, is_example, author_name, sponsor_names, status, moderation_note"
     )
     .eq("author_id", user.id)
     .order("created_at", { ascending: false })
-    .returns<ListingCard[]>();
+    .returns<MyListing[]>();
 
-  const coverPaths =
-    listings
-      ?.map((l) => l.images?.[0]?.path)
-      .filter((p): p is string => Boolean(p)) ?? [];
+  const all = listings ?? [];
+  const active = all.filter((l) => l.status !== "archived");
+  const archived = all.filter((l) => l.status === "archived");
+
+  const coverPaths = active
+    .map((l) => l.images?.[0]?.path)
+    .filter((p): p is string => Boolean(p));
   const coverUrlByPath = await signImagePaths(coverPaths);
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            My listings
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
-
-        {submitted === "1" && (
-          <p className="mb-14 text-center font-serif text-xl leading-relaxed text-ink">
-            Your listing is in review. We&apos;ll email you once we&apos;ve
-            taken a look.
-          </p>
-        )}
-
-        {!listings || listings.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <ul className="space-y-px">
-            {listings.map((listing) => {
-              const coverPath = listing.images?.[0]?.path;
-              const coverUrl = coverPath
-                ? coverUrlByPath.get(coverPath) ?? null
-                : null;
-              return (
-                <li
-                  key={listing.id}
-                  className="border-t border-ink/10 py-10 last:border-b"
-                >
-                  <ListingCardItem listing={listing} coverUrl={coverUrl} />
-                  {listing.moderation_note && (
-                    <p className="mt-5 text-sm text-slate">
-                      <span className="text-[11px] tracking-[0.22em] uppercase">
-                        From the review:&nbsp;
-                      </span>
-                      {listing.moderation_note}
-                    </p>
-                  )}
-                  <MyListingActions
-                    listingId={listing.id}
-                    status={listing.status}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </main>
-  );
-}
-
-function ListingCardItem({
-  listing,
-  coverUrl,
-}: {
-  listing: ListingCard;
-  coverUrl: string | null;
-}) {
-  const muted = listing.status === "archived";
-
-  const card = (
-    <>
-      {coverUrl && (
-        <div className="mb-6 aspect-[4/3] overflow-hidden bg-ink/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={coverUrl}
-            alt=""
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-          />
-        </div>
-      )}
-      <p className="mb-4 text-[11px] tracking-[0.22em] uppercase text-slate">
-        {STATUS_BADGE[listing.status]}
-      </p>
-      <div className="flex items-baseline justify-between gap-6">
-        <h2 className="font-serif font-light text-2xl md:text-3xl tracking-tight text-ink">
-          {listing.title}
-        </h2>
-        <p className="font-serif text-xl text-ink whitespace-nowrap">
-          {formatPrice(listing.price_cents, listing.type)}
+    <PageShell
+      label="My listings"
+      title="What you've posted."
+      backHref="/listings"
+      backLabel="Listings"
+    >
+      {/* The post-submit confirmation. Pre-moderation means there's no public
+          page to land on, so this is where a new listing reports in. */}
+      {submitted === "1" && (
+        <p className="font-serif text-[26px] leading-[1.25] max-w-[30ch] mt-10 text-ink">
+          Your listing is in review. We&rsquo;ll email you once we&rsquo;ve
+          taken a look.
         </p>
-      </div>
-      <p className="mt-3 text-slate leading-relaxed">{listing.description}</p>
-      <p className="mt-5 text-[11px] tracking-[0.22em] uppercase text-slate">
-        {renderByline(listing.author_name, listing.sponsor_names)}
-      </p>
-    </>
-  );
+      )}
 
-  // Only a live listing has a public page to link to — pending, draft, and
-  // archived rows aren't readable on /listings/[id] (published-only RLS read),
-  // so their cards render unlinked.
-  if (listing.status === "published") {
-    return (
-      <Link href={`/listings/${listing.id}`} className="group block">
-        {card}
-      </Link>
-    );
-  }
-  return <div className={muted ? "opacity-60" : undefined}>{card}</div>;
+      {all.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <>
+          {active.length > 0 && (
+            <div className="mt-10 mh-card-grid">
+              {active.map((listing) => {
+                const coverPath = listing.images?.[0]?.path;
+                const coverUrl = coverPath
+                  ? coverUrlByPath.get(coverPath) ?? null
+                  : null;
+                return (
+                  <div key={listing.id}>
+                    <ListingCard
+                      surface="light"
+                      // Status replaces the neighborhood in the kicker's left
+                      // slot: on your own listings, "In review" is the thing
+                      // you came to check, not where the apartment is.
+                      listing={{
+                        id: listing.id,
+                        title: listing.title,
+                        description: listing.description ?? null,
+                        place: STATUS_BADGE[listing.status],
+                        price: formatPrice(listing.price_cents, listing.type),
+                        postedAt: formatPostedDate(listing.created_at),
+                        coverUrl,
+                        isExample: listing.is_example,
+                        byline: renderByline(
+                          listing.author_name,
+                          listing.sponsor_names
+                        ),
+                      }}
+                      // Only a live listing has a public page to link to —
+                      // pending and draft rows aren't readable on
+                      // /listings/[id] (published-only RLS read).
+                      href={
+                        listing.status === "published"
+                          ? `/listings/${listing.id}`
+                          : null
+                      }
+                    />
+
+                    {listing.moderation_note && (
+                      <p className="mt-3.5 text-[12.5px] leading-relaxed text-slate max-w-[44ch]">
+                        <span className="mh-label">From the review:&nbsp;</span>
+                        {listing.moderation_note}
+                      </p>
+                    )}
+
+                    <MyListingActions
+                      listingId={listing.id}
+                      status={listing.status}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ---------- Archived ----------
+              Compact rows, muted, under their own hairline heading. This is
+              the audit fix: an archived listing is a record, not an offer. */}
+          {archived.length > 0 && (
+            <div className="mt-[72px] mh-rule">
+              <p className="mh-label text-slate mb-1">Archived</p>
+              <ul className="mt-5">
+                {archived.map((listing) => (
+                  <li
+                    key={listing.id}
+                    className="grid grid-cols-[110px_1fr_auto_auto] items-baseline gap-x-6 gap-y-1 py-3.5 border-t border-ink/12 last:border-b max-[860px]:grid-cols-[1fr_auto]"
+                  >
+                    <span className="mh-label text-slate max-[860px]:col-span-2">
+                      {STATUS_BADGE[listing.status]}
+                    </span>
+                    <span className="text-slate truncate">{listing.title}</span>
+                    <span className="text-slate tabular-nums whitespace-nowrap">
+                      {formatPrice(listing.price_cents, listing.type)}
+                    </span>
+                    <span className="mh-label text-slate/70 whitespace-nowrap max-[860px]:hidden">
+                      {formatPostedDate(listing.created_at)}
+                    </span>
+                    {listing.moderation_note && (
+                      <span className="col-span-4 max-[860px]:col-span-2 text-[12.5px] leading-relaxed text-slate/70 max-w-[52ch]">
+                        <span className="mh-label">From the review:&nbsp;</span>
+                        {listing.moderation_note}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-[12.5px] text-slate/70">
+                Archived listings are off the network. They stay here for your
+                records.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </PageShell>
+  );
 }
 
 function EmptyState() {
   return (
-    <div className="text-center max-w-md mx-auto py-10">
-      <p className="font-serif text-2xl leading-relaxed text-ink">
-        You haven&apos;t posted anything yet.
+    <div className="mt-10 max-w-[34ch]">
+      <p className="font-serif text-[26px] leading-[1.25] text-ink">
+        You haven&rsquo;t posted anything yet.
       </p>
-      <Link
-        href="/listings/new"
-        className="mh-link inline-block mt-8 text-[14px] tracking-[0.22em] uppercase text-ink"
-      >
-        Post a listing &rarr;
-      </Link>
+      <div className="mt-7">
+        <BoxButton href="/listings/new" surface="light">
+          Post a listing
+        </BoxButton>
+      </div>
+      <div className="mt-6">
+        <ArrowLink href="/listings">Browse the network</ArrowLink>
+      </div>
     </div>
   );
 }

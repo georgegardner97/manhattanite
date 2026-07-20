@@ -30,8 +30,11 @@ import type { ListingStatus } from "@/app/listings/mine/page";
 const ARCHIVE_INITIAL: ArchiveListingState = { error: null };
 const RESUBMIT_INITIAL: ResubmitListingState = { error: null };
 
+// Slice 3: these are SECONDARY actions in a card footer — boxes stay reserved
+// for the one primary action on a screen, so Edit/Remove/Resubmit read as
+// ArrowLink-weight text at 14px park, not as buttons competing with the card.
 const CONTROL =
-  "mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink cursor-pointer";
+  "inline-block text-[14px] text-park hover:underline underline-offset-4 transition-colors cursor-pointer";
 
 export default function MyListingActions({
   listingId,
@@ -58,9 +61,9 @@ export default function MyListingActions({
   const error = archiveState.error ?? resubmitState.error;
 
   return (
-    <div className="mt-6">
+    <div className="mt-3.5">
       {!confirming ? (
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-7">
           <Link href={`/listings/${listingId}/edit`} className={CONTROL}>
             Edit
           </Link>
@@ -91,12 +94,12 @@ export default function MyListingActions({
           className="flex flex-wrap items-baseline gap-x-10 gap-y-3"
         >
           <input type="hidden" name="id" value={listingId} />
-          <p className="font-serif italic text-[15px] text-ink">
+          <p className="text-[13px] text-slate max-w-[40ch]">
             {status === "pending"
-              ? "Remove this listing? It comes out of review and won't go live."
+              ? "Remove this listing? It comes out of review and won’t go live."
               : "Remove this listing? It comes off the network right away."}
           </p>
-          <span className="flex items-baseline gap-10">
+          <span className="flex items-baseline gap-7">
             <button
               type="submit"
               disabled={archiving}
@@ -115,7 +118,7 @@ export default function MyListingActions({
           </span>
         </form>
       )}
-      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-3 text-[12.5px] text-slate">{error}</p>}
     </div>
   );
 }
