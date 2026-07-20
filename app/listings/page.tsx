@@ -53,12 +53,16 @@ type BrowseRow = ListingRow & {
 // The category filter — every live listing type (the type enum: apartment,
 // furniture, other, service). Server-driven via the ?type= param; an absent or
 // unknown value means "All".
+//
+// Order and labels are presentation. The catch-all sits last, where a catch-all
+// belongs, and reads "Everything else" rather than "Other" — the enum VALUE is
+// still `other`, so existing /listings?type=other links keep working.
 const FILTERS = [
   { label: "All", value: null },
   { label: "Apartments", value: "apartment" },
   { label: "Furniture", value: "furniture" },
-  { label: "Other", value: "other" },
   { label: "Services", value: "service" },
+  { label: "Everything else", value: "other" },
 ] as const;
 
 type FilterValue = (typeof FILTERS)[number]["value"];
@@ -213,9 +217,10 @@ export default async function ListingsPage({
 }
 
 // The desktop rail: a vertical category list in the label column of the feed
-// grid. Active item is ink with a leading park-green dot; the dot is always in
-// the layout (just transparent when inactive) so the labels never shift
-// sideways.
+// grid. The active item is marked by WEIGHT — ink at 500 against slate at 400.
+// No bullet or marker: with the labels flush to the column edge the rail lines
+// up with the LISTINGS label above it, and a left-aligned list doesn't need a
+// pointer to say which line is live.
 //
 // The negative top margin cancels the first link's own py-[7px], so "All"
 // starts flush with the top of the column — which is the top of the first
@@ -232,16 +237,12 @@ function CategoryRail({ activeType }: { activeType: FilterValue }) {
             key={f.label}
             href={hrefFor(f.value)}
             aria-current={isActive ? "page" : undefined}
-            className={`flex items-center gap-2.5 py-[7px] text-[14px] leading-[1.5] transition-colors ${
-              isActive ? "text-ink" : "text-slate hover:text-ink"
+            className={`py-[7px] text-[14px] leading-[1.5] transition-colors ${
+              isActive
+                ? "text-ink font-medium"
+                : "text-slate font-normal hover:text-ink"
             }`}
           >
-            <span
-              aria-hidden="true"
-              className={`w-1 h-1 shrink-0 rounded-full bg-park transition-opacity ${
-                isActive ? "opacity-100" : "opacity-0"
-              }`}
-            />
             {f.label}
           </Link>
         );
