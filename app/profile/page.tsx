@@ -152,7 +152,8 @@ export default async function ProfilePage() {
         ) : null
       }
     >
-      <MetaRows className="mt-10 max-w-[560px]" rows={rows} />
+      {/* omitFirstRule: the title above already closes with a hairline. */}
+      <MetaRows className="max-w-[560px]" rows={rows} omitFirstRule />
 
       {/* Connections — the member's trust web, both directions. On-brand:
           trust is the product, so we surface who vouched for whom. Hidden

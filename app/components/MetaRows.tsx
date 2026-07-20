@@ -20,9 +20,16 @@ export type MetaRow = {
 export default function MetaRows({
   rows,
   className = "",
+  omitFirstRule = false,
 }: {
   rows: MetaRow[];
   className?: string;
+  /**
+   * Drop the first row's top hairline. For when the rows sit directly under
+   * something that already closed with one — PageShell's title does, and two
+   * rules a few pixels apart read as an empty row rather than a divider.
+   */
+  omitFirstRule?: boolean;
 }) {
   if (rows.length === 0) return null;
 
@@ -31,9 +38,9 @@ export default function MetaRows({
       {rows.map((row, i) => (
         <div
           key={row.label}
-          className={`grid grid-cols-[180px_1fr] items-baseline gap-4 py-[13px] border-t border-ink/16 max-[860px]:grid-cols-1 max-[860px]:gap-1 ${
-            i === rows.length - 1 ? "border-b border-ink/16" : ""
-          }`}
+          className={`grid grid-cols-[180px_1fr] items-baseline gap-4 py-[13px] max-[860px]:grid-cols-1 max-[860px]:gap-1 ${
+            i === 0 && omitFirstRule ? "" : "border-t border-ink/16"
+          } ${i === rows.length - 1 ? "border-b border-ink/16" : ""}`}
         >
           <dt className="mh-label text-slate">{row.label}</dt>
           <dd className="text-ink">{row.value}</dd>
