@@ -18,6 +18,12 @@
 // horizontal filter row is gone on desktop and returns below 860px, where a
 // tall vertical rail would push the listings off the first screen.
 //
+// The page is TWO section grids, not one, and that is load-bearing: the head
+// grid carries the LISTINGS label beside the title, and the feed grid carries
+// the category rail beside the cards. Because the rail and the card grid are
+// columns of the same grid row, "All" lines up with the first card's kicker
+// intrinsically — there is no offset constant to drift when the head changes.
+//
 // The rail sticks because the <aside> stretches to the full height of the grid
 // row (grid items stretch by default) and the sticky element is its CHILD.
 // Sticky on the aside itself would do nothing — it is already as tall as the
@@ -117,20 +123,16 @@ export default async function ListingsPage({
   return (
     <>
       <main className="mh-gutter pt-16 max-[860px]:pt-10">
+        {/* ================= PAGE HEAD =================
+            Its own section grid: the LISTINGS label sits in the label column,
+            level with the title. The categories deliberately do NOT live here
+            — see the feed grid below. */}
         <div className="mh-section-grid">
-          {/* ================= CATEGORY RAIL (desktop) ================= */}
-          <aside className="max-[860px]:hidden">
-            {/* Sticky on the CHILD — see the note at the top of this file. */}
-            <div className="sticky top-24">
-              <p className="mh-label text-ink">Listings</p>
-              <CategoryRail activeType={activeType} />
-            </div>
-          </aside>
+          <p className="mh-label text-ink max-[860px]:hidden">Listings</p>
 
-          {/* ================= CONTENT =================
-              min-w-0: a grid track defaults to min-width:auto, so the
-              nowrap filter row below would refuse to shrink and push the
-              whole column — and the page — wider than the viewport. */}
+          {/* min-w-0: a grid track defaults to min-width:auto, so the nowrap
+              filter row below would refuse to shrink and push the whole
+              column — and the page — wider than the viewport. */}
           <div className="min-w-0">
             <h1 className="font-serif font-normal text-[52px] max-[860px]:text-[38px] leading-[1.05] text-ink">
               {/* Typographic apostrophe, not the straight one: at 52px in
@@ -141,8 +143,25 @@ export default async function ListingsPage({
 
             {/* Below 860px the rail is hidden and this takes over. */}
             <FilterRow activeType={activeType} />
+          </div>
+        </div>
 
-            <div className="mh-rule mt-14 max-[860px]:mt-9">
+        {/* ================= THE FEED =================
+            The hairline spans both columns, and the category rail is the label
+            column of THIS grid — the same grid row as the listing cards. That
+            is what makes "All" line up with the first card's kicker: both
+            columns start at the same y, below the rule's padding. No magic
+            offset to drift out of date when the head changes. */}
+        <div className="mh-rule mt-14 max-[860px]:mt-9">
+          <div className="mh-section-grid">
+            <aside className="max-[860px]:hidden">
+              {/* Sticky on the CHILD — see the note at the top of this file. */}
+              <div className="sticky top-24">
+                <CategoryRail activeType={activeType} />
+              </div>
+            </aside>
+
+            <div className="min-w-0">
               {!hasListings ? (
                 <EmptyState filtered={activeType !== null} />
               ) : (
@@ -193,12 +212,19 @@ export default async function ListingsPage({
   );
 }
 
-// The desktop rail: a vertical category list under the section label. Active
-// item is ink with a leading park-green dot; the dot is always in the layout
-// (just transparent when inactive) so the labels never shift sideways.
+// The desktop rail: a vertical category list in the label column of the feed
+// grid. Active item is ink with a leading park-green dot; the dot is always in
+// the layout (just transparent when inactive) so the labels never shift
+// sideways.
+//
+// The negative top margin cancels the first link's own py-[7px], so "All"
+// starts flush with the top of the column — which is the top of the first
+// card's kicker row, since both columns of the feed grid begin at the same y.
+// The padding stays on the links themselves so the spacing BETWEEN items is
+// even and the whole row stays clickable.
 function CategoryRail({ activeType }: { activeType: FilterValue }) {
   return (
-    <nav aria-label="Categories" className="mt-7 flex flex-col items-start">
+    <nav aria-label="Categories" className="-mt-[7px] flex flex-col items-start">
       {FILTERS.map((f) => {
         const isActive = f.value === activeType;
         return (
