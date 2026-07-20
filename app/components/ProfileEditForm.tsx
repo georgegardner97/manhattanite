@@ -16,12 +16,10 @@ import {
   type UpdateProfileState,
 } from "@/lib/profile/update";
 import AvatarUpload from "@/app/components/AvatarUpload";
+import BoxButton from "@/app/components/BoxButton";
 
-const FIELD_BASE =
-  "w-full bg-transparent border-b border-ink/20 pb-3 text-base text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
-const LABEL = "block text-[13px] tracking-[0.22em] uppercase text-slate mb-5";
-const HINT =
-  "font-serif italic normal-case tracking-normal text-slate/70 ml-1";
+const LABEL = "mh-label block text-slate mb-2.5";
+const HINT = "normal-case tracking-normal font-normal text-slate/70 ml-1.5";
 
 const INITIAL: UpdateProfileState = { error: null };
 
@@ -50,7 +48,7 @@ export default function ProfileEditForm({
   );
 
   return (
-    <form action={formAction} className="space-y-12">
+    <form action={formAction} className="space-y-[22px]">
       {/* ---------- Profile photo ---------- */}
       <AvatarUpload
         userId={userId}
@@ -71,7 +69,7 @@ export default function ProfileEditForm({
           defaultValue={initialName ?? ""}
           maxLength={80}
           placeholder="e.g. George Gardner"
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -88,7 +86,7 @@ export default function ProfileEditForm({
           defaultValue={initialNeighborhood ?? ""}
           maxLength={60}
           placeholder="e.g. West Village"
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -105,7 +103,7 @@ export default function ProfileEditForm({
           maxLength={500}
           rows={4}
           placeholder="What members might want to know about you."
-          className={`${FIELD_BASE} resize-none`}
+          className="mh-input resize-none"
         />
       </div>
 
@@ -122,7 +120,7 @@ export default function ProfileEditForm({
           defaultValue={initialLinkedin ?? ""}
           maxLength={200}
           placeholder="linkedin.com/in/you"
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -130,14 +128,10 @@ export default function ProfileEditForm({
       {state.error && <p className="text-sm text-red-700">{state.error}</p>}
 
       {/* ---------- Submit ---------- */}
-      <div className="pt-8 text-center">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="group inline-block bg-park text-bone px-12 py-4 text-[11px] tracking-[0.32em] uppercase transition-colors duration-300 hover:bg-ink disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
+      <div className="pt-2">
+        <BoxButton type="submit" surface="light" disabled={isPending}>
           {isPending ? "Saving…" : "Save changes"}
-        </button>
+        </BoxButton>
       </div>
     </form>
   );

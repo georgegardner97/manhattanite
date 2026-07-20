@@ -10,10 +10,10 @@
 // on this form — the protect_account_columns trigger from 0001 would reject
 // any attempt to change them, but the cleanest defense is to not even ask.
 
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileEditForm from "@/app/components/ProfileEditForm";
+import PageShell from "@/app/components/PageShell";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -50,25 +50,13 @@ export default async function ProfileEditPage() {
     : null;
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/profile"
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Profile
-        </Link>
-
-        <div className="text-center mt-12 mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Edit profile
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            Who are you?
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
-
+    <PageShell
+      label="Edit profile"
+      title="Who are you?"
+      backHref="/profile"
+      backLabel="Profile"
+    >
+      <div className="max-w-[560px] mt-10">
         <ProfileEditForm
           userId={user.id}
           initialName={account?.name ?? null}
@@ -79,6 +67,6 @@ export default async function ProfileEditPage() {
           initialLinkedin={account?.linkedin_url ?? null}
         />
       </div>
-    </main>
+    </PageShell>
   );
 }

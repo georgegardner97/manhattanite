@@ -6,9 +6,19 @@
 // Phase 4 Slice 2 wires the "Edit profile →" link to /profile/edit.
 // The membership-application path (/apply) is still later work.
 
-import Link from "next/link";
+// Layout (design foundation, Slice 3): the audit graded this page C+ — a
+// centered stack of fields with no hierarchy. It now uses the standard light
+// frame: label column carries the TIER and the avatar, content column carries
+// the name as the statement and the fields as the same hairline label/value
+// rows the listing detail uses. No new data — the connections rpc below was
+// already here.
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import PageShell from "@/app/components/PageShell";
+import MetaRows, { type MetaRow } from "@/app/components/MetaRows";
+import BoxButton from "@/app/components/BoxButton";
+import ArrowLink from "@/app/components/ArrowLink";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -89,211 +99,141 @@ export default async function ProfilePage() {
   const sponsoredBy = connections.filter((c) => c.direction === "sponsor");
   const sponsored = connections.filter((c) => c.direction === "sponsee");
 
+  // The fields, as label/value rows. Optional ones drop out entirely rather
+  // than rendering empty — a row reading "Bio —" is worse than no row.
+  const rows: MetaRow[] = [{ label: "Email", value: account.email }];
+  if (account.neighborhood) {
+    rows.push({ label: "Neighborhood", value: account.neighborhood });
+  }
+  if (account.bio) {
+    rows.push({
+      label: "Bio",
+      value: (
+        <span className="block leading-relaxed whitespace-pre-wrap">
+          {account.bio}
+        </span>
+      ),
+    });
+  }
+  if (account.linkedin_url) {
+    rows.push({
+      label: "LinkedIn",
+      value: (
+        <a
+          href={externalHref(account.linkedin_url)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mh-link text-ink break-all"
+        >
+          {account.linkedin_url}
+        </a>
+      ),
+    });
+  }
+  rows.push({
+    label: account.is_member ? "Member since" : "Account since",
+    value: new Date(account.created_at).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }),
+  });
+
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          {avatarUrl && (
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-ink/[0.06] mx-auto mb-7">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatarUrl}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            {account.is_member ? "Member" : "Account"}
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight">
-            {account.name ?? account.email}
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
-
-        {/* Profile fields */}
-        <dl className="space-y-10 max-w-md mx-auto">
-          <Field label="Email" value={account.email} />
-          {account.neighborhood && (
-            <Field label="Neighborhood" value={account.neighborhood} />
-          )}
-          {account.bio && <Field label="Bio" value={account.bio} multiline />}
-          {account.linkedin_url && (
-            <div>
-              <dt className="text-[11px] tracking-[0.22em] uppercase text-slate mb-2">
-                LinkedIn
-              </dt>
-              <dd className="font-serif text-lg">
-                <a
-                  href={externalHref(account.linkedin_url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mh-link text-ink break-all"
-                >
-                  {account.linkedin_url}
-                </a>
-              </dd>
-            </div>
-          )}
-          <Field
-            label="Member since"
-            value={new Date(account.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          />
-        </dl>
-
-        {/* Connections — the member's trust web, both directions. On-brand:
-            trust is the product, so we surface who vouched for whom. Hidden
-            entirely when there's nothing to show (or before migration 0024). */}
-        {(sponsoredBy.length > 0 || sponsored.length > 0) && (
-          <div className="mt-16 border-t border-ink/10 pt-12 max-w-md mx-auto">
-            <p className="text-[11px] tracking-[0.22em] uppercase text-slate text-center mb-10">
-              Connections
-            </p>
-            {sponsoredBy.length > 0 && (
-              <ConnectionGroup label="Sponsored by" people={sponsoredBy} />
-            )}
-            {sponsored.length > 0 && (
-              <ConnectionGroup label="You've sponsored" people={sponsored} />
-            )}
+    <PageShell
+      label={account.is_member ? "Member" : "Account"}
+      title={account.name ?? account.email}
+      aside={
+        avatarUrl ? (
+          <div className="mt-5 w-[84px] h-[84px] rounded-full overflow-hidden bg-ink/[0.06]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
           </div>
-        )}
+        ) : null
+      }
+    >
+      <MetaRows className="mt-10 max-w-[560px]" rows={rows} />
 
-        {/* Member view — the in-product door to the posting form. Without
-            this CTA, members have no entry point to /listings/new. */}
-        {account.is_member && (
-          <div className="mt-20 border-t border-ink/10 pt-12 text-center">
-            <Link
-              href="/listings/new"
-              className="mh-link inline-block text-[14px] tracking-[0.22em] uppercase text-ink"
-            >
-              Post a listing &rarr;
-            </Link>
-            {/* Each link wrapped in its own div so the stacking works
-                regardless of how mh-link's display property is defined. */}
-            <div className="mt-8 space-y-4">
-              <div>
-                <Link
-                  href="/listings"
-                  className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-                >
-                  Browse listings &rarr;
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/profile/edit"
-                  className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-                >
-                  Edit profile &rarr;
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Connections — the member's trust web, both directions. On-brand:
+          trust is the product, so we surface who vouched for whom. Hidden
+          entirely when there's nothing to show (or before migration 0024).
+          Small caps, one line per direction — this is a credential, not a
+          section, and it shouldn't outweigh the fields above it. */}
+      {sponsoredBy.length > 0 && (
+        <p className="mh-label mt-8 text-slate">
+          Sponsored by {renderNames(sponsoredBy)}
+        </p>
+      )}
+      {sponsored.length > 0 && (
+        <p className="mh-label mt-2.5 text-slate">
+          You&rsquo;ve sponsored {renderNames(sponsored)}
+        </p>
+      )}
 
-        {/* Tier-1 nudge — visible only to account holders, not full members.
-            The "Apply for membership" CTA went live in Phase 2 Slice A. */}
-        {!account.is_member && (
-          <div className="mt-20 border-t border-ink/10 pt-12 text-center">
-            <p className="font-serif text-xl leading-relaxed text-ink">
-              You have an account. To post a listing, contact a member, or
-              sponsor someone, you&apos;ll need to be approved as a member.
-            </p>
-            <Link
-              href="/apply"
-              className="mh-link inline-block mt-10 text-[14px] tracking-[0.22em] uppercase text-ink"
-            >
-              Apply for membership &rarr;
-            </Link>
-            <div className="mt-8">
-              <Link
-                href="/profile/edit"
-                className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-              >
-                Edit profile &rarr;
-              </Link>
-            </div>
-          </div>
-        )}
+      {/* Tier-1 nudge — account holders only, not full members. */}
+      {!account.is_member && (
+        <p className="font-serif text-[26px] leading-[1.25] max-w-[30ch] mt-12 text-ink">
+          You have an account. To post a listing, contact a member, or sponsor
+          someone, you&rsquo;ll need to be approved as a member.
+        </p>
+      )}
 
-        {/* Sign out */}
-        <div className="mt-24 text-center">
-          <form action="/auth/sign-out" method="post">
-            <button
-              type="submit"
-              className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink cursor-pointer"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+      {/* One boxed primary per screen. For a member that's editing the
+          profile they're looking at; for Tier-1 it's the conversion. */}
+      <div className="mt-10">
+        {account.is_member ? (
+          <BoxButton href="/profile/edit" surface="light">
+            Edit profile
+          </BoxButton>
+        ) : (
+          <BoxButton href="/apply" surface="light">
+            Apply for membership
+          </BoxButton>
+        )}
       </div>
-    </main>
+
+      {/* Everything else that moves you forward is an ArrowLink. */}
+      <div className="mt-8 flex flex-col items-start gap-3">
+        {account.is_member ? (
+          <>
+            <ArrowLink href="/listings/new">Post a listing</ArrowLink>
+            <ArrowLink href="/listings/mine">My listings</ArrowLink>
+            <ArrowLink href="/listings">Browse listings</ArrowLink>
+          </>
+        ) : (
+          <>
+            <ArrowLink href="/profile/edit">Edit profile</ArrowLink>
+            <ArrowLink href="/listings">Browse listings</ArrowLink>
+          </>
+        )}
+      </div>
+
+      {/* Sign out — deliberately the quietest thing on the page. */}
+      <form action="/auth/sign-out" method="post" className="mt-14">
+        <button
+          type="submit"
+          className="mh-label text-slate hover:text-ink cursor-pointer transition-colors"
+        >
+          Sign out
+        </button>
+      </form>
+    </PageShell>
   );
 }
 
-function ConnectionGroup({
-  label,
-  people,
-}: {
-  label: string;
-  people: Connection[];
-}) {
-  return (
-    <div className="mb-10 last:mb-0 text-center">
-      <p className="text-[11px] tracking-[0.22em] uppercase text-slate mb-4">
-        {label}
-      </p>
-      <ul className="space-y-2">
-        {people.map((p) => (
-          <li key={p.account_id} className="font-serif text-lg text-ink">
-            {p.name}
-            {/* Mark the inviter — the primary sponsor who first brought you in. */}
-            {p.direction === "sponsor" && p.is_primary && (
-              <span className="ml-3 text-[10px] tracking-[0.22em] uppercase text-slate">
-                Inviter
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+// "Anna", "Anna & Ben", "Anna, Ben + 2 more" — the same hybrid-at-2 shape the
+// listing byline uses, so a name list reads identically wherever it appears.
+// The inviter (primary sponsor) is rendered first.
+function renderNames(people: Connection[]): string {
+  const ordered = [...people].sort(
+    (a, b) => Number(b.is_primary) - Number(a.is_primary)
   );
+  const names = ordered.map((p) => p.name);
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} & ${names[1]}`;
+  return `${names[0]}, ${names[1]} + ${names.length - 2} more`;
 }
 
 function externalHref(value: string): string {
   return /^https?:\/\//i.test(value) ? value : `https://${value}`;
-}
-
-function Field({
-  label,
-  value,
-  multiline = false,
-}: {
-  label: string;
-  value: string;
-  multiline?: boolean;
-}) {
-  return (
-    <div>
-      <dt className="text-[11px] tracking-[0.22em] uppercase text-slate mb-2">
-        {label}
-      </dt>
-      <dd
-        className={
-          multiline
-            ? "font-serif text-lg text-ink leading-relaxed whitespace-pre-wrap"
-            : "font-serif text-lg text-ink"
-        }
-      >
-        {value}
-      </dd>
-    </div>
-  );
 }

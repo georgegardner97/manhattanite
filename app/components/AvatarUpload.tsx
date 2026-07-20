@@ -49,9 +49,9 @@ export default function AvatarUpload({
 
   return (
     <div>
-      <p className="block text-[13px] tracking-[0.22em] uppercase text-slate mb-5">
+      <p className="mh-label block text-slate mb-2.5">
         Profile photo
-        <span className="font-serif italic normal-case tracking-normal text-slate/70 ml-1">
+        <span className="normal-case tracking-normal font-normal text-slate/70 ml-1.5">
           (optional)
         </span>
       </p>
@@ -71,8 +71,11 @@ export default function AvatarUpload({
           )}
         </div>
 
-        <div className="flex items-center gap-5">
-          <label className="inline-block cursor-pointer text-[12px] tracking-[0.22em] uppercase text-ink border border-ink/30 px-5 py-2.5 hover:bg-ink hover:text-bone transition-colors duration-200">
+        <div className="flex items-center gap-6">
+          {/* Dashed hairline, same convention as the listing photo dropzone:
+              a space something goes into, not a primary action. Previously a
+              one-off solid box that competed with the form's real submit. */}
+          <label className="inline-block cursor-pointer border border-dashed border-ink/35 px-5 py-2.5 mh-label text-ink transition-colors duration-200 hover:border-ink hover:bg-ink/[0.02]">
             {busy ? "Uploading…" : preview ? "Change" : "Add a photo"}
             <input
               ref={inputRef}
@@ -87,7 +90,7 @@ export default function AvatarUpload({
             <button
               type="button"
               onClick={remove}
-              className="text-[12px] tracking-[0.22em] uppercase text-slate hover:text-ink cursor-pointer"
+              className="mh-label text-slate hover:text-ink cursor-pointer transition-colors"
             >
               Remove
             </button>
@@ -95,9 +98,9 @@ export default function AvatarUpload({
         </div>
       </div>
 
-      {error && <p className="mt-4 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-2 text-[12.5px] text-slate">{error}</p>}
 
-      <p className="mt-4 text-slate text-sm leading-relaxed">
+      <p className="mt-2 text-[12.5px] leading-relaxed text-slate">
         A photo helps members put a face to your name.
       </p>
     </div>
