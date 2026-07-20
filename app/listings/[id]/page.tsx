@@ -32,6 +32,7 @@ import ContactModal from "@/app/components/ContactModal";
 import ArrowLink from "@/app/components/ArrowLink";
 import BoxButton from "@/app/components/BoxButton";
 import SiteFooter from "@/app/components/SiteFooter";
+import MetaRows from "@/app/components/MetaRows";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -231,26 +232,13 @@ export default async function ListingDetailPage({
               {listing.description}
             </p>
 
-            {detailEntries.length > 0 && (
-              <dl className="mt-11 max-w-[520px]">
-                {detailEntries.map(([key, value], i) => (
-                  <div
-                    key={key}
-                    // items-baseline, not the default stretch: the 11px label
-                    // and the 15px value sit on the same line, and without it
-                    // the caps ride visibly high against the value beside them.
-                    className={`grid grid-cols-[180px_1fr] items-baseline gap-4 py-[13px] border-t border-ink/16 max-[860px]:grid-cols-1 max-[860px]:gap-1 ${
-                      i === detailEntries.length - 1
-                        ? "border-b border-ink/16"
-                        : ""
-                    }`}
-                  >
-                    <dt className="mh-label text-slate">{humanizeKey(key)}</dt>
-                    <dd className="text-ink">{formatDetailValue(value)}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
+            <MetaRows
+              className="mt-11 max-w-[520px]"
+              rows={detailEntries.map(([key, value]) => ({
+                label: humanizeKey(key),
+                value: formatDetailValue(value),
+              }))}
+            />
 
             <p className="mh-label mt-10 text-slate">
               {renderByline(listing.author_name, listing.sponsor_names)}

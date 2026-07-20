@@ -64,14 +64,23 @@ const SURFACE = {
 export default function ListingCard({
   listing,
   surface = "light",
+  href,
 }: {
   listing: ListingCardData;
   surface?: ListingCardSurface;
+  /**
+   * Where the card points. Defaults to the listing's public page. Pass `null`
+   * to render it unlinked — /listings/mine shows pending and draft listings,
+   * which have no public page (the RLS read is published-only), and a card
+   * that navigates to a 404 is worse than one that doesn't navigate.
+   */
+  href?: string | null;
 }) {
   const s = SURFACE[surface];
+  const target = href === undefined ? `/listings/${listing.id}` : href;
 
-  return (
-    <Link href={`/listings/${listing.id}`} className="group block">
+  const body = (
+    <>
       {/* Kicker — place and the EXAMPLE tag left, posted date right. */}
       <div
         className={`mh-label flex items-center justify-between gap-4 border-b pb-[10px] mb-[18px] ${s.kicker}`}
@@ -119,11 +128,25 @@ export default function ListingCard({
         <p className={`mh-label mt-3.5 ${s.byline}`}>{listing.byline}</p>
       )}
 
-      <div className="mt-3.5">
-        <ArrowLink as="span" surface={surface}>
-          View listing
-        </ArrowLink>
-      </div>
+      {/* The forward action only makes sense when the card goes somewhere. */}
+      {target && (
+        <div className="mt-3.5">
+          <ArrowLink as="span" surface={surface}>
+            View listing
+          </ArrowLink>
+        </div>
+      )}
+    </>
+  );
+
+  if (!target) {
+    // `group` stays so the media's hover scale still reads as one object.
+    return <div className="group block">{body}</div>;
+  }
+
+  return (
+    <Link href={target} className="group block">
+      {body}
     </Link>
   );
 }
