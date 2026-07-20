@@ -19,12 +19,15 @@ import {
 
 const INITIAL: ModerateActionState = { error: null };
 
+// Slice 3, the two-action system: the queue verbs are secondary (ArrowLink
+// weight — park text, underline on hover), and the CONFIRM step is the one
+// primary action in that moment, so it takes the box. Nothing here is a
+// bespoke button any more.
 const CONTROL =
-  "mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink cursor-pointer disabled:opacity-40";
+  "inline-block text-[14px] text-park hover:underline underline-offset-4 transition-colors cursor-pointer disabled:opacity-40";
 const CONFIRM_CONTROL =
-  "mh-link text-[11px] tracking-[0.22em] uppercase text-ink cursor-pointer disabled:opacity-40";
-const NOTE_FIELD =
-  "w-full bg-transparent border-b border-ink/20 pb-2 text-sm text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
+  "inline-block border border-ink px-[18px] py-[9px] mh-label text-ink bg-transparent cursor-pointer transition-colors duration-[250ms] hover:bg-ink hover:text-bone disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink";
+const NOTE_FIELD = "mh-input text-sm";
 
 type Mode = "idle" | "approve" | "return" | "reject";
 
@@ -47,9 +50,9 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
   const busy = approving || returning || rejecting;
 
   return (
-    <div className="mt-6">
+    <div className="mt-4">
       {mode === "idle" && (
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-7">
           <button type="button" onClick={() => setMode("approve")} className={CONTROL}>
             Approve
           </button>
@@ -65,10 +68,10 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
       {mode === "approve" && (
         <form action={approveAction} className="space-y-4">
           <input type="hidden" name="id" value={listingId} />
-          <p className="font-serif italic text-[15px] text-ink">
+          <p className="text-[13px] text-slate max-w-[46ch]">
             Put it on the network? It goes live for every member right away.
           </p>
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-7">
             <button type="submit" disabled={busy} className={CONFIRM_CONTROL}>
               {approving ? "Approving…" : "Approve"}
             </button>
@@ -80,7 +83,7 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
       {mode === "return" && (
         <form action={returnAction} className="space-y-4">
           <input type="hidden" name="id" value={listingId} />
-          <p className="font-serif italic text-[15px] text-ink">
+          <p className="text-[13px] text-slate max-w-[46ch]">
             Send it back? They see your note, make the changes, and resubmit.
           </p>
           <input
@@ -91,7 +94,7 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
             placeholder="What needs changing"
             className={NOTE_FIELD}
           />
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-7">
             <button type="submit" disabled={busy} className={CONFIRM_CONTROL}>
               {returning ? "Returning…" : "Return with note"}
             </button>
@@ -103,7 +106,7 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
       {mode === "reject" && (
         <form action={rejectAction} className="space-y-4">
           <input type="hidden" name="id" value={listingId} />
-          <p className="font-serif italic text-[15px] text-ink">
+          <p className="text-[13px] text-slate max-w-[46ch]">
             Take it down for good? It never goes live, and your reason stays on
             the record.
           </p>
@@ -115,7 +118,7 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
             placeholder="Why it doesn't meet the bar"
             className={NOTE_FIELD}
           />
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-7">
             <button type="submit" disabled={busy} className={CONFIRM_CONTROL}>
               {rejecting ? "Rejecting…" : "Reject"}
             </button>
@@ -124,7 +127,7 @@ export default function ModerationActions({ listingId }: { listingId: string }) 
         </form>
       )}
 
-      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-3 text-[12.5px] text-slate">{error}</p>}
     </div>
   );
 }

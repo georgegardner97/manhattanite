@@ -14,8 +14,8 @@
 //   - "joined" = the approved application's reviewed_at when there is one,
 //     else the account's created_at (founder, hand-seeded members).
 
-import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/guard";
+import PageShell from "@/app/components/PageShell";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -77,24 +77,12 @@ export default async function AdminMembersPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/admin"
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Admin
-        </Link>
-
-        <div className="text-center mt-12 mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Member directory
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            Everyone inside.
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
+    <PageShell
+      label="Member directory"
+      title={<>Everyone inside.</>}
+      backHref="/admin"
+      backLabel="Admin"
+    >
 
         {!members || members.length === 0 ? (
           <p className="text-center font-serif text-2xl text-ink py-10">
@@ -138,7 +126,6 @@ export default async function AdminMembersPage() {
             })}
           </ul>
         )}
-      </div>
-    </main>
+    </PageShell>
   );
 }

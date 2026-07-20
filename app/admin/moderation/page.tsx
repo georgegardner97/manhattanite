@@ -10,8 +10,8 @@
 // the data gate; image signing rides the admin's own session (the storage
 // read policy already serves any authenticated viewer, same as /listings).
 
-import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/guard";
+import PageShell from "@/app/components/PageShell";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
 import ModerationActions from "@/app/components/ModerationActions";
@@ -78,24 +78,12 @@ export default async function AdminModerationPage() {
   const urlByPath = await signImagePaths(allPaths);
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/admin"
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Admin
-        </Link>
-
-        <div className="text-center mt-12 mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Listings in review
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            What&apos;s waiting to go live.
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
+    <PageShell
+      label="Listings in review"
+      title={<>What&rsquo;s waiting to go live.</>}
+      backHref="/admin"
+      backLabel="Admin"
+    >
 
         {pending.length === 0 ? (
           <EmptyState />
@@ -112,8 +100,7 @@ export default async function AdminModerationPage() {
             ))}
           </ul>
         )}
-      </div>
-    </main>
+    </PageShell>
   );
 }
 

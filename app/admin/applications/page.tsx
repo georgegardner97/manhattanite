@@ -12,8 +12,8 @@
 // Reads run as the signed-in admin — 0007's "applications: admin reads all"
 // policy (and 0002's accounts read-all for the name embed) are the data gate.
 
-import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/guard";
+import PageShell from "@/app/components/PageShell";
 import ApplicationActions from "@/app/components/ApplicationActions";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
@@ -152,24 +152,12 @@ export default async function AdminApplicationsPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/admin"
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Admin
-        </Link>
-
-        <div className="text-center mt-12 mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Applications
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            Who&apos;s asking in.
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
+    <PageShell
+      label="Applications"
+      title={<>Who&rsquo;s asking in.</>}
+      backHref="/admin"
+      backLabel="Admin"
+    >
 
         {pending.length === 0 && needsInfo.length === 0 ? (
           <EmptyState />
@@ -238,8 +226,7 @@ export default async function AdminApplicationsPage() {
             )}
           </>
         )}
-      </div>
-    </main>
+    </PageShell>
   );
 }
 
@@ -327,7 +314,7 @@ function EmptyState() {
         The queue is clear.
       </p>
       <p className="mt-6 text-slate leading-relaxed">
-        Nothing waiting. New applications land here the moment they&apos;re
+        Nothing waiting. New applications land here the moment they&rsquo;re
         submitted.
       </p>
     </div>
