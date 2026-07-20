@@ -56,6 +56,11 @@ export default async function AdminDashboardPage() {
             <dt className="mt-3 mh-label text-slate">{stat.label}</dt>
           </div>
         ))}
+        {/* The hairlines are the container's background showing through a 1px
+            grid gap, so an unfilled trailing cell renders as a grey block.
+            Five stats leaves exactly one empty cell at both three columns and
+            two, so one bone filler covers both. Revisit if the count changes. */}
+        <div className="bg-bone" aria-hidden="true" />
       </dl>
 
       <div className="mt-10 flex flex-col items-start gap-3">

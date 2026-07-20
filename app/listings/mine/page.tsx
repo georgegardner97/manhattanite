@@ -116,7 +116,7 @@ export default async function MyListingsPage({
   return (
     <PageShell
       label="My listings"
-      title="What you've posted."
+      title={<>What you&rsquo;ve posted.</>}
       backHref="/listings"
       backLabel="Listings"
     >

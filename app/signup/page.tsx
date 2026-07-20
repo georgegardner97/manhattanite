@@ -101,7 +101,7 @@ export default function SignupPage() {
     <AuthShell
       kicker="Account"
       headline="Join the network."
-      sub="Manhattanite is a private marketplace for New Yorkers. Create an account to browse the network. To post a listing or contact a member, you'll need to be approved."
+      sub="Manhattanite is a private marketplace for New Yorkers. Create an account to browse the network. To post a listing or contact a member, you’ll need to be approved."
       footer={<AuthLink href="/login">Already a member? Sign in</AuthLink>}
     >
       <form onSubmit={onSubmit} className="space-y-[22px]">

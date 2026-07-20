@@ -227,7 +227,9 @@ export default function NewListingForm({
               id="available_from"
               name="available_from"
               defaultValue={detailString(initial?.details, "available_from")}
-              className="mh-input mh-select"
+              // No mh-select here: a date input already draws its own picker
+              // icon, so our caret made it two chevrons in one field.
+              className="mh-input"
             />
           </div>
         </>

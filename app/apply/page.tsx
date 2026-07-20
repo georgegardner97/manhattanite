@@ -102,7 +102,7 @@ export default async function ApplyPage() {
       kicker="Apply for membership"
       headline="Tell us who you are."
       width="wide"
-      sub="Manhattanite is a private network. We read every application personally, so tell us who you are in your own words. The basics matter: real name, where you live in Manhattan, what you do. The rest is up to you. We're not looking for a CV."
+      sub="Manhattanite is a private network. We read every application personally, so tell us who you are in your own words. The basics matter: real name, where you live in Manhattan, what you do. The rest is up to you. We’re not looking for a CV."
       footer={<AuthLink href="/profile">Back to your profile</AuthLink>}
     >
       <ApplicationForm
