@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { createListing } from "@/lib/listings/create";
 import { updateListing } from "@/lib/listings/update";
 import ImageUpload from "@/app/components/ImageUpload";
+import BoxButton from "@/app/components/BoxButton";
 
 // The insert/update runs server-side (createListing / updateListing, where
 // the Supabase session and RLS live). This client component owns the stateful
@@ -30,12 +31,13 @@ export type ListingFormInitial = {
   images: { path: string; previewUrl: string }[];
 };
 
-// Shared field styles — lifted from ApplicationForm for visual consistency.
-const FIELD_BASE =
-  "w-full bg-transparent border-b border-ink/20 pb-3 text-base text-ink placeholder:text-slate/50 focus:border-ink focus:outline-none transition-colors duration-200";
-const LABEL = "block text-[13px] tracking-[0.22em] uppercase text-slate mb-5";
-const HINT =
-  "font-serif italic normal-case tracking-normal text-slate/70 ml-1";
+// Styling (Slice 3): the boxed .mh-input control and a BoxButton submit, the
+// same grammar as every other form in the system. The type radios keep
+// .mh-checkbox — it already fits — and selects add .mh-select for the hairline
+// caret.
+const LABEL = "mh-label block text-slate mb-2.5";
+const HINT = "normal-case tracking-normal font-normal text-slate/70 ml-1.5";
+const HELP = "mt-2 text-[12.5px] leading-relaxed text-slate";
 
 const INITIAL: ListingFormState = { error: null };
 
@@ -70,7 +72,7 @@ export default function NewListingForm({
   >(initial?.type ?? "apartment");
 
   return (
-    <form action={formAction} className="space-y-12">
+    <form action={formAction} className="space-y-[22px]">
       {/* Edit mode: which listing this is. The action re-checks ownership. */}
       {initial && <input type="hidden" name="id" value={initial.id} />}
 
@@ -120,7 +122,7 @@ export default function NewListingForm({
                   ? "e.g. Piano lessons on the Upper West Side"
                   : "e.g. Trek hybrid bike, barely used"
           }
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -137,7 +139,7 @@ export default function NewListingForm({
           rows={5}
           defaultValue={initial?.description}
           placeholder="The details a member would want. Be specific, and name the flaws."
-          className={`${FIELD_BASE} resize-none`}
+          className="mh-input resize-none"
         />
       </div>
 
@@ -162,7 +164,7 @@ export default function NewListingForm({
           placeholder={
             type === "apartment" ? "5400" : type === "service" ? "75" : "1200"
           }
-          className={FIELD_BASE}
+          className="mh-input"
         />
       </div>
 
@@ -179,7 +181,7 @@ export default function NewListingForm({
               name="neighborhood"
               defaultValue={detailString(initial?.details, "neighborhood")}
               placeholder="e.g. West Village"
-              className={FIELD_BASE}
+              className="mh-input"
             />
           </div>
 
@@ -196,7 +198,7 @@ export default function NewListingForm({
                 step="1"
                 defaultValue={detailString(initial?.details, "bedrooms")}
                 placeholder="2"
-                className={FIELD_BASE}
+                className="mh-input"
               />
             </div>
             <div>
@@ -211,7 +213,7 @@ export default function NewListingForm({
                 step="0.5"
                 defaultValue={detailString(initial?.details, "bathrooms")}
                 placeholder="1"
-                className={FIELD_BASE}
+                className="mh-input"
               />
             </div>
           </div>
@@ -225,7 +227,7 @@ export default function NewListingForm({
               id="available_from"
               name="available_from"
               defaultValue={detailString(initial?.details, "available_from")}
-              className={`${FIELD_BASE} mh-select`}
+              className="mh-input mh-select"
             />
           </div>
         </>
@@ -242,7 +244,7 @@ export default function NewListingForm({
               id="condition"
               name="condition"
               defaultValue={detailString(initial?.details, "condition")}
-              className={`${FIELD_BASE} mh-select appearance-none cursor-pointer capitalize`}
+              className="mh-input mh-select appearance-none cursor-pointer capitalize"
             >
               <option value="" disabled>
                 Select a condition
@@ -266,7 +268,7 @@ export default function NewListingForm({
               name="dimensions"
               defaultValue={detailString(initial?.details, "dimensions")}
               placeholder="e.g. 72 × 38 × 30"
-              className={FIELD_BASE}
+              className="mh-input"
             />
           </div>
 
@@ -281,7 +283,7 @@ export default function NewListingForm({
               name="brand"
               defaultValue={detailString(initial?.details, "brand")}
               placeholder="e.g. Ceccotti Collezioni"
-              className={FIELD_BASE}
+              className="mh-input"
             />
           </div>
         </>
@@ -298,7 +300,7 @@ export default function NewListingForm({
               id="condition"
               name="condition"
               defaultValue={detailString(initial?.details, "condition")}
-              className={`${FIELD_BASE} mh-select appearance-none cursor-pointer capitalize`}
+              className="mh-input mh-select appearance-none cursor-pointer capitalize"
             >
               <option value="" disabled>
                 Select a condition
@@ -322,7 +324,7 @@ export default function NewListingForm({
               name="neighborhood"
               defaultValue={detailString(initial?.details, "neighborhood")}
               placeholder="e.g. Lower East Side"
-              className={FIELD_BASE}
+              className="mh-input"
             />
           </div>
         </>
@@ -340,7 +342,7 @@ export default function NewListingForm({
             name="neighborhood"
             defaultValue={detailString(initial?.details, "neighborhood")}
             placeholder="e.g. Manhattan, or your neighborhood"
-            className={FIELD_BASE}
+            className="mh-input"
           />
         </div>
       )}
@@ -351,21 +353,27 @@ export default function NewListingForm({
       {/* ---------- Error ---------- */}
       {state.error && <p className="text-sm text-red-700">{state.error}</p>}
 
-      {/* ---------- Submit ---------- */}
-      <div className="pt-8 text-center">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="group inline-block bg-park text-bone px-12 py-4 text-[11px] tracking-[0.32em] uppercase transition-colors duration-300 hover:bg-ink disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
+      {/* ---------- Submit ----------
+          The moderation notice sits with the button, not buried up the page:
+          pre-moderation is the trust bar made mechanical, and the moment you
+          are about to submit is the moment it needs saying. Create mode only —
+          an edit to a live listing doesn't re-enter the queue. */}
+      <div className="pt-2">
+        <BoxButton type="submit" surface="light" disabled={isPending}>
           {isPending
             ? isEdit
               ? "Saving…"
-              : "Posting…"
+              : "Submitting…"
             : isEdit
               ? "Save changes"
-              : "Post a listing"}
-        </button>
+              : "Submit for review"}
+        </BoxButton>
+        {!isEdit && (
+          <p className={`${HELP} max-w-[46ch]`}>
+            Every listing is read by a person before it goes live. You&rsquo;ll
+            get an email either way, usually within a day.
+          </p>
+        )}
       </div>
     </form>
   );

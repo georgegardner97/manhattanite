@@ -99,10 +99,10 @@ export default function ImageUpload({
   const sizeMb = Math.round(MAX_IMAGE_BYTES / 1024 / 1024);
 
   return (
-    <div className="border-t border-ink/10 pt-8">
-      <p className="text-[13px] tracking-[0.22em] uppercase text-slate mb-5">
+    <div>
+      <p className="mh-label block text-slate mb-2.5">
         Photos
-        <span className="font-serif italic normal-case tracking-normal text-slate/70 ml-1">
+        <span className="normal-case tracking-normal font-normal text-slate/70 ml-1.5">
           (up to {MAX_IMAGES_PER_LISTING}, {sizeMb}&nbsp;MB each)
         </span>
       </p>
@@ -137,13 +137,24 @@ export default function ImageUpload({
         </ul>
       )}
 
+      {/* The dropzone: a DASHED hairline, the same convention the mockup used
+          for the Turnstile slot. Solid boxes in this system mean "a control
+          you act on"; dashed means "a space something goes into". It reads as
+          a target rather than competing with the submit button below. */}
       {remaining > 0 && (
-        <label className="inline-block cursor-pointer text-[13px] tracking-[0.22em] uppercase text-ink border border-ink/30 px-6 py-3 hover:bg-ink hover:text-bone transition-colors duration-200">
-          {busy
-            ? "Uploading…"
-            : items.length === 0
-              ? "Add photos"
-              : "Add more"}
+        <label className="block cursor-pointer border border-dashed border-ink/35 px-6 py-7 text-center transition-colors duration-200 hover:border-ink hover:bg-ink/[0.02]">
+          <span className="mh-label text-ink">
+            {busy
+              ? "Uploading…"
+              : items.length === 0
+                ? "Add photos"
+                : "Add more"}
+          </span>
+          <span className="block mt-1.5 text-[12.5px] text-slate">
+            {items.length === 0
+              ? "The first one becomes the cover."
+              : `${remaining} more if you want them.`}
+          </span>
           <input
             ref={inputRef}
             type="file"
@@ -156,11 +167,7 @@ export default function ImageUpload({
         </label>
       )}
 
-      {error && <p className="mt-4 text-sm text-red-700">{error}</p>}
-
-      <p className="mt-4 text-slate text-sm leading-relaxed">
-        The first photo is the cover.
-      </p>
+      {error && <p className="mt-2 text-[12.5px] text-slate">{error}</p>}
     </div>
   );
 }

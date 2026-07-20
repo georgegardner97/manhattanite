@@ -12,10 +12,14 @@
 // Image upload is wired in Slice 6 (Supabase Storage `listing-images` bucket,
 // RLS scoped to the user's own folder).
 
-import Link from "next/link";
+// Layout (design foundation, Slice 3): the standard light page frame —
+// PageShell's label column carries POST A LISTING and the way back, the
+// content column carries the statement and the form.
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import NewListingForm from "@/app/components/NewListingForm";
+import PageShell from "@/app/components/PageShell";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -43,27 +47,15 @@ export default async function NewListingPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/listings"
-          className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-        >
-          &larr; Listings
-        </Link>
-
-        <div className="text-center mt-12 mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Post a listing
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            What have you got?
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
-
+    <PageShell
+      label="Post a listing"
+      title="What have you got?"
+      backHref="/listings"
+      backLabel="Listings"
+    >
+      <div className="max-w-[560px] mt-10">
         <NewListingForm userId={user.id} />
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -13,10 +13,10 @@
 // The Slice 4 RLS update policy is the real, database-level gate; this
 // route-level check is the clean user-facing experience. Both layers stay.
 
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
+import PageShell from "@/app/components/PageShell";
 import NewListingForm, {
   type ListingFormInitial,
 } from "@/app/components/NewListingForm";
@@ -101,39 +101,20 @@ export default async function EditListingPage({
     })),
   };
 
+  // Only a live listing has a public page to go back to — pending and draft
+  // rows would 404 on /listings/[id] (published-only read).
+  const isPublished = listing.status === "published";
+
   return (
-    <main className="min-h-screen px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        {/* Only a live listing has a public page to go back to — pending and
-            draft rows would 404 on /listings/[id] (published-only read). */}
-        {listing.status === "published" ? (
-          <Link
-            href={`/listings/${listing.id}`}
-            className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-          >
-            &larr; Back to the listing
-          </Link>
-        ) : (
-          <Link
-            href="/listings/mine"
-            className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
-          >
-            &larr; My listings
-          </Link>
-        )}
-
-        <div className="text-center mt-12 mb-16">
-          <p className="text-[14px] tracking-[0.22em] uppercase text-slate mb-5">
-            Edit listing
-          </p>
-          <h1 className="font-serif font-light text-4xl md:text-5xl tracking-tight text-ink">
-            Touch it up.
-          </h1>
-          <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
-        </div>
-
+    <PageShell
+      label="Edit listing"
+      title="Touch it up."
+      backHref={isPublished ? `/listings/${listing.id}` : "/listings/mine"}
+      backLabel={isPublished ? "The listing" : "My listings"}
+    >
+      <div className="max-w-[560px] mt-10">
         <NewListingForm userId={user.id} initial={initial} />
       </div>
-    </main>
+    </PageShell>
   );
 }
