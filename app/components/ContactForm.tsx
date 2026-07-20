@@ -49,8 +49,8 @@ export default function ContactForm({
           Your message is on its way.
         </p>
         <p className="font-serif text-lg leading-relaxed text-slate">
-          We&apos;ve passed your note to {listerName}. If it&apos;s a fit,
-          they&apos;ll reply to you directly.
+          We&rsquo;ve passed your note to {listerName}. If it&rsquo;s a fit,
+          they&rsquo;ll reply to you directly.
         </p>
       </div>
     );

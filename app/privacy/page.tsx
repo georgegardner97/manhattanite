@@ -35,7 +35,7 @@ export default function PrivacyPage() {
         <div className="border border-ink/15 px-6 py-5 mb-12">
           <p className="text-[13px] leading-[1.7] text-slate">
             This is an early version of our privacy policy, written in plain
-            English while Manhattanite is in its private, seed phase. We&apos;ll
+            English while Manhattanite is in its private, seed phase. We&rsquo;ll
             publish a final version, reviewed by counsel, before the network opens
             to the public. Questions? Write to{" "}
             <a href="mailto:info@manhattanite.com" className="text-ink underline underline-offset-2">
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
         <p className={P}>
           Manhattanite is built on trust, and that includes how we handle your
           information. We collect only what the network needs to work, we
-          don&apos;t sell it, and we keep it inside the network.
+          don&rsquo;t sell it, and we keep it inside the network.
         </p>
 
         <h2 className={H2}>What we collect</h2>
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
           We use your information to run the network: to create and secure your
           account, review membership applications, check listings before they go
           live, connect members who want to reach each other, and keep the place
-          trustworthy. We don&apos;t process payments — Manhattanite takes no
+          trustworthy. We don&rsquo;t process payments — Manhattanite takes no
           money through the platform during this phase.
         </p>
 
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
           first and last name, your neighborhood, and the name of the member who
           sponsored you. Your listings show this byline too. Your email address,
           password, and application details are not shown to other members. If
-          you&apos;d rather not be named, Manhattanite isn&apos;t the right fit —
+          you&rsquo;d rather not be named, Manhattanite isn&rsquo;t the right fit —
           being vouched for, and named, is the point.
         </p>
 
@@ -87,13 +87,13 @@ export default function PrivacyPage() {
           application data to review members and moderate listings. We use a few
           trusted service providers to operate the site — for hosting, database,
           and sending email — and they only handle data on our behalf. We do not
-          sell your information, and we don&apos;t share it for advertising.
+          sell your information, and we don&rsquo;t share it for advertising.
         </p>
 
         <h2 className={H2}>Cookies and analytics</h2>
         <p className={P}>
           We use the cookies needed to keep you signed in, and lightweight
-          analytics to understand how the site is used. We don&apos;t use
+          analytics to understand how the site is used. We don&rsquo;t use
           advertising trackers.
         </p>
 
@@ -108,13 +108,13 @@ export default function PrivacyPage() {
         <h2 className={H2}>Your choices</h2>
         <p className={P}>
           You can ask to see the information we hold about you, correct it, or have
-          it deleted. Depending on where you live — including under New York&apos;s
+          it deleted. Depending on where you live — including under New York&rsquo;s
           SHIELD Act, and laws such as the CCPA in California or the GDPR in Europe
           — you may have additional rights. To make any request, write to{" "}
           <a href="mailto:info@manhattanite.com" className="text-ink underline underline-offset-2">
             info@manhattanite.com
           </a>{" "}
-          and we&apos;ll take care of it.
+          and we&rsquo;ll take care of it.
         </p>
 
         <h2 className={H2}>Security</h2>
@@ -128,13 +128,13 @@ export default function PrivacyPage() {
         <h2 className={H2}>Children</h2>
         <p className={P}>
           Manhattanite is for adults. You must be at least 18 to use it, and
-          it&apos;s not directed at anyone younger.
+          it&rsquo;s not directed at anyone younger.
         </p>
 
         <h2 className={H2}>Changes</h2>
         <p className={P}>
           We may update this policy as Manhattanite grows. If we make a material
-          change, we&apos;ll let members know.
+          change, we&rsquo;ll let members know.
         </p>
 
         <h2 className={H2}>Contact</h2>

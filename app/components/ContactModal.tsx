@@ -90,22 +90,24 @@ export default function ContactModal(props: ContactModalProps) {
               &times;
             </button>
 
-            <div className="text-center mb-10">
-              <p className="text-[11px] tracking-[0.22em] uppercase text-slate mb-4">
+            {/* Left-aligned under a hairline, matching the /contact route and
+                the rest of the system — the centered stack with a dash under
+                it was the last survivor of the pre-Slice-1 header. */}
+            <div className="mb-8">
+              <p className="mh-label text-slate mb-3.5">
                 {props.mode === "form" ? "Contact" : "Members only"}
               </p>
-              <h2 className="font-serif font-light text-3xl tracking-tight text-ink">
+              <h2 className="font-serif font-normal text-[32px] leading-[1.1] text-ink border-b border-ink/16 pb-6">
                 {props.mode === "form"
                   ? `Message ${props.listerName}.`
                   : `Message ${props.listerName}`}
               </h2>
-              <span className="block w-8 h-px bg-ink/30 mx-auto mt-7" />
             </div>
 
             {props.mode === "form" ? (
               <>
-                <p className="max-w-md mx-auto mb-10 text-center font-serif text-base leading-relaxed text-slate">
-                  Your note goes straight to their inbox. They&apos;ll see your
+                <p className="mb-8 leading-relaxed text-slate">
+                  Your note goes straight to their inbox. They&rsquo;ll see your
                   name and can reply to you directly.
                 </p>
                 <ContactForm
@@ -116,7 +118,7 @@ export default function ContactModal(props: ContactModalProps) {
                 />
               </>
             ) : (
-              <div className="max-w-md mx-auto text-center space-y-8">
+              <div className="space-y-7">
                 <p className="font-serif text-lg leading-relaxed text-ink">
                   To message {props.listerName}, you need a member account.
                   Members are sponsored by an existing member or approved through

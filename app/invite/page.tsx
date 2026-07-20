@@ -43,8 +43,8 @@ export default async function InvitePage() {
           </h1>
           <span className="block w-8 h-px bg-ink/30 mx-auto mt-8" />
           <p className="font-serif text-lg text-slate leading-relaxed mt-10">
-            Invite someone you&apos;d vouch for. They join through you &mdash;
-            and you&apos;re named as their sponsor on the network. We still read
+            Invite someone you&rsquo;d vouch for. They join through you &mdash;
+            and you&rsquo;re named as their sponsor on the network. We still read
             every new member by hand.
           </p>
         </div>

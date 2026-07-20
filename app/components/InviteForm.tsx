@@ -26,7 +26,7 @@ export default function InviteForm() {
       {state.sentTo && (
         <p className="mb-10 text-center font-serif text-lg text-ink leading-relaxed">
           Invitation sent to{" "}
-          <span className="italic">{state.sentTo}</span>. They&apos;ll arrive
+          <span className="italic">{state.sentTo}</span>. They&rsquo;ll arrive
           vouched for by you. Invite someone else below.
         </p>
       )}

@@ -77,11 +77,11 @@ export default async function ApplyPage() {
       >
         <div className="space-y-6 text-center">
           <p className="font-serif text-lg leading-relaxed text-bone">
-            We read every application personally, which means it&apos;ll take a
-            few days. We&apos;ll be in touch either way.
+            We read every application personally, which means it&rsquo;ll take a
+            few days. We&rsquo;ll be in touch either way.
           </p>
           <p className="font-serif text-lg leading-relaxed text-bone/70">
-            In the meantime, if you know a member of Manhattanite who&apos;d
+            In the meantime, if you know a member of Manhattanite who&rsquo;d
             vouch for you, ask them to send a note. Sponsored applications move
             faster.
           </p>

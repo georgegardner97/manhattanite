@@ -102,7 +102,7 @@ export default async function ContactPage({
                 </h1>
 
                 <p className="max-w-[52ch] mt-8 mb-10 leading-relaxed text-slate">
-                  Your note goes straight to their inbox. They&apos;ll see your
+                  Your note goes straight to their inbox. They&rsquo;ll see your
                   name and can reply to you directly.
                 </p>
 

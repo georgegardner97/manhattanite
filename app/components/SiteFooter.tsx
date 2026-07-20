@@ -123,7 +123,7 @@ export default async function SiteFooter({
         className={`flex justify-between gap-6 max-[860px]:flex-col max-[860px]:gap-2 mt-[52px] pt-[18px] border-t text-[12.5px] ${s.legal}`}
       >
         <span>&copy; Manhattanite 2026. All rights reserved.</span>
-        <span>New York&apos;s trusted private marketplace.</span>
+        <span>New York&rsquo;s trusted private marketplace.</span>
       </div>
     </footer>
   );

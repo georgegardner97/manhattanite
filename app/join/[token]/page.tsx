@@ -83,7 +83,7 @@ export default async function JoinPage({
       <main className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
         <div className="w-full max-w-md text-center">
           <p className="font-serif text-2xl text-ink leading-relaxed">
-            This invitation isn&apos;t available.
+            This invitation isn&rsquo;t available.
           </p>
           <p className="mt-4 text-slate leading-relaxed">
             {invite && invite.status === "accepted"

@@ -190,7 +190,7 @@ export default async function Home() {
               </h2>
               <p className="text-bone/60 max-w-[52ch] mb-[34px]">
                 Membership is by application and approval. Every member is
-                sponsored by another member, and the sponsor&apos;s name stands
+                sponsored by another member, and the sponsor&rsquo;s name stands
                 next to everything they post. No spam, no strangers, no noise.
               </p>
 

@@ -13,7 +13,7 @@ export default function ThankYou() {
       <div className="mh-fade-in-delay w-12 h-px bg-ink/30 my-14" />
 
       <p className="mh-fade-in-delay text-slate leading-[1.7] max-w-md">
-        I read every application by hand. You&apos;ll hear from me.
+        I read every application by hand. You&rsquo;ll hear from me.
       </p>
 
       <Link

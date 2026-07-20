@@ -26,11 +26,11 @@ export default function SponsorRequestActions({
     return (
       <div className="max-w-md mx-auto text-center space-y-5">
         <p className="font-serif text-2xl text-ink">
-          You&apos;ve vouched for {requesterName}.
+          You&rsquo;ve vouched for {requesterName}.
         </p>
         <p className="font-serif text-lg leading-relaxed text-slate">
           Thank you. Manhattanite gives every application a final look, so
-          we&apos;ll take it from here.
+          we&rsquo;ll take it from here.
         </p>
       </div>
     );
@@ -39,9 +39,9 @@ export default function SponsorRequestActions({
   if (state.status === "declined") {
     return (
       <div className="max-w-md mx-auto text-center space-y-5">
-        <p className="font-serif text-2xl text-ink">Noted — you&apos;ve declined.</p>
+        <p className="font-serif text-2xl text-ink">Noted — you&rsquo;ve declined.</p>
         <p className="font-serif text-lg leading-relaxed text-slate">
-          {requesterName} won&apos;t be told who declined. Thanks for letting us
+          {requesterName} won&rsquo;t be told who declined. Thanks for letting us
           know.
         </p>
       </div>

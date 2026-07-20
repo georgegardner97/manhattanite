@@ -86,7 +86,7 @@ export default async function SponsorRequestPage({
           <div className="max-w-md mx-auto text-center space-y-8">
             <p className="font-serif text-lg leading-relaxed text-ink">
               {requesterName} is applying to join Manhattanite and named you as
-              someone who&apos;d vouch for them. Sign in to your member account,
+              someone who&rsquo;d vouch for them. Sign in to your member account,
               then reopen this link to confirm or decline.
             </p>
             <Link
@@ -118,8 +118,8 @@ export default async function SponsorRequestPage({
           <>
             <div className="max-w-md mx-auto mb-12 text-center">
               <p className="font-serif text-lg leading-relaxed text-slate">
-                {requesterName} named you as someone who&apos;d vouch for them.
-                If you know them and you&apos;re happy to sponsor them, confirm
+                {requesterName} named you as someone who&rsquo;d vouch for them.
+                If you know them and you&rsquo;re happy to sponsor them, confirm
                 below. Your name will be shown as their sponsor. Manhattanite
                 still gives every application a final look.
               </p>
