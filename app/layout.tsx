@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/app/components/SiteNav";
+import NavGate from "@/app/components/NavGate";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,7 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${instrumentSerif.variable} antialiased`}>
-        <SiteNav />
+        {/* NavGate hides the nav on "/" (the landing brings its own) and must
+            do it on the client — this layout does not re-render on navigation. */}
+        <NavGate>
+          <SiteNav />
+        </NavGate>
         {children}
       </body>
     </html>

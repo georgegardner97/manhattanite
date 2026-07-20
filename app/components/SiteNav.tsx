@@ -18,11 +18,13 @@
 // the links and the tier logic below are untouched.
 //
 // The nav stands down entirely on "/" — the dark landing carries its own nav
-// overlaid on the hero photograph. The pathname arrives as the x-pathname
-// request header, set in proxy.ts (Server Components can't read the URL).
+// overlaid on the hero photograph. That decision lives in NavGate, the client
+// wrapper this component is mounted inside; it cannot be made here, because a
+// Server Component in the root layout does not re-render on client-side
+// navigation and would strand a landing-page visitor with no nav for the rest
+// of their session.
 
 import Link from "next/link";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import AccountMenu from "@/app/components/AccountMenu";
 
@@ -34,10 +36,6 @@ const LINK_QUIET = `${LINK_BASE} text-ink/70 hover:text-ink`;
 const LINK_EMPHASIS = `${LINK_BASE} text-ink`; // the tier's conversion CTA
 
 export default async function SiteNav() {
-  // The landing page brings its own nav; don't stack a second one on top of it.
-  const pathname = (await headers()).get("x-pathname");
-  if (pathname === "/") return null;
-
   const supabase = await createClient();
 
   const {

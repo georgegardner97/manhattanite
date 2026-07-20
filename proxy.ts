@@ -14,20 +14,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function proxy(request: NextRequest) {
-  // Forward the pathname to Server Components as a request header. Server
-  // Components have no usePathname equivalent, and SiteNav (mounted globally in
-  // the root layout) needs to know it's on "/" so it can stand down — the dark
-  // landing page carries its own nav overlaid on the hero photograph. Setting
-  // it here keeps the layout tree unchanged; the alternative was moving every
-  // route into a group so the landing could opt out of the nav layout.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-pathname", request.nextUrl.pathname);
-
   // Start with a response that mirrors the incoming request. We'll attach
   // any new auth cookies to this response below.
   let response = NextResponse.next({
     request: {
-      headers: requestHeaders,
+      headers: request.headers,
     },
   });
 
@@ -47,7 +38,7 @@ export async function proxy(request: NextRequest) {
           );
           response = NextResponse.next({
             request: {
-              headers: requestHeaders,
+              headers: request.headers,
             },
           });
           cookiesToSet.forEach(({ name, value, options }) =>
