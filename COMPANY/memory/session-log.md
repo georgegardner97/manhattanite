@@ -6,6 +6,16 @@ Newest entries at the top.
 
 ---
 
+## 2026-07-21 · Mobile pass — the emulated half, audited and fixed
+
+**Every reachable route swept at iPhone dimensions (390×844 DPR 3, spot-checked at 375×667) and the iOS trap list fixed within the existing system.** The big four: inputs now hit iOS's 16px threshold on phones so focusing a field no longer zooms the whole page; the landing hero measures itself in `svh` so it fills the visible screen instead of jumping with Safari's toolbar; the page opts into `viewport-fit=cover` with safe-area padding on the gutter, hero chrome and footer, so nothing sits under the notch or home indicator; and every small text link grew an invisible 44px tap target (coarse pointers only — desktop is untouched). Also: the three hand-written hover rules are now gated to hover-capable devices (no more stuck underlines after a tap — Tailwind's own hover utilities were already gated), and the browse category row scrolls the active chip into view on load (on "Everything else" it used to load fully offscreen).
+
+**Verified:** zero horizontal overflow on every route at both sizes, desktop regression-checked (hero, nav hover fill, browse rail unchanged), `npm run build` clean. The mobile "after" screenshot set is committed at `WORK AREAS/Product/design-foundation-project/outputs/mobile-pass-screens-2026-07/`.
+
+**Still George's half:** the real-device walk — toolbar-collapse feel, notch/landscape behavior, actual tap feel, and the logged-in screens (local auth is still blocked at Cloudflare, so post form / profile / mine / admin were audited at code level only). Flagged, not fixed: the hero photo is soft at DPR 3 (known `TODO(phase-4)`), and listing photos download full-size originals on mobile (no `srcset` — a later image-transform slice).
+
+---
+
 ## 2026-07-21 · Phase 5 — transactional emails restyled to the v12 design
 
 **Every send in `lib/applications/emails.ts` rebuilt on one shared email-safe layout** (table-based, inline styles, Georgia headlines + wordmark, Arial body, 600px bone card, hairlines, boxed CTA) per the approved v12 mockup. The three contract emails carry the mockup copy verbatim; the reviewer ping keeps its action block untouched inside the new bones; invite/sponsorship/moderation sends moved onto the same layout with copy unchanged. Plain-text alternative added to every send.
