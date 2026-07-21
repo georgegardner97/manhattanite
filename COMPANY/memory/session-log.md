@@ -14,6 +14,9 @@ Newest entries at the top.
 
 **Verified:** rendered locally and checked at 700px and 360px in the browser; `npx tsc --noEmit` and `npm run build` clean; one test of each sent to info@manhattanite.com only. Send triggers, recipients, and best-effort error handling untouched. Pending: George's Gmail check (desktop + phone).
 
+**Amendment shipped same session:** wordmark replaced with a retina PNG of the true Instrument Serif mark (same next/og pipeline as the OG card, `/email/wordmark.png`); headlines + quotes now prefer Instrument Serif via `@font-face` woff2 with Georgia fallback (Apple Mail true serif, Gmail Georgia). Assets verified live on prod before the three tests were re-sent to info@.
+
+
 ---
 
 ## 2026-07-20 · Slice 3 SHIPPED — Phase 3 of the design plan is complete

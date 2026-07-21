@@ -111,6 +111,8 @@
 - Two things beyond pure styling, both flagged: (1) contact.ts now also selects `neighborhood` from the sender's own accounts row (needed for the "(West Village)" credit — RLS read-own, no policy change); (2) interpolated user data (names, titles, messages, notes) is now HTML-escaped — the old templates interpolated raw strings.
 - Dark-mode check: bone card + dark text throughout, `color-scheme: light` meta, no white text anywhere — the combination that survives Gmail's dark-mode transform. Verified in-browser at 700px and 360px; one test of each (three emails + reviewer ping) sent to info@manhattanite.com only. **Awaiting George's Gmail check (desktop + phone) before the slice is called done-done.**
 - Remaining in the project: photography rules + brand-guide v2 (Cowork), mobile pass, final before/after re-grade.
+- **Amendment (same day): the wordmark now matches the site exactly.** The header is a retina PNG of the real Instrument Serif "Manhattan*ite*." (ink on transparent, 180px display at 2x), generated with the same next/og + committed-TTF pipeline as the OG card, hosted at `/email/wordmark.png` (alt="Manhattanite.", Georgia alt-treatment for images-off). Headlines + pull-quotes declare Instrument Serif via `@font-face` (woff2 converted from the committed TTF, hosted at `/email/instrument-serif-regular.woff2`) with Georgia fallback — Apple Mail renders the true serif, Gmail strips `@font-face` and falls back. Both faces verified at 700px and 360px; assets confirmed live on prod (200s) before the three tests were re-sent to info@.
+
 
 ## Next steps
 
