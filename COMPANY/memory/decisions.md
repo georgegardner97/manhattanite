@@ -22,6 +22,7 @@ Read this at the start of every Manhattanite conversation.
 
 ## Trust mechanic
 
+- **Spam protection on the front door — Turnstile-only.** (2026-06-30, George) Returning from a break to a flooded application queue, we diagnosed the cause: email confirmation is OFF in Supabase (bots sign up with fake emails → instant session → apply) and there's no CAPTCHA. **Decision: add Cloudflare Turnstile (CAPTCHA) on signup + a free honeypot on the apply form; KEEP instant signup (email confirmation deferred).** Turnstile stops the automated flood, which is the bulk of it; email confirmation is parked as a one-setting add if spam still trickles through. No DB migration — auth-settings + frontend only. Full plan: `WORK AREAS/Product/mvp-build-project/outputs/Manhattanite_Spam-Protection_Build-Plan_v1.md`.
 - **Working name:** Gens de Confiance Lite. (2026-05-16)
 - **Seed / MVP phase:** Open application path. Anyone visiting the site can apply for membership via real account creation. George reviews each application personally and approves or declines. Approved applicants are technically "sponsored by George." (2026-05-16)
 - **Post-launch:** Sponsor-only becomes the primary path. One existing member vouches and is publicly named on the new member's profile. Application path may quietly remain or be removed depending on what we learn during MVP. (2026-05-16)
@@ -79,6 +80,7 @@ Read this at the start of every Manhattanite conversation.
 - **Public marketing surface delayed until Cohort 2.** Goes live with cohort 2 expansion, not before. (2026-05-16)
 - **No Twitter/X, no TikTok.** Instagram + email + word of mouth. Substack optional. (2026-05-16)
 - **Monetization:** Free until end of Cohort 2 / start of Cohort 3, then pay-per-post via Stripe. Free to browse, free to sponsor, free to be a member. (2026-05-16, default pending confirm)
+- **Seed phase activated — full go; entity formation deferred.** (2026-07-02, George; revises the same-day "legal in parallel" call) With the MVP demo-ready, focus shifts from build to member acquisition. Outreach, list-building, seed listings, **and member approvals** all start immediately. **George's call: no entity registration until money is about to change hands.** Triggers to revisit: first dollar taken, ~50+ members, or members George doesn't personally know — whichever first. Attorney review of T&P moves to the same trigger list. **Surviving guardrail: fair-housing checklist in the moderation pass for apartment listings** — that exposure exists regardless of money or entity (George personally approves every listing). New work area: `WORK AREAS/Growth/founding-member-acquisition-project/` (two-week plan + candidate tracker in outputs/). Playbook assumptions still open: 8/8/4 composition split, founder-routine cadence (plan assumes the 2-day ADHD-friendly version), printed cards, Instagram-first vs no social.
 
 ## Trust and moderation
 
@@ -135,6 +137,7 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 
 - **Begin design conversations around Phase 1 week 2–3** (~7–14 days from 2026-05-18). Decisions land in hand before Phase 2 listing UI work starts; not rushed, not over-baked before the backend can absorb them. Scope: brand application as real pages (including wordmark + palette finalization), trust-first homepage layout, listing card patterns, browse feed, listing detail, application form UI, member profile, admin review queue. (2026-05-18)
 - **Claude is a design collaborator, not a substitute for a senior product designer.** Can generate options, apply brand guide rigorously, build HTML/CSS prototypes, structure the conversation. Whether to bring in a human designer later is a separate decision deferred to post-MVP. (2026-05-18)
+- **Design Foundation activated as its own project.** (2026-07-16, George) The deferred styling pass is now an active workstream. George's verdict on the current design: okay but not amazing — the bar is chic, eye-catching, elegant, very professional. Scope decision: **product screens first, brand lock second** (chosen over "full brand system at once"; matches the brand guide's own sequencing — decide on a screen, not a swatch, and the first real screens now exist). Working method: Mobbin for reference collection, Claude Design (claude.ai/design) for mockups + component library, implementation in the repo by Claude. Wordmark, final palette, and the serif question all get decided inside this project, in context. New project: `WORK AREAS/Product/design-foundation-project/` (5-phase plan in outputs/). [System change: new project folder created per protocol.]
 
 ## Personal Assistant
 
@@ -155,6 +158,12 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 - **GdC reconciliation:** GdC's real-photo rule exists for accountability *at the point of trust* — "see who I'm dealing with before I deal with them." That goal is served by a photo on the **profile**, viewable on click-through, NOT by thumbnails sprinkled across the browse grid. So keeping faces off inline bylines costs nothing on the trust model. (2026-06-08)
 - **Where a photo earns its place:** (1) Profile page — real, generous, well-shot photo = the identity surface, fully GdC-faithful. (2) Listing detail — the *only* place a face might appear outside the profile (the trust-decision moment), and even then as a tasteful "about the lister" treatment, never a thumbnail. (3) Browse bylines — name only, no photo. (2026-06-08)
 - **Status:** principle locked; implementation deferred to the Phase 1.5 Design Foundation / a future avatar slice. Not in the /apply build. Also a future GdC-identity note: GdC includes a profile photo as part of real-identity — adding one to profiles closes that gap when the time comes. (2026-06-08)
+
+## Positioning revisions from outreach prep (2026-07-13)
+
+- **Paid ads softened from "never" to "not while the network seeds."** George's call during company-briefing review: an absolute no-ads rule may not be realistic; he's open to paid acquisition later if a channel can be measured against the member bar. `gtm-playbook.md` still reads "no paid ads, ever" — treat this entry as the later decision that wins; reconcile the playbook in its next revision. Note the distinction preserved: ads *on the site* (monetization) remain off the table; this revision covers ads *for acquisition* only. (2026-07-13)
+- **Category framing widened for conversations:** apartments + furniture are the *focus*, but Manhattanite is open to any right listing from day one. Product caveat: the listings table currently supports only the apartment/furniture types, so an off-category listing needs a small build change before it can actually post. (2026-07-13)
+- **Moderation language corrected:** "never rewrite" means the platform never rewrites a listing *itself* (Section 230 posture). Sending a listing back and asking the poster to rewrite is fine and expected — that's the quality bar working. (2026-07-13)
 
 ---
 

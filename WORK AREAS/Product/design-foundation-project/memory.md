@@ -71,6 +71,47 @@
   2. **Local dev talks to the production database** — no separate dev DB. Fine at seed scale; becomes real risk once non-George members exist. Logged as a build-backlog candidate: separate Supabase dev project.
 - Observed during QA, for existing open decisions: profile page body values now render in the serif, numeral-1-as-l visible ("June l, 2026") — direct evidence for the Phase 2 serif decision. /listings/mine untouched as planned (archived QA listing still leads; EDIT/REMOVE still old text links) — Slice 3 scope.
 
+## 2026-07-20 — Slice 3 done (per George); PHASE 4 OPENED — wordmark concepts delivered
+
+- George reports Slice 3 complete (forms, profile, mine, admin, polish sweep — full report in Claude Code's session / mvp-build memory). Every product screen is now in the ICW system. Phase 3 of the design-foundation plan: done.
+- **Phase 4 opened with the wordmark decision.** Delivered `outputs/Manhattanite_Mockup_v10_Wordmark-Concepts.html` — three concepts, each shown in all four contexts (dark hero, light nav, favicon at 32/16px, OG share card):
+  - **A — The incumbent:** roman serif, italic "ite" (the live treatment, presented deliberately).
+  - **B — The signature:** full-italic serif masthead.
+  - **C — The wildcard:** letterspaced Inter caps (the Le Labo/Söhne quiet route).
+- Once George picks: same-session ship of favicon + OG share image + any wordmark refinement, then photography rules + brand-guide v2 close Phase 4. Phase 5 (emails) after.
+
+## 2026-07-20 — WORDMARK DECIDED: "Manhattanite." (Concept D)
+
+- After two rounds (v10: A incumbent / B full-italic / C sans caps; v11: D full stop / E lowercase / F engraved caps / G Fraunces / H Playfair), **George chose D — Instrument Serif roman, italic "ite", with a period.** "I like D for now" — the period joins the house voice (headlines all end with full stops). The typeface question (G/H would have reopened it) is settled: Instrument Serif carries the mark.
+- This closes the brand guide's oldest [ASSUMPTION]: the wordmark is no longer a default. GT Sectra licence question: dead for now — no paid font needed.
+- **Phase 4A implementation prompt delivered:** `outputs/Manhattanite_Phase-4A_Wordmark-Favicon-OG_Claude-Code-Prompt_v1.md` — single `Wordmark` component (period part of the mark, never in running text), favicon (serif M, bone on park, no period at 16px), OG share card via `app/opengraph-image.tsx` (park ground, wordmark + tagline) + full OG/twitter metadata, and the hero retina swap if a better asset exists.
+- Remaining in Phase 4 after 4A ships: photography rules + brand-guide v2 (Cowork drafts both). Then Phase 5 (emails) and the final re-grade.
+
+## 2026-07-20 — Phase 5 designed and approved; favicon amended to "M."
+
+- **Favicon amended at George's request: "M." WITH the period** at all sizes (optically centred, dot enlarged at 16px if needed). Phase 4A prompt updated; comparison in `outputs/Manhattanite_Favicon_M-vs-Mdot.html`.
+- **The three emails designed and approved** (`outputs/Manhattanite_Mockup_v12_Emails.html`, final): Georgia headlines (inbox-safe serif — web fonts don't load in Gmail), Arial body, bone card, hairlines, one boxed CTA max. George's copy edits applied: application received opens "Your application is in. Every application is read by a person…" (no CTA, deliberate); welcome ends "Welcome to the network." (dash and "whole system" line cut); contact forward is "Someone has messaged you." with the sender's note as a serif pull-quote and the reply line reduced to **"Replies go straight to {name}."**
+- Reply mechanics documented: contact email carries Reply-To = sender; lister's address revealed only when they reply. Phase 5 prompt requires verifying/setting that header (the one sanctioned behavior fix — makes existing modal copy true).
+- **Phase 5 prompt delivered:** `outputs/Manhattanite_Phase-5_Emails_Claude-Code-Prompt_v1.md` — shared table-based layout helper, three templates + plain-text parts, reviewer ping gets header/footer only (action block untouched), test sends to info@ only, George checks Gmail before done. **This is the final build slice.** Remaining: photography rules + brand-guide v2 (Cowork), final re-grade.
+
+## 2026-07-20 — iPhone pass queued (after Phase 5)
+
+- George's next focus: how the site feels on an iPhone. Two-part plan:
+  1. **Emulated audit-and-fix by Claude Code** — prompt delivered (`outputs/Manhattanite_Mobile-Pass_Claude-Code-Prompt_v1.md`): 390×844 DPR-3 primary + 375×667 spot-check, with the iOS trap-list spelled out — **input auto-zoom (.mh-input is ~14.5px, under iOS's 16px threshold — will zoom until fixed)**, vh-vs-Safari-toolbar on the 92vh hero (use svh/dvh), safe-area insets, stuck :hover states on touch (gate with `@media (hover:hover)`), 44px tap targets, filter-row momentum scroll, Turnstile fit, DPR-3 image softness.
+  2. **George on his real iPhone** — walks the flows, screenshots anything that feels off into Cowork for taste-level review (the same loop that caught the nav bug).
+- Run order: Phase 4A → Phase 5 → mobile pass → then Cowork's paperwork (photo rules, brand-guide v2, final re-grade — the re-grade will now include the mobile screenshot set as the phone-width "after" the original audit never captured).
+
+## 2026-07-21 — Phase 5 SHIPPED: transactional emails restyled to v12
+
+- Claude Code rebuilt every send in `lib/applications/emails.ts` on one shared v12 layout (the `Manhattanite_Mockup_v12_Emails.html` contract): table-based, all-inline styles, no web fonts; Georgia wordmark "Manhattan*ite*." + headlines, Arial body, 600px bone card, hairline rules, bulletproof boxed CTA. Copy for the three v12 emails lifted verbatim, typographic apostrophes included.
+- The three: **application received** ("We've got your application." — no CTA, deliberate), **welcome** ("You're in." — one boxed CTA → /listings), **contact forward** ("Someone has messaged you." — sender name + neighborhood bolded, message in the serif left-hairline pull-quote, "Replies go straight to {first name}", mailto CTA "Reply to {first name}").
+- **Reply-To finding: already set.** `sendListingContact` had `replyTo: senderEmail` from the contact slice — the modal's "can reply to you directly" promise was already true. No behavior fix needed.
+- Reviewer ping kept its load-bearing action block verbatim (npm run approve / SQL fallbacks), now inside the shared header/footer. The other sends (invite, sponsorship request, moderation trio) moved onto the same bones with copy unchanged.
+- Every send now carries a **plain-text alternative** (deliverability), built from the same render functions as the HTML.
+- Two things beyond pure styling, both flagged: (1) contact.ts now also selects `neighborhood` from the sender's own accounts row (needed for the "(West Village)" credit — RLS read-own, no policy change); (2) interpolated user data (names, titles, messages, notes) is now HTML-escaped — the old templates interpolated raw strings.
+- Dark-mode check: bone card + dark text throughout, `color-scheme: light` meta, no white text anywhere — the combination that survives Gmail's dark-mode transform. Verified in-browser at 700px and 360px; one test of each (three emails + reviewer ping) sent to info@manhattanite.com only. **Awaiting George's Gmail check (desktop + phone) before the slice is called done-done.**
+- Remaining in the project: photography rules + brand-guide v2 (Cowork), mobile pass, final before/after re-grade.
+
 ## Next steps
 
 - ~~Font wiring fix~~ — DONE 2026-07-17, live on prod.
@@ -84,29 +125,3 @@
 - Accent: park green vs brick red vs no accent — Phase 2. (Audit confirmed the live site is 100% monochrome in practice.)
 - Wordmark concept — Phase 4.
 - Mobbin Pro: only if the free cap bites — Phase 1.
-
-## 2026-07-20 — Slice 3 SHIPPED: the last of the screen rework
-
-Live on prod. Commits `eb7f91b` (groundwork) → `5aa045c` (post a listing) → `83c3c56` (profile) → `7f4d71f` (my listings) → `c898603` (admin) → `5798e10` (polish), plus four fixes found on the prod pass. **Phase 3 of the design plan is complete** — every product screen now sits on the same system.
-
-**Groundwork.** Three things Slices 1–2 hand-built per page became components once five more screens needed them: `PageShell` (the light frame — editorial grid, label column with the way back, serif statement closed by a hairline), `MetaRows` (the hairline label/value pairs; listing detail now renders through it rather than keeping a second copy), and an optional `href` on `ListingCard` so a card with no public page renders unlinked instead of pointing at a 404.
-
-**The audit's C+ pages, both fixed structurally rather than cosmetically:**
-- `/listings/mine` — the archived QA test listing out-shouted the live ones. Muting it wasn't enough because it was still the same object at the same size. Active listings now use the standard `ListingCard`; **archived ones are compact hairline rows under their own heading** — no image, no card. An archived listing can't outweigh a live one because it is no longer the same kind of element on the page. Status moved into the card kicker's left slot (on your own listings, "In review" is what you came to check).
-- `/profile` — out of the centered stack into the grid: tier + avatar in the label column, name as the statement, fields as `MetaRows`. Sponsorship became a small-caps line ("Sponsored by …") rather than its own centered section: trust is the product, but it's a credential, not a chapter. **No new query** — the connections rpc was already on the page.
-
-**Forms.** `/listings/new`, `/listings/[id]/edit` (same component, so it moved with it) and `/profile/edit` all take `.mh-input` + `BoxButton`. The photo and avatar controls got a **dashed** hairline — solid means "a control you act on", dashed means "a space something goes into"; as solid boxes they competed with the real submit. Submit reads "Submit for review" now, because that's what it does under pre-moderation, and the moderation notice sits with the button rather than up the page.
-
-**Admin** got the same frame and the two-action system (queue verbs as ArrowLink-weight text, the CONFIRM step taking the box). Minimal effort by design — George is the only user.
-
-**Four things only the prod pass caught**, all worth remembering as a checklist for future screens:
-1. The type-radio row needed 431px inside a 346px column, so "Service" sat **outside the column and could not be tapped at all** on a phone — not merely cropped. Any non-wrapping flex row inside the content column is a mobile risk.
-2. `PageShell`'s title closes with a hairline and `MetaRows` opens with one; two rules seven pixels apart read as an empty row. Hence `omitFirstRule`.
-3. The admin stat grid draws its hairlines as the container showing through a 1px gap, so an **unfilled trailing cell renders as a grey block**.
-4. A `type="date"` input draws its own picker icon, so `mh-select` gave it two chevrons.
-
-**Smart quotes:** swept `&apos;` → `&rsquo;` across 46 occurrences, all verified to be in JSX text rather than attributes before the sweep. **Placeholders were deliberately left alone** (the slice's rule was text, not attributes) — they still contain straight apostrophes and are visible copy, so they're worth a later pass.
-
-**Stage 0 — local auth: attempted, BLOCKED at Cloudflare.** The real site key (`0x4AAAAAADtg85GOzu0Ueq50`, public, lifted from the live bundle) was put into `.env.local` and Cloudflare **rejected the localhost hostname** — the widget renders "Unable to connect to website" and offers no challenge at all, which is worse locally than the test key. Reverted to the test key with the real one recorded in a comment above it. **To finish: add `localhost` to the widget's allowed hostnames in the Cloudflare Turnstile dashboard, then swap the two lines.** Until then no local sign-in, and every gated screen has to be verified on prod against George's session.
-
-**Known blemish, not touched (pre-existing, shipped in Slice 1):** a listing with no photo renders the card's empty beige 4:3 media block, which reads as broken. Visible on `/listings` and `/listings/mine`. Changing it alters the shipped browse layout, so it's flagged rather than fixed.

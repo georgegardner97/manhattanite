@@ -6,6 +6,16 @@ Newest entries at the top.
 
 ---
 
+## 2026-07-21 · Phase 5 — transactional emails restyled to the v12 design
+
+**Every send in `lib/applications/emails.ts` rebuilt on one shared email-safe layout** (table-based, inline styles, Georgia headlines + wordmark, Arial body, 600px bone card, hairlines, boxed CTA) per the approved v12 mockup. The three contract emails carry the mockup copy verbatim; the reviewer ping keeps its action block untouched inside the new bones; invite/sponsorship/moderation sends moved onto the same layout with copy unchanged. Plain-text alternative added to every send.
+
+**Reply-To on the contact forward was already set** to the sender's address — confirmed, no fix needed. Contact forward gained the sender's neighborhood (one extra column on the existing read-own select). Interpolated user data is now HTML-escaped.
+
+**Verified:** rendered locally and checked at 700px and 360px in the browser; `npx tsc --noEmit` and `npm run build` clean; one test of each sent to info@manhattanite.com only. Send triggers, recipients, and best-effort error handling untouched. Pending: George's Gmail check (desktop + phone).
+
+---
+
 ## 2026-07-20 · Slice 3 SHIPPED — Phase 3 of the design plan is complete
 
 **Six commits plus four prod-pass fixes, all live.** Every product screen now sits on the same system: post a listing, edit listing, profile, edit profile, my listings, and all four admin pages.

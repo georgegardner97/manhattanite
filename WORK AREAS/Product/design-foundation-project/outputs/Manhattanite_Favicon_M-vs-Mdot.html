@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Favicon: M vs M.</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  body{font-family:Inter,system-ui,sans-serif;background:#F5F0E8;color:#0F0E0C;padding:56px 40px;-webkit-font-smoothing:antialiased}
+  h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:34px;margin-bottom:6px}
+  p{color:#5A5A5A;max-width:58ch;font-size:14px;margin-bottom:40px}
+  .row{display:flex;gap:56px;flex-wrap:wrap;margin-bottom:48px}
+  .cell .cap{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:500;color:#5A5A5A;margin-bottom:14px}
+  .fav{background:#13241B;color:#F5F0E8;font-family:'Instrument Serif',Georgia,serif;display:flex;align-items:center;justify-content:center;border-radius:6px}
+  .s64{width:64px;height:64px;font-size:40px}
+  .s32{width:32px;height:32px;font-size:20px}
+  .s16{width:16px;height:16px;font-size:10px;border-radius:3px}
+  .stack{display:flex;gap:18px;align-items:flex-end}
+  .tabbar{border-radius:10px;overflow:hidden;max-width:520px;margin-bottom:12px}
+  .tabs{display:flex;gap:6px;padding:8px 10px 0}
+  .tab{display:flex;align-items:center;gap:8px;border-radius:8px 8px 0 0;padding:7px 14px;font-size:12px;max-width:230px;white-space:nowrap;overflow:hidden}
+  .light .tabs{background:#DEE1E6}.light .tab{background:#fff;color:#333}
+  .dark .tabs{background:#202124}.dark .tab{background:#35363A;color:#ddd}
+  .m-dot::after{content:"."}
+</style></head><body>
+<h1>M&nbsp; versus &nbsp;M.</h1>
+<p>Instrument Serif, bone on park, at browser sizes and in light and dark tab chrome. The period is optically shifted — the pair is nudged left so it reads centred.</p>
+
+<div class="row">
+  <div class="cell"><div class="cap">Plain M</div>
+    <div class="stack">
+      <div class="fav s64">M</div>
+      <div class="fav s32">M</div>
+      <div class="fav s16">M</div>
+    </div>
+  </div>
+  <div class="cell"><div class="cap">M. — the wordmark&rsquo;s full stop</div>
+    <div class="stack">
+      <div class="fav s64" style="padding-right:6px"><span class="m-dot" style="margin-left:6px">M</span></div>
+      <div class="fav s32" style="padding-right:3px"><span class="m-dot" style="margin-left:3px">M</span></div>
+      <div class="fav s16" style="padding-right:2px"><span class="m-dot" style="margin-left:2px">M</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cell"><div class="cap">In the tab — light chrome</div>
+<div class="tabbar light"><div class="tabs">
+  <div class="tab"><div class="fav s16">M</div> Manhattanite — Today&rsquo;s lis…</div>
+  <div class="tab"><div class="fav s16" style="padding-right:2px"><span class="m-dot" style="margin-left:2px">M</span></div> Manhattanite — Today&rsquo;s lis…</div>
+</div></div></div>
+
+<div class="cell"><div class="cap">In the tab — dark chrome</div>
+<div class="tabbar dark"><div class="tabs">
+  <div class="tab"><div class="fav s16">M</div> Manhattanite — Today&rsquo;s lis…</div>
+  <div class="tab"><div class="fav s16" style="padding-right:2px"><span class="m-dot" style="margin-left:2px">M</span></div> Manhattanite — Today&rsquo;s lis…</div>
+</div></div></div>
+
+</body></html>

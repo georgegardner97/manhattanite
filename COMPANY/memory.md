@@ -150,3 +150,11 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 - **'John Robinson' placeholder REMOVED** from the founder's 2 listings — they now read "Listed by George Gardner". This long-open thread is closed.
 - **Polish:** guest "Sign in to message" CTA; Terms spacing fix.
 - **State: the MVP is demo-ready.** Remaining before *real users* (not demo): entity formation + attorney review of T&P/fair-housing. Leftovers: one archived QA-test listing to hard-delete; verify a real contact email lands.
+
+## 2026-07-02 — GTM shift: Seed phase activated (full go, entity deferred)
+- Focus moved from build to **member acquisition**. The plan is `gtm-playbook.md` Phase 1 (Seed, 0–20), now being executed.
+- **Sequencing: full go on outreach AND approvals. Entity formation deferred** (George's call — nothing registered until money approaches). Triggers to revisit: first dollar, ~50+ members, or strangers joining. Attorney review moves to the same triggers.
+- **Surviving guardrail:** fair-housing checklist in the moderation pass for apartment listings — that exposure doesn't depend on money or entity.
+- New work area: `WORK AREAS/Growth/founding-member-acquisition-project/` — two-week action plan + candidate tracker in outputs/. From week 3: 2-day-a-week founder routine (Mon outreach, Thu meets).
+- Week-1 to-dos: 30-name brain-dump (done — 38 names), fair-housing checklist (research done), outreach template, 3 coffees.
+- **Correction (verified on prod 2026-07-02): the seed listings ARE loaded** — example listings with photos live on `/listings`, guest teaser + landing image band working. The 2026-06-09 "not loaded; 2 text-only listings" note above is stale; it was resolved around the 2026-06-12 demo-ready push but never crossed off here.

@@ -13,10 +13,14 @@ Format per task:
 
 - [ ] **Look into Angie's List (angi.com / formerly angieslist.com) as a competitor to Manhattanite** — review their offering, positioning, pricing, and differentiation opportunities. Useful input for competitive positioning vs. trust-based classifieds model. *(Source: George, added 2026-05-16, area: Product / Competitive research)*
 
+- [ ] **Read First 1000 newsletter (first1000.substack.com) for founding-member acquisition ideas** — Marwan's rec; case studies of how startups got their first 1,000 users. Feeds directly into the Growth project. *(Source: Marwan Roushdy meeting, added 2026-07-14, area: Growth / Acquisition)*
+
+- [ ] **Rework the one-line pitch** — "Raya meets Craigslist" framed Manhattanite as a hype-y tech startup and lost Marwan before the substance landed. Draft a utility-first opener aligned with "invite-worthy because useful". *(Source: Marwan Roushdy meeting, added 2026-07-14, area: GTM / Positioning)*
+
 ## In progress
 
 *(none)*
 
 ## Done
 
-*(none)*
+- [x] **Send outreach email to Richard Laermer** — outreach done; meeting booked for Tue 2026-07-21, 13:00, Chrysler Building. First Manhattanite founding-member conversation. *(Source: George, added 2026-07-08, closed 2026-07-17, area: GTM / Outreach)*

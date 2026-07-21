@@ -33,3 +33,6 @@ Append-only. Most recent at the bottom.
 - 2026-06-09 | Manhattanite_Legal-Roadmap_v1.md | Legal/company-formation-project | Pre-launch legal action plan (entity, Terms/Privacy, fair housing)
 - 2026-06-09 | Manhattanite_Attorney-Brief_v1.md | Legal/company-formation-project | One-page brief to send to startup counsel for a fixed-fee quote
 - 2026-06-09 | Manhattanite_Attorney-Brief_v2.md | Legal/company-formation-project | Attorney brief rewritten in natural email voice; Gens de Confiance reference removed
+- 2026-07-13 · Founding-Members_Pitch-Cards_v1.md · Growth/founding-member-acquisition-project — per-type pitch cards (spine + swap system)
+- 2026-07-13 · Founding-Members_Pitch-Cards_v1.pdf · Growth/founding-member-acquisition-project — printable pitch cards (generator: generators/generate_pitch_cards_pdf.py)
+- 2026-07-13 · Manhattanite_Company-Briefing_v1.pdf · Growth/founding-member-acquisition-project — founder's briefing: model, plan, finances, legal, hard Q&A (generator: generators/generate_company_briefing_pdf.py)

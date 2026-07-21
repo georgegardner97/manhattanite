@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manhattanite — v12: The three emails (Phase 5)</title>
+<style>
+  :root{--bone:#F5F0E8;--ink:#0F0E0C;--slate:#5A5A5A;--park:#13241B;--hair:rgba(15,14,12,.16)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#DDD8CE;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:90px}
+  .note{max-width:640px;margin:48px auto 8px;padding:0 20px;color:#4a463e}
+  .note h1{font-family:Georgia,serif;font-weight:400;font-size:32px;color:#1a1archives916;margin-bottom:8px;color:#171511}
+  .note p{font-size:14px;max-width:60ch}
+  .view{display:none}
+  .view.active{display:block}
+  .switch{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99;display:flex;gap:4px;background:rgba(15,14,12,.85);padding:5px;border-radius:3px}
+  .switch button{border:none;background:transparent;color:#cfc9bd;font-family:inherit;font-size:11.5px;letter-spacing:.06em;padding:7px 14px;cursor:pointer;border-radius:2px}
+  .switch button.on{background:#F5F0E8;color:#0F0E0C}
+
+  /* inbox chrome */
+  .inbox-meta{max-width:600px;margin:34px auto 0;padding:14px 22px;background:#fff;border-radius:10px 10px 0 0;border-bottom:1px solid #eee;font-size:13px;color:#333}
+  .inbox-meta .subj{font-weight:600;font-size:15px;margin-bottom:3px;color:#111}
+  .inbox-meta .from{color:#666}
+  .email{max-width:600px;margin:0 auto;background:var(--bone);color:var(--ink);border-radius:0 0 10px 10px;overflow:hidden}
+  .e-pad{padding:44px 48px 40px}
+  .e-wm{font-family:Georgia,serif;font-size:24px;text-align:center;color:var(--ink);padding-bottom:28px}
+  .e-wm em{font-style:italic}
+  .e-rule{border-top:1px solid var(--hair)}
+  .e-kicker{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--slate);text-align:center;margin:30px 0 12px;font-family:Arial,Helvetica,sans-serif}
+  .e-h{font-family:Georgia,serif;font-weight:400;font-size:34px;text-align:center;line-height:1.15;margin-bottom:24px}
+  .e-body{font-family:Arial,Helvetica,sans-serif;font-size:14.5px;line-height:1.65;color:#2c2a25;max-width:44ch;margin:0 auto}
+  .e-body p{margin-bottom:14px}
+  .e-quote{border-left:1px solid rgba(15,14,12,.3);padding:4px 0 4px 18px;margin:18px 0;font-family:Georgia,serif;font-size:16px;line-height:1.5;color:#2c2a25}
+  .e-cta{text-align:center;margin:30px 0 6px}
+  .e-cta a{display:inline-block;border:1px solid var(--ink);padding:13px 30px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ink);text-decoration:none}
+  .e-foot{border-top:1px solid var(--hair);margin-top:36px;padding-top:22px;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8a857a}
+  .e-foot .tag{letter-spacing:.16em;margin-bottom:6px}
+  .e-foot a{color:#8a857a}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <h1>The three emails.</h1>
+  <p>Same magazine, different page. Headlines in Georgia — the serif that email clients actually allow — bodies in a quiet system sans, hairlines and one boxed action, exactly like the site. Shown inside a mock inbox so you judge them where they&rsquo;ll live.</p>
+</div>
+
+<div class="view active" id="v-app">
+  <div class="inbox-meta">
+    <div class="subj">We’ve got your application.</div>
+    <div class="from">Manhattanite <info@manhattanite.com></div>
+  </div>
+  <div class="email"><div class="e-pad">
+    <div class="e-wm">Manhattan<em>ite</em>.</div>
+    <div class="e-rule"></div>
+    <div class="e-kicker">Membership</div>
+    <div class="e-h">We&rsquo;ve got your application.</div>
+    <div class="e-body"><p>Your application is in. Every application is read by a person, usually within a few days.</p>
+     <p>There&rsquo;s nothing you need to do in the meantime. When there&rsquo;s news, it comes from this address.</p></div>
+    
+    <div class="e-foot">
+      <div class="tag">New York&rsquo;s trusted private marketplace</div>
+      <div>Manhattanite &middot; New York, NY &middot; <a href="#">info@manhattanite.com</a></div>
+    </div>
+  </div></div>
+</div>
+<div class="view" id="v-welcome">
+  <div class="inbox-meta">
+    <div class="subj">You’re in.</div>
+    <div class="from">Manhattanite <info@manhattanite.com></div>
+  </div>
+  <div class="email"><div class="e-pad">
+    <div class="e-wm">Manhattan<em>ite</em>.</div>
+    <div class="e-rule"></div>
+    <div class="e-kicker">Membership</div>
+    <div class="e-h">You&rsquo;re in.</div>
+    <div class="e-body"><p>Your application was approved, and your sponsor&rsquo;s name now stands next to yours. You can post listings, message members, and vouch for someone yourself when the time comes.</p>
+     <p>Welcome to the network.</p></div>
+    <div class="e-cta"><a href="#">Browse the network</a></div>
+    <div class="e-foot">
+      <div class="tag">New York&rsquo;s trusted private marketplace</div>
+      <div>Manhattanite &middot; New York, NY &middot; <a href="#">info@manhattanite.com</a></div>
+    </div>
+  </div></div>
+</div>
+<div class="view" id="v-contact">
+  <div class="inbox-meta">
+    <div class="subj">Someone has messaged you.</div>
+    <div class="from">Manhattanite <info@manhattanite.com></div>
+  </div>
+  <div class="email"><div class="e-pad">
+    <div class="e-wm">Manhattan<em>ite</em>.</div>
+    <div class="e-rule"></div>
+    <div class="e-kicker">Your listing · One-bedroom · Yorkville</div>
+    <div class="e-h">Someone has messaged you.</div>
+    <div class="e-body"><p><strong>Jane Moro</strong> (West Village) wrote to you about <em>One-bedroom &middot; Yorkville</em>:</p>
+     <div class="e-quote">Hi — I&rsquo;m looking for exactly this, and August 1 works perfectly. Could I come see it this week?</div>
+     <p style="font-size:13px;color:#6b665c">Replies go straight to Jane.</p></div>
+    <div class="e-cta"><a href="#">Reply to Jane</a></div>
+    <div class="e-foot">
+      <div class="tag">New York&rsquo;s trusted private marketplace</div>
+      <div>Manhattanite &middot; New York, NY &middot; <a href="#">info@manhattanite.com</a></div>
+    </div>
+  </div></div>
+</div>
+<div class="switch">
+  <button class="on" onclick="show('v-app',this)">Application received</button>
+  <button onclick="show('v-welcome',this)">The welcome</button>
+  <button onclick="show('v-contact',this)">Contact forward</button>
+</div>
+<script>
+function show(id,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+document.querySelectorAll('.switch button').forEach(b=>b.classList.remove('on'));
+btn.classList.add('on');window.scrollTo(0,0)}
+</script>
+</body>
+</html>

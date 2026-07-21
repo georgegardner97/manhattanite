@@ -22,7 +22,19 @@ Format:
 
 ## Manhattanite — business
 
-*(none logged yet)*
+### Richard Laermer
+- **Role/relationship:** PR veteran (RLM PR founder, author of *Full Frontal PR* and others), NYC legend. Family friend — knows George's parents, good existing rapport.
+- **Channels:** email (George has his address)
+- **Reply priority:** important
+- **Last interaction:** 2026-07-17 — outreach done; meeting booked
+- **Open threads:** meeting Tue 2026-07-21, 13:00, Chrysler Building — first founding-member conversation. Prep before Tuesday: pitch cards + company briefing PDF are ready in Growth/founding-member-acquisition-project/outputs/
+
+### Marwan Roushdy
+- **Role/relationship:** acquaintance/peer; owns a matcha store. Heard the Manhattanite pitch 2026-07-14 — skeptical (sees it as a long-odds tech play). Offered George a job starting a matcha subscription company.
+- **Channels:** [TBD]
+- **Reply priority:** warm
+- **Last interaction:** 2026-07-14 — pitch meeting; recommended YC and the First 1000 newsletter. Notes: `WORK AREAS/Admin-PA/meeting-notes/2026-07-14_Marwan-Roushdy.md`
+- **Open threads:** matcha job offer unanswered (George hasn't indicated interest)
 
 ## Music — band + collaborators
 
