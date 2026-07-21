@@ -45,7 +45,13 @@ const BODY_COLOR = "#2c2a25";
 const FOOT_COLOR = "#8a857a";
 
 const SERIF = "Georgia,'Times New Roman',serif";
+// Headlines and quotes prefer the site's true serif where the client allows
+// it (Apple Mail honors @font-face; Gmail strips it and falls back to
+// Georgia). The woff2 + retina wordmark PNG live in public/email/ and are
+// served from prod — email clients can only load them over https.
+const SERIF_STACK = `'Instrument Serif',${SERIF}`;
 const SANS = "Arial,Helvetica,sans-serif";
+const ASSET_HOST = "https://manhattanite.com";
 
 // Interpolated user data (names, titles, messages, notes) must never be able
 // to break out of the markup.
@@ -67,7 +73,7 @@ function p(html: string, opts?: { muted?: boolean; last?: boolean }): string {
 
 // The serif left-hairline pull-quote (contact forward, moderation notes).
 function quote(html: string): string {
-  return `<div style="border-left:1px solid rgba(15,14,12,.3);padding:4px 0 4px 18px;margin:18px 0;font-family:${SERIF};font-size:16px;line-height:1.5;color:${BODY_COLOR};">${html}</div>`;
+  return `<div style="border-left:1px solid rgba(15,14,12,.3);padding:4px 0 4px 18px;margin:18px 0;font-family:${SERIF_STACK};font-size:16px;line-height:1.5;color:${BODY_COLOR};">${html}</div>`;
 }
 
 type LayoutOptions = {
@@ -99,6 +105,14 @@ function layout({ kicker, headline, bodyHtml, cta }: LayoutOptions): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
+<style>
+  @font-face {
+    font-family: 'Instrument Serif';
+    font-style: normal;
+    font-weight: 400;
+    src: url('${ASSET_HOST}/email/instrument-serif-regular.woff2') format('woff2');
+  }
+</style>
 </head>
 <body style="margin:0;padding:0;background:#ffffff;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
@@ -107,7 +121,9 @@ function layout({ kicker, headline, bodyHtml, cta }: LayoutOptions): string {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="${BONE}" style="width:100%;max-width:600px;background:${BONE};color:${INK};">
           <tr>
             <td style="padding:44px 40px 40px;">
-              <div style="font-family:${SERIF};font-size:24px;text-align:center;color:${INK};padding-bottom:28px;">Manhattan<em>ite</em>.</div>
+              <div style="text-align:center;padding-bottom:28px;">
+                <img src="${ASSET_HOST}/email/wordmark.png" width="180" height="28" alt="Manhattanite." style="display:inline-block;width:180px;height:28px;border:0;font-family:${SERIF};font-size:24px;color:${INK};" />
+              </div>
               <div style="border-top:1px solid ${HAIR};line-height:1px;font-size:1px;">&nbsp;</div>
               ${
                 kicker
@@ -116,7 +132,7 @@ function layout({ kicker, headline, bodyHtml, cta }: LayoutOptions): string {
               }
               ${
                 headline
-                  ? `<h1 style="font-family:${SERIF};font-weight:normal;font-size:34px;text-align:center;line-height:1.15;margin:0 0 24px;color:${INK};">${headline}</h1>`
+                  ? `<h1 style="font-family:${SERIF_STACK};font-weight:normal;font-size:34px;text-align:center;line-height:1.15;margin:0 0 24px;color:${INK};">${headline}</h1>`
                   : ""
               }
               <div style="max-width:420px;margin:0 auto;">
