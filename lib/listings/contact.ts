@@ -105,18 +105,19 @@ export async function sendContact(
   // The contact is logged. The email is a best-effort forward — a mail failure
   // must NOT lose the recorded contact, so it's wrapped in its own try/catch.
   if (lister?.lister_email && user.email) {
-    // The member's own name (for the lister's "from"). RLS read-own.
+    // The member's own name + neighborhood (for the lister's "from"). RLS read-own.
     const { data: account } = await supabase
       .from("accounts")
-      .select("name")
+      .select("name, neighborhood")
       .eq("id", user.id)
-      .single<{ name: string | null }>();
+      .single<{ name: string | null; neighborhood: string | null }>();
 
     try {
       await sendListingContact({
         to: lister.lister_email,
         listerName: lister.lister_name,
         senderName: account?.name ?? null,
+        senderNeighborhood: account?.neighborhood ?? null,
         senderEmail: user.email,
         message,
         listingTitle: lister.listing_title,
