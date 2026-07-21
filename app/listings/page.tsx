@@ -38,6 +38,7 @@ import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
 import { toCardData, type ListingRow } from "@/lib/listings/card";
 import ListingCard from "@/app/components/ListingCard";
+import ListingsFilterRow from "@/app/components/ListingsFilterRow";
 import BoxButton from "@/app/components/BoxButton";
 import SiteFooter from "@/app/components/SiteFooter";
 
@@ -253,27 +254,18 @@ function CategoryRail({ activeType }: { activeType: FilterValue }) {
 
 // The mobile fallback: the horizontal small-caps row, scrollable rather than
 // wrapping to two lines. Hidden at 861px and up, where the rail takes over.
+// Rendering lives in ListingsFilterRow (a Client Component, so the active chip
+// can scroll itself into view on load); this just maps the shared FILTERS list
+// into its props.
 function FilterRow({ activeType }: { activeType: FilterValue }) {
   return (
-    <div className="hidden max-[860px]:flex min-w-0 gap-x-[26px] mt-[26px] overflow-x-auto whitespace-nowrap mh-no-scrollbar">
-      {FILTERS.map((f) => {
-        const isActive = f.value === activeType;
-        return (
-          <Link
-            key={f.label}
-            href={hrefFor(f.value)}
-            aria-current={isActive ? "page" : undefined}
-            className={`mh-label shrink-0 pb-[5px] border-b transition-colors ${
-              isActive
-                ? "text-ink border-park"
-                : "text-slate border-transparent hover:text-ink"
-            }`}
-          >
-            {f.label}
-          </Link>
-        );
-      })}
-    </div>
+    <ListingsFilterRow
+      items={FILTERS.map((f) => ({
+        label: f.label,
+        href: hrefFor(f.value),
+        active: f.value === activeType,
+      }))}
+    />
   );
 }
 

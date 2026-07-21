@@ -60,10 +60,14 @@ html {
    ========================================================================== */
 
 /* Page gutter — 40px desktop, 22px mobile. The site is full-bleed (no centered
-   max-width container); the gutter is what holds the margins. */
+   max-width container); the gutter is what holds the margins. The max() against
+   the safe-area insets is for notched iPhones in landscape (the layout uses
+   viewport-fit=cover, so without it the gutter would start under the sensor
+   housing); everywhere else the inset is 0 and max() resolves to the plain
+   gutter. */
 .mh-gutter {
-  padding-left: 40px;
-  padding-right: 40px;
+  padding-left: max(40px, env(safe-area-inset-left));
+  padding-right: max(40px, env(safe-area-inset-right));
 }
 
 /* The hairline that opens a section. `ink` at 16% on light, `bone` at 16% on
@@ -225,8 +229,8 @@ html {
 
 @media (max-width: 860px) {
   .mh-gutter {
-    padding-left: 22px;
-    padding-right: 22px;
+    padding-left: max(22px, env(safe-area-inset-left));
+    padding-right: max(22px, env(safe-area-inset-right));
   }
 
   .mh-section-grid {
@@ -237,6 +241,13 @@ html {
   .mh-card-grid {
     grid-template-columns: 1fr;
     row-gap: 56px;
+  }
+
+  /* iOS Safari zooms the whole page when a focused control's font-size is
+     under 16px. 16px is the exact threshold — the phone keeps the layout
+     still, and desktop keeps the quieter 14.5px set above. */
+  .mh-input {
+    font-size: 16px;
   }
 }
 
@@ -303,8 +314,13 @@ body {
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.mh-checkbox:hover {
-  border-color: var(--color-ink);
+/* Hover-capable pointers only: iOS applies :hover on first tap and leaves it
+   stuck until the next tap lands elsewhere. (Tailwind's own hover: variants
+   are already gated this way in v4.) */
+@media (hover: hover) {
+  .mh-checkbox:hover {
+    border-color: var(--color-ink);
+  }
 }
 
 .mh-checkbox:checked {
@@ -348,8 +364,12 @@ body {
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.mh-link:hover::after {
-  transform: scaleX(1);
+/* Same (hover: hover) gate as the checkbox above — without it a tap "plays"
+   the underline and leaves it stuck. */
+@media (hover: hover) {
+  .mh-link:hover::after {
+    transform: scaleX(1);
+  }
 }
 
 /* Accent variant for the primary landing CTA: a 2px park-green underline,
@@ -361,7 +381,64 @@ body {
   transform: scaleX(1);
 }
 
-.mh-link-park:hover::after {
-  transform: scaleX(0);
-  transform-origin: right center;
+@media (hover: hover) {
+  .mh-link-park:hover::after {
+    transform: scaleX(0);
+    transform-origin: right center;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   MOBILE PASS (2026-07-21)
+   -------------------------------------------------------------------------- */
+
+/* Viewport-height helpers. On iOS, `vh` is measured against the LARGEST
+   possible viewport — it ignores Safari's collapsing toolbar — so a 92vh hero
+   overflows the visible screen on load and jumps as the toolbar collapses.
+   `svh` (small viewport height) is the visible screen with the toolbar OPEN:
+   the hero fits on first paint and never moves. Plain vh stays as the fallback
+   for engines without svh. */
+.mh-vh-hero {
+  height: 92vh;
+}
+
+.mh-vh-modal {
+  max-height: 90vh;
+}
+
+@supports (height: 100svh) {
+  .mh-vh-hero {
+    height: 92svh;
+  }
+
+  .mh-vh-modal {
+    max-height: 90svh;
+  }
+}
+
+/* Touch target. The small-caps text links are ~15px tall; Apple's floor for a
+   comfortable tap is 44×44px. On coarse pointers (phones, tablets) this grows
+   the HIT AREA to at least that, via an invisible pseudo-element — no padding,
+   no margins, so baselines, borders and layout are untouched, and fine
+   pointers (desktop) get nothing at all. Element must not be display:inline
+   (the pseudo needs a real box to center against) — our links are inline-block
+   or flex children already. */
+@media (pointer: coarse) {
+  .mh-tap {
+    position: relative;
+  }
+
+  /* .mh-link is always a tappable text link and already has the box this
+     needs (inline-block + relative), so it gets the hit area for free —
+     no per-call-site class. Its underline lives on ::after; no clash. */
+  .mh-tap::before,
+  .mh-link::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
 }

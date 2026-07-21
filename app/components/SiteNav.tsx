@@ -37,7 +37,7 @@ type Viewer = "guest" | "account" | "member";
 // goes park green, every piece of type on it has to cross to bone or it
 // disappears into the fill. The group is NAMED so AccountMenu — a separate
 // component further down the tree — can join the same transition.
-const LINK_BASE = "mh-label transition-colors duration-[400ms]";
+const LINK_BASE = "mh-label mh-tap transition-colors duration-[400ms]";
 const LINK_QUIET = `${LINK_BASE} text-ink/70 hover:text-ink group-hover/nav:text-bone/70 group-hover/nav:hover:text-bone`;
 const LINK_EMPHASIS = `${LINK_BASE} text-ink group-hover/nav:text-bone`; // the tier's conversion CTA
 
@@ -85,7 +85,7 @@ export default async function SiteNav() {
             drop their centered one. Clicking it takes you back "outside". */}
         <Link
           href="/"
-          className="text-ink transition-colors duration-[400ms] group-hover/nav:text-bone"
+          className="mh-tap text-ink transition-colors duration-[400ms] group-hover/nav:text-bone"
         >
           <Wordmark className="text-[24px] leading-none" />
         </Link>

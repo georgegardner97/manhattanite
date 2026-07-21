@@ -80,12 +80,14 @@ export default function ContactModal(props: ContactModalProps) {
           />
 
           {/* Card */}
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-bone border border-ink/15 shadow-xl px-8 py-10 sm:px-12 sm:py-12">
+          {/* mh-vh-modal: 90svh with a vh fallback, so the card never runs
+              under the iOS toolbar (vh ignores it; svh doesn't). */}
+          <div className="relative w-full max-w-lg mh-vh-modal overflow-y-auto bg-bone border border-ink/15 shadow-xl px-8 py-10 sm:px-12 sm:py-12">
             <button
               type="button"
               aria-label="Close"
               onClick={() => setOpen(false)}
-              className="absolute top-5 right-6 text-2xl leading-none text-slate hover:text-ink cursor-pointer"
+              className="mh-tap absolute top-5 right-6 text-2xl leading-none text-slate hover:text-ink cursor-pointer"
             >
               &times;
             </button>

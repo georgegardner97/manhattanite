@@ -19,7 +19,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 const BASE =
-  "inline-block text-[14px] hover:underline underline-offset-4 transition-colors";
+  "mh-tap inline-block text-[14px] hover:underline underline-offset-4 transition-colors";
 
 const SURFACE = {
   light: "text-park",

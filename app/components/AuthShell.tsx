@@ -43,7 +43,7 @@ export default function AuthShell({
     <main className="mh-dark min-h-screen flex flex-col">
       {/* Wordmark — the way back "outside". Matches the landing's mark. */}
       <div className="mh-gutter py-[34px] text-center">
-        <Link href="/" className="text-bone">
+        <Link href="/" className="mh-tap inline-block text-bone">
           <Wordmark className="text-[28px] leading-none" />
         </Link>
       </div>
@@ -98,7 +98,7 @@ export function AuthLink({
   return (
     <Link
       href={href}
-      className="text-cream hover:underline underline-offset-4"
+      className="mh-tap inline-block text-cream hover:underline underline-offset-4"
     >
       {children}
     </Link>

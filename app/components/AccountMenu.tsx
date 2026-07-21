@@ -12,7 +12,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
 const ITEM =
-  "block w-full text-left px-5 py-3 text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink hover:bg-ink/[0.04] transition-colors cursor-pointer";
+  "mh-tap block w-full text-left px-5 py-3 text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink hover:bg-ink/[0.04] transition-colors cursor-pointer";
 
 export default function AccountMenu({
   name,
@@ -55,7 +55,7 @@ export default function AccountMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="flex items-center gap-1.5 cursor-pointer group"
+        className="mh-tap flex items-center gap-1.5 cursor-pointer group"
       >
         {/* group-hover/nav: crosses to bone with the rest of the bar when
             SiteNav's hover fill comes in. Without it the avatar vanishes into

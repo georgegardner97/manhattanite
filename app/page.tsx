@@ -48,7 +48,8 @@ const HERO_SRC = "/hero-brownstone.jpg";
 const HERO_SCRIM =
   "linear-gradient(to bottom, rgba(10,14,10,.5) 0%, rgba(10,14,10,.12) 38%, rgba(10,14,10,.15) 60%, rgba(19,36,27,.96) 100%)";
 
-const HERO_LINK = "mh-label text-bone/90 hover:text-bone transition-colors";
+const HERO_LINK =
+  "mh-label mh-tap text-bone/90 hover:text-bone transition-colors";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -88,7 +89,7 @@ export default async function Home() {
     <div className="mh-dark">
       <main>
         {/* ================= HERO ================= */}
-        <header className="relative h-[92vh] min-h-[560px] overflow-hidden">
+        <header className="relative mh-vh-hero min-h-[560px] overflow-hidden">
           {/* Decorative; the statement below carries the meaning. Plain <img>
               rather than next/image — this is a single above-the-fold hero from
               public/, and the art direction is a full-bleed cover crop. */}
@@ -104,16 +105,20 @@ export default async function Home() {
             aria-hidden="true"
           />
 
-          <div className="absolute inset-0 z-10 flex flex-col justify-between px-10 pt-7 pb-14 max-[860px]:px-[22px] max-[860px]:pt-[22px] max-[860px]:pb-10">
+          <div className="absolute inset-0 z-10 flex flex-col justify-between">
             {/* The hover fill (ICW's header panel). This is the case their
                 effect was actually built for — a nav sitting on a photograph,
                 where the panel fading in is what makes the links legible. The
-                negative margins cancel the overlay's padding so the fill runs
-                edge to edge and up to the very top, rather than floating in a
-                padded box. Park at 88% keeps a trace of the image showing
-                through, so it reads as a scrim settling rather than a bar
-                appearing. */}
-            <div className="mh-navbar -mx-10 -mt-7 px-10 pt-7 pb-6 max-[860px]:-mx-[22px] max-[860px]:-mt-[22px] max-[860px]:px-[22px] max-[860px]:pt-[22px]">
+                nav block is a full-bleed child of the (unpadded) overlay, so
+                the fill's inset-0 runs edge to edge and up to the very top on
+                its own; the gutter padding sits INSIDE it. (This replaces the
+                old negative-margin trick, which couldn't survive the gutter
+                becoming safe-area-aware — you can't negative-margin an env()
+                max().) The max() on the top padding keeps the nav below the
+                notch when the status bar overlaps the page. Park at 88% keeps
+                a trace of the image showing through, so it reads as a scrim
+                settling rather than a bar appearing. */}
+            <div className="mh-navbar mh-gutter pt-[max(28px,env(safe-area-inset-top))] pb-6 max-[860px]:pt-[max(22px,env(safe-area-inset-top))]">
               <div
                 className="mh-navbar-fill bg-park/[0.88]"
                 aria-hidden="true"
@@ -140,17 +145,22 @@ export default async function Home() {
               </nav>
             </div>
 
-            <div className="max-w-[600px] mh-fade-in">
-              <h1 className="font-serif font-normal text-[46px] max-[860px]:text-[32px] leading-[1.12] text-bone mb-6">
-                A private marketplace for the people who define New York.
-              </h1>
-              <div className="flex flex-wrap items-center gap-x-[26px] gap-y-4">
-                <BoxButton href="#membership" surface="dark">
-                  Apply for membership
-                </BoxButton>
-                <ArrowLink href="/listings" surface="dark">
-                  Browse the network
-                </ArrowLink>
+            {/* The statement carries its own gutter now that the overlay is
+                unpadded (see the nav note above). Same 56px/40px bottom
+                clearance as before. */}
+            <div className="mh-gutter pb-14 max-[860px]:pb-10">
+              <div className="max-w-[600px] mh-fade-in">
+                <h1 className="font-serif font-normal text-[46px] max-[860px]:text-[32px] leading-[1.12] text-bone mb-6">
+                  A private marketplace for the people who define New York.
+                </h1>
+                <div className="flex flex-wrap items-center gap-x-[26px] gap-y-4">
+                  <BoxButton href="#membership" surface="dark">
+                    Apply for membership
+                  </BoxButton>
+                  <ArrowLink href="/listings" surface="dark">
+                    Browse the network
+                  </ArrowLink>
+                </div>
               </div>
             </div>
           </div>
@@ -223,7 +233,9 @@ export default async function Home() {
                   name="email"
                   type="email"
                   placeholder="you@example.com"
-                  className="flex-1 min-w-0 border border-bone/75 border-r-0 max-[520px]:border-r bg-transparent px-4 py-[14px] text-[14px] text-bone outline-none placeholder:text-bone/45 focus-visible:border-bone"
+                  // 16px on phones or iOS zooms the page on focus — same
+                  // threshold as .mh-input's mobile bump in globals.css.
+                  className="flex-1 min-w-0 border border-bone/75 border-r-0 max-[520px]:border-r bg-transparent px-4 py-[14px] text-[14px] max-[860px]:text-[16px] text-bone outline-none placeholder:text-bone/45 focus-visible:border-bone"
                 />
                 <BoxButton surface="dark" type="submit" className="py-[14px]">
                   Apply
@@ -234,7 +246,7 @@ export default async function Home() {
                 Applications are reviewed personally. Already a member?{" "}
                 <Link
                   href="/login"
-                  className="text-bone/80 underline underline-offset-[3px]"
+                  className="mh-tap inline-block text-bone/80 underline underline-offset-[3px]"
                 >
                   Sign in
                 </Link>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/app/components/SiteNav";
@@ -22,6 +22,18 @@ const instrumentSerif = Instrument_Serif({
 const TITLE = "Manhattanite — A better marketplace for Manhattan residents";
 const DESCRIPTION =
   "A members-only marketplace for the people who define New York. Verified residents only. No spam, no strangers, no noise.";
+
+// viewport-fit=cover lets the page run under the iPhone notch and home
+// indicator instead of Safari letterboxing it with background-colored bars in
+// landscape. The safe-area env() insets in globals.css (.mh-gutter) and the
+// hero/footer padding only report non-zero values once this is set — the two
+// halves of one fix. width + initialScale restate Next's defaults, which an
+// explicit viewport export would otherwise drop.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://manhattanite.com"),

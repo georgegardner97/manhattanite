@@ -25,7 +25,7 @@ const INITIAL: ReviewActionState = { error: null };
 // primary action in that moment, so it takes the box. Nothing here is a
 // bespoke button any more.
 const CONTROL =
-  "inline-block text-[14px] text-park hover:underline underline-offset-4 transition-colors cursor-pointer disabled:opacity-40";
+  "mh-tap inline-block text-[14px] text-park hover:underline underline-offset-4 transition-colors cursor-pointer disabled:opacity-40";
 const CONFIRM_CONTROL =
   "inline-block border border-ink px-[18px] py-[9px] mh-label text-ink bg-transparent cursor-pointer transition-colors duration-[250ms] hover:bg-ink hover:text-bone disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink";
 const NOTE_FIELD = "mh-input text-sm";

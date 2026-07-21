@@ -95,14 +95,19 @@ export default async function SiteFooter({
   const membership = MEMBERSHIP_BY_TIER[viewer];
 
   return (
-    <footer className={`mh-gutter mt-[120px] pb-[46px] ${s.body}`}>
+    // The calc() keeps the legal line clear of the iPhone home indicator now
+    // that viewport-fit=cover lets the page run under it; everywhere else the
+    // env() is 0 and this is the same 46px as before.
+    <footer
+      className={`mh-gutter mt-[120px] pb-[calc(46px+env(safe-area-inset-bottom))] ${s.body}`}
+    >
       <div className="mh-rule pt-[34px] grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 max-[860px]:grid-cols-1">
         <div>
           <Wordmark as="div" className={`text-[22px] ${s.wordmark}`} />
           <div className="text-[14px] leading-[1.7] mt-[22px]">
             <a
               href="mailto:info@manhattanite.com"
-              className="hover:underline underline-offset-4"
+              className="mh-tap inline-block hover:underline underline-offset-4"
             >
               info@manhattanite.com
             </a>
@@ -160,7 +165,8 @@ function FooterLinkItem({
   href: string;
   children: ReactNode;
 }) {
-  const className = "hover:underline underline-offset-4";
+  // inline-block so mh-tap's hit-area pseudo has a real box to center on.
+  const className = "mh-tap inline-block hover:underline underline-offset-4";
   return href.startsWith("/") ? (
     <Link href={href} className={className}>
       {children}

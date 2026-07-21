@@ -34,7 +34,7 @@ const RESUBMIT_INITIAL: ResubmitListingState = { error: null };
 // for the one primary action on a screen, so Edit/Remove/Resubmit read as
 // ArrowLink-weight text at 14px park, not as buttons competing with the card.
 const CONTROL =
-  "inline-block text-[14px] text-park hover:underline underline-offset-4 transition-colors cursor-pointer";
+  "mh-tap inline-block text-[14px] text-park hover:underline underline-offset-4 transition-colors cursor-pointer";
 
 export default function MyListingActions({
   listingId,
