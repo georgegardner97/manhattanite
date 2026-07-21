@@ -4,6 +4,149 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-07-21 (Design Foundation) · Wordmark locked + favicon + OG card
+
+Shipped the locked wordmark and the two brand images it never had. George approved Concept D from the round-2 wordmark mockup: **"Manhattanite."** — Instrument Serif roman, italic "ite", closed by a roman period. The period is now part of the mark everywhere the brand signs its name.
+
+- **One source of truth.** New `app/components/Wordmark.tsx` renders `Manhattan<span italic>ite</span>.` with `font-serif` + `whitespace-nowrap` baked in; size/color come from the caller (or by inheriting color from a wrapping `<Link>`, which is how SiteNav's hover-to-bone still works). Replaced all five hand-rolled wordmarks: landing hero (`app/page.tsx`), light `SiteNav`, `AuthShell`, both `SiteFooter` variants, and the `/join/[token]` hero. No more per-surface drift.
+  - **Scope guard:** the period belongs to the LOGO only. Running prose that mentions Manhattanite (terms, privacy, descriptions, meta) does NOT gain a period and does NOT use the component.
+- **Favicon** — `app/icon.tsx` (next/og `ImageResponse`, 32×32): bone serif roman "M" on a rounded park tile. Roman, not italic (the mockup showed italic; George's brief overrode to roman — italic M smears at 16px). Deleted the scaffold's default `app/favicon.ico`. 16px verdict: legible, serifs soften slightly but the M reads clearly — acceptable, no heavier 16px variant needed.
+- **OG share card** — `app/opengraph-image.tsx` (1200×630): park ground, bone "Manhattanite." ~120px, tagline `NEW YORK'S TRUSTED PRIVATE MARKETPLACE` in letterspaced serif caps at 65%. Whole card is one typeface (Instrument Serif) — dropped the planned Inter tagline cut when the static Inter TTF 404'd; serif caps read better anyway.
+- **Fonts** committed to `assets/fonts/` (InstrumentSerif Regular + Italic TTF) so satori has real font data at build time. The icon/OG routes prerender as **static** (○) — fonts are read at build, not runtime.
+- **Metadata** in `app/layout.tsx`: added `metadataBase` (`https://manhattanite.com`) + full `openGraph`/`twitter` blocks (title/description unchanged, `summary_large_image`). og:image + icon link auto-injected by the file conventions.
+- **Hero photo NOT swapped.** `public/hero-brownstone.jpg` keeps its `TODO(phase-4)` (1400×789, soft on retina). Nothing in `seed-images/` qualifies: all are apartment INTERIORS, ≤2000px wide, none a brownstone exterior. Per brief, left it rather than substitute a different subject without George seeing it. **Still needs a licensed ≥2400px brownstone-exterior original.**
+
+Verified locally on every surface (desktop + 390px, light + dark), `/icon` and `/opengraph-image` routes render with real Instrument Serif (not fallback), `npm run build` clean, OG/twitter meta tags present in `<head>`.
+
+**Next:** verify on prod after deploy — live favicon in tab, `curl … | grep og:` tags, and the OG image URL.
+
+---
+
+## 2026-07-20 (Slice 1.3) · Category rail — weight not dot, catch-all last and renamed
+
+Live on prod (`097936b`). Three presentation changes off George's review; the mobile horizontal row reads the same `FILTERS` array so it inherited all three.
+
+- **Active category is marked by WEIGHT** (ink 500 vs slate 400), park dot removed. Side effect worth keeping: without the marker the labels sit flush to the column edge, so the rail now aligns exactly with the LISTINGS label above it (0px).
+- **Services and the catch-all swapped** so the catch-all is last.
+- **"Other" now reads "Everything else"** — label only. **The enum value is still `other`**, so `/listings?type=other` links keep working and keep marking the renamed item active. Verified on prod. The listing `type` enum in the database is untouched; if a future label change tempts anyone to rename the value, don't — the URL is the contract.
+
+"All" still tops out level with the first card's kicker at 0.6px: removing the dot moved labels horizontally, not vertically.
+
+---
+
+## 2026-07-20 (Slice 1.2) · Category rail realigned into the cards' grid row
+
+Live on prod (`e655cb6`). George: the rail started too high — level with the "Today's listings." title rather than with the listings it filters.
+
+**The structural point, which is the reusable bit.** The fix was NOT a padding constant. `/listings` is now **two section grids instead of one**: the head grid carries the LISTINGS label beside the title; the feed grid carries the category rail in its label column, **in the same grid row as the card grid**. Both columns of that grid begin at the same y, so "All" lines up with the first card's kicker *intrinsically* — there is no offset number to drift out of date the next time the page head changes. **Prefer this shape whenever two columns need to agree vertically: put them in the same grid row rather than measuring one against the other.**
+
+Detail: the rail's `<nav>` takes `-mt-[7px]` to cancel the first link's own `py-[7px]`, so "All" starts flush with the column top instead of one padding-step below it. Padding stays on the links so inter-item spacing stays even and the whole row stays clickable. Measured on every `?type=`: rail text top and kicker text top agree to **0.6px** (the residual is the two different font sizes, unavoidable).
+
+**Bonus:** moving `mh-rule` onto the feed container restored the **full-width hairline** across both columns — it had been starting at the content column's left edge since the rail landed.
+
+Sticky (96px) and the sub-860px horizontal row are untouched.
+
+---
+
+## 2026-07-20 (later) · Founder review of Slice 1 — nav bug fixed, sticky category rail shipped
+
+Live on prod (`c544566` nav fix, `409efb2` rail). Three items off George's review of the live Slice 1.
+
+**THE BUG, and the lesson that supersedes the one in the entry below.** Landing on `/` and clicking through to `/listings` left you with **no top nav at all, for the rest of the session** — direct loads of `/listings` were fine, which is the tell. Cause: `SiteNav` decided its own visibility server-side from the `x-pathname` header. **A Server Component in the root layout does not re-render on client-side navigation**, so the first request's answer ("hide", for anyone arriving on the landing) was frozen into the layout for the whole SPA session.
+
+**Rule going forward: anything that must change on navigation has to be a client subscription, not a server read.** The decision now lives in `app/components/NavGate.tsx` — a client wrapper reading `usePathname()` that returns `null` on `/`. `SiteNav` keeps its session/tier logic and is still a Server Component passed in as `children`. `proxy.ts` is back to exactly what it was before Slice 1. **The `x-pathname` header pattern is deleted; do not reach for it.** Generalizes to any future per-route chrome: breadcrumbs, page-specific banners, conditional footers.
+
+**Browse page changes:**
+- Title is now **"Today's listings."** — sentence case per the brand guide's New Yorker heading rule. Set with a real typographic apostrophe (’); at 52px in Instrument Serif the straight one reads like a text field. **The rest of the site still uses straight `&apos;` everywhere — a smart-quotes sweep is worth a later slice.**
+- **Sticky category rail** (In Common With's All Products pattern) in the 220px column the section grammar already reserved. Vertical category list; active item ink with a leading 4px park dot, and **the dot stays in the layout when inactive (transparent) so labels never shift sideways**. Horizontal filter row removed on desktop.
+- Below 860px the rail hides and the horizontal row returns, swipeable rather than wrapping, scrollbar suppressed via the new `.mh-no-scrollbar` utility.
+
+**Two CSS gotchas worth remembering:**
+1. **`min-w-0` on grid content columns.** A grid track defaults to `min-width: auto`, so the `whitespace-nowrap` filter row refused to shrink and pushed the whole page wider than the viewport on a phone. Any nowrap or scrolling child inside a grid/flex track needs `min-w-0` on the track.
+2. **Sticky must sit on the CHILD of a stretched grid item.** Grid items stretch to the row height by default, so `position: sticky` on the `<aside>` itself does nothing — it is already as tall as the scrolling content. The aside stretches; its inner div sticks.
+
+---
+
+## 2026-07-20 · ICW redesign Slice 1 SHIPPED — dark landing + light browse live on prod
+
+**Done, live on prod** (commits `b998215` foundation, `10412d7` landing, `8a5bda3` browse). Styling and copy only — no route, data-layer, auth, or gating changes. Built against `Manhattanite_Mockup_v8_Dark-Outside-Light-Inside.html` as the contract.
+
+**What shipped:**
+- **Design foundation.** `globals.css` gains the section grammar (`.mh-rule` hairline + `.mh-section-grid` 220px label column + `.mh-label`), `.mh-gutter` (40px desktop / 22px mobile, full-bleed — the old `max-w-5xl` centered container is gone from these pages), `.mh-card-grid`, and `.mh-dark`, which flips every nested hairline from ink/16% to bone/16% so one set of utilities serves both surfaces. New `--color-cream` (#E9E2D3) token.
+- **Two-action system.** `BoxButton` (the only boxed element in the system — that scarcity is what makes it read as "the action") and `ArrowLink`. Both take a `surface` prop rather than inferring from a container class.
+- **`ListingCard`** — the flagship object, light + dark variants. Kicker row (place · EXAMPLE tag · posted date, hairline under), 4:3 image with a 1.025 hover scale, serif title + tabular price, 2-line description, byline, arrow link.
+- **`SiteFooter`** — editorial footer, both surfaces.
+- **Landing** rebuilt dark: 92vh hero photograph with a scrim that closes into park green, overlaid nav, serif statement, BoxButton + ArrowLink, "On the network" 2×2 of real listings, membership statement + email row, dark footer.
+- **Browse** rebuilt light: label-left page head, two-column card grid (56px column / 72px row gap) replacing the single-column giant-image feed.
+
+**KEY LESSON — the global nav vs. a page that brings its own.** `SiteNav` is mounted in the root layout, so it rendered on top of the landing's hero nav and had to stand down on `/`. **The first attempt did this server-side via an `x-pathname` header from `proxy.ts` and it was WRONG — see the 2026-07-20 (later) entry above for the bug and the fix.** Correct answer: a client wrapper (`NavGate`) reading `usePathname()`. The alternative considered and rejected was moving all 15 route folders into a route group so the landing could opt out of the nav layout — same URLs, far bigger diff.
+
+**Judgment call worth knowing about:** the footer's Membership column is chosen by viewer **tier** (guest / account / member), not by light-vs-dark surface. Keying it to the surface would have shown a logged-out guest on `/listings` links to "Post a listing" and "My listings" — advertising doors they can't open, which is exactly what the trust model says not to do.
+
+**Deviations from the mockup (all deliberate):**
+- Footer "New this week" and "About" dropped — no such routes exist, and this slice doesn't add any. Browse column is All listings / Apartments / Furniture.
+- Hero nav's "Membership" link hides under 560px (three links + wordmark don't fit on a phone; the hero's own Apply button is the same destination).
+- Footer email is now `hello@manhattanite.com` per the mockup — **the old footer said `info@`. Confirm hello@ actually receives mail.**
+- The membership email field is a plain GET form to `/signup`; `/signup` doesn't read the `?email=` param yet, so the address isn't prefilled. Wire the prefill in Slice 2 when auth screens get their pass.
+
+**Hero image:** taken from the approved mockup, saved to `public/hero-brownstone.jpg`. 1400×789 — fine at 1x, soft on a large retina display. Carries a `TODO(phase-4): replace hero photo` comment; wants a licensed 2400px+ original.
+
+**Not verified (couldn't):** logged-in landing redirect and the member view of `/listings` — logging in needs George's password, which Claude won't enter. Both code paths are untouched by this slice, but worth a 30-second eyeball.
+
+**Next:** Slice 2 — listing detail (light, anchor rail) + auth/apply (dark). Slice 3 — forms/profile/mine (light) + emails.
+
+---
+
+## 2026-07-02 · Spam protection SHIPPED end-to-end (Turnstile live on all auth pages) + spam queue cleared
+
+**Done, live on prod.** The Turnstile-only spam protection is fully in place and the spam flood is cleared. Cowork co-piloted every dashboard step via the browser.
+
+**What shipped / was configured:**
+- **Cloudflare Turnstile widget** created for manhattanite.com (Managed mode). Site key in Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (non-sensitive); secret key pasted into Supabase.
+- **Supabase → Auth → Attack Protection → CAPTCHA = ON, provider Turnstile.** This enforces a captcha token on every auth-initiating call.
+- **Turnstile widget on signup, login, AND reset-request** pages (`app/components/Turnstile.tsx` reused; commit `925d108` added login + reset-request; signup was the earlier slice). Honeypot + dwell-time silent-drop on the apply form. reset-password left alone (updateUser/getSession are not captcha-gated).
+- **Spam queue cleared:** dozens of bot applications (gibberish names/occupations, dotted-Gmail throwaway emails, dated Jun 27–30) removed via `delete from auth.users where id in (select account_id from applications where status='pending')` in the Supabase SQL editor (cascades accounts+applications; founder/members are 'approved' so untouched). Throwaway signup-test accounts deleted via Supabase → Auth → Users.
+
+**KEY LESSON (worth remembering): Supabase CAPTCHA protection guards EVERY auth endpoint at once** — signUp, signInWithPassword, resetPasswordForEmail (and signInWithOtp) — not just signup. When we first enabled it, login broke with "captcha protection: request disallowed (no captcha_token found)" because the widget was only on /signup. Fix = put the Turnstile widget on every page that starts a session. **Any future auth page (magic-link, new OTP flow, etc.) must include the widget + pass `options.captchaToken`, or that endpoint will 400.** updateUser/verifyOtp are NOT captcha-gated.
+
+**Debugging notes for next time:** (1) A one-character site-key typo (capital `O` read as `0` off a screenshot) caused Cloudflare **error 400020** ("invalid sitekey") — the widget script loads but never issues a token, so the submit button stays disabled. Always copy-paste keys via the dashboard's "Click to copy", never transcribe from an image. (2) A wrong **secret** (in Supabase) shows as the widget saying "Success!" client-side but the submit failing with "Couldn't verify you're human" — that's a server-side token-validation failure = secret mismatch. (3) Cloudflare's dashboard would not load in the automated browser tab (stuck on the loader) — George did the Cloudflare steps in his own tab; Vercel and the live site drove fine.
+
+**Prompts/plans produced:** `outputs/Manhattanite_Spam-Protection_Build-Plan_v1.md`, `..._Claude-Code-Prompt_v1.md`, `Manhattanite_Turnstile-Login-Reset_Claude-Code-Prompt_v1.md`.
+
+**Still open (unrelated, parked since 16 June):** run migrations `0024` (profile connections) + `0025` (sponsorship requests) in the Supabase SQL editor, and have Claude Code commit + push the uncommitted UX/landing/connections/sponsorship-request batch. Separate from this spam work.
+
+**UPDATE 2026-07-02 — the June slice was already shipped; the "parked" note above was STALE.** Checked git: `origin/main == main` (no unpushed commits), no app-code uncommitted — the connections/sponsorship frontend was committed + pushed in a prior session. Ran the verify query in prod: all four functions exist (`get_my_connections`, `request_sponsorship`, `get_sponsorship_request`, `respond_to_sponsorship_request`) and `sponsorship_requests` already exists (0025 re-run errored 42P07 "already exists"). **Both 0024 and 0025 are applied; the June features are live.** Nothing to do. Also produced `outputs/Manhattanite_Build-Remaining_Checklist_v1.md` — the current remaining-work punch list (launch-blockers are legal: entity formation + counsel review of T&P/fair-housing).
+
+---
+
+## 2026-06-30 (later) · Spam-protection frontend BUILT + pushed (Turnstile + honeypot) — awaiting dashboard setup
+
+**Claude Code built + pushed the Turnstile-only slice** (two clean commits, only the 4 intended files; the parked 0024/0025 working-tree changes left untouched). Vercel deploying.
+
+**What shipped (code):**
+- **Turnstile CAPTCHA on signup** — new `app/components/Turnstile.tsx` (loads the Cloudflare script once, light-themed widget, hands a token to the parent, resets on failure since tokens are single-use). `app/signup/page.tsx` gates the "Create an account" button until a token exists and passes `options: { captchaToken }` into `signUp`; Supabase verifies server-side against the secret key (which stays in the dashboard, never the repo). Friendly "couldn't verify you're human" error branch; existing success redirect to `/listings` unchanged.
+- **Honeypot + dwell-time on the apply form** — `ApplicationForm.tsx` gains a hidden off-screen `company` field (position:absolute, NOT display:none, + aria-hidden/tabIndex-1/autoComplete off) and a `form_loaded_at` mount timestamp. `lib/applications/submit.ts` silently drops (redirect to `/apply`, identical to a real success) if the honeypot is filled OR the submit lands <2.5s after load — before any DB write or email. Missing timestamp does NOT false-drop a real user.
+- **No migration, no RLS change, no email-confirmation change.** `.env.local` has `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = Cloudflare's "always passes" TEST key for now.
+- Verified: tsc clean, eslint clean, `next build` green; all spam-guard paths reasoned through.
+
+**BLOCKER / next (George's dashboard steps — order matters):** frontend is pushed first ON PURPOSE — while Supabase CAPTCHA is OFF, the sent token is ignored and signups keep working. Once the Vercel deploy is live: (1) **Cloudflare → Turnstile** create the widget for manhattanite.com → get site + secret keys; (2) **Vercel** set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to the REAL site key → redeploy; (3) **Supabase → Auth → Bot/Attack Protection → Turnstile → paste SECRET key → enable**; (4) live signup test (Gmail plus-alias). DO NOT enable the Supabase setting before the deploy is live or all signups fail. **Then** clear the existing spam from `/admin/applications` (protect first, clean second). Cowork to co-pilot the dashboard steps via Chrome. Prompt + plan: `outputs/Manhattanite_Spam-Protection_Claude-Code-Prompt_v1.md` + `..._Build-Plan_v1.md`.
+
+---
+
+## 2026-06-30 · Returned from break to spam-flooded application queue — spam-protection SPECCED (Turnstile-only)
+
+**Context:** George back after 10 days off; the membership-application queue is full of spam. Oriented from memory, then diagnosed the cause by reading the live code (`signup/page.tsx`, `apply/page.tsx`, `submit.ts`, `ApplicationForm.tsx`).
+
+**Root cause (three open doors):** (1) **email confirmation is OFF in Supabase Auth** — `signUp` returns a session instantly, so a bot with a fake email becomes a Tier-1 account and applies; (2) **no CAPTCHA** anywhere; (3) no honeypot / rate-limit / dwell-time. Mitigating factor already in place: one-pending-application-per-account index (so each fake account = one spam row) + the approval moat (no bot became a member).
+
+**Decision (George): Turnstile-only.** Ship Cloudflare Turnstile CAPTCHA on signup + a free honeypot on the apply form; **defer email confirmation** (keep instant signup; revisit if spam still trickles). **No DB migration** — auth-settings + frontend only.
+
+**Build plan written:** `outputs/Manhattanite_Spam-Protection_Build-Plan_v1.md` — four layers, file-by-file code changes, the 5 dashboard steps George owns (Cloudflare Turnstile widget → Supabase native CAPTCHA setting → Vercel `NEXT_PUBLIC_TURNSTILE_SITE_KEY` env var), and a "protect first, then clear the queue" cleanup order.
+
+**Open / next:** (1) George does the Turnstile dashboard setup (Cowork can co-pilot via Chrome) + Claude Code builds the frontend (Turnstile widget on signup, honeypot on apply form, silent-drop in `submit.ts`); (2) then clear the existing spam from `/admin/applications`; (3) SEPARATELY, the parked 16-June work still needs shipping — run migrations `0024` (profile connections) + `0025` (sponsorship requests) in the SQL editor, and Claude Code to commit + push the uncommitted UX/landing/connections/sponsorship-request batch.
+
+---
+
 ## 2026-06-16 (later still) · Sponsorship-request flow built + landing "two ways in" simplified
 
 **Landing simplified (George's call).** Killed the "Two ways in" Account/Member two-column section — it framed membership as a velvet rope before signup. Replaced with a single account-first closing CTA ("Start with an account"). Also rewrote the "How it works" body plainer/less clever (dropped "genuinely" + the em-dash clause) and bumped the privacy subline from 13px → 16px (George said it looked too small). All in `app/page.tsx`.

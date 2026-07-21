@@ -18,6 +18,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import Wordmark from "@/app/components/Wordmark";
 
 export default function AuthShell({
   kicker,
@@ -42,8 +43,8 @@ export default function AuthShell({
     <main className="mh-dark min-h-screen flex flex-col">
       {/* Wordmark — the way back "outside". Matches the landing's mark. */}
       <div className="mh-gutter py-[34px] text-center">
-        <Link href="/" className="font-serif text-[28px] leading-none text-bone">
-          Manhattan<span className="italic">ite</span>
+        <Link href="/" className="text-bone">
+          <Wordmark className="text-[28px] leading-none" />
         </Link>
       </div>
 

@@ -16,6 +16,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
+import Wordmark from "@/app/components/Wordmark";
 
 type FooterLink = { label: string; href: string };
 
@@ -97,9 +98,7 @@ export default async function SiteFooter({
     <footer className={`mh-gutter mt-[120px] pb-[46px] ${s.body}`}>
       <div className="mh-rule pt-[34px] grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 max-[860px]:grid-cols-1">
         <div>
-          <div className={`font-serif text-[22px] ${s.wordmark}`}>
-            Manhattan<span className="italic">ite</span>
-          </div>
+          <Wordmark as="div" className={`text-[22px] ${s.wordmark}`} />
           <div className="text-[14px] leading-[1.7] mt-[22px]">
             <a
               href="mailto:info@manhattanite.com"

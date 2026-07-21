@@ -32,6 +32,7 @@ import ListingCard from "@/app/components/ListingCard";
 import BoxButton from "@/app/components/BoxButton";
 import ArrowLink from "@/app/components/ArrowLink";
 import SiteFooter from "@/app/components/SiteFooter";
+import Wordmark from "@/app/components/Wordmark";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -118,9 +119,7 @@ export default async function Home() {
                 aria-hidden="true"
               />
               <nav className="relative flex items-baseline justify-between gap-6">
-                <span className="font-serif text-[24px] text-bone">
-                  Manhattan<span className="italic">ite</span>
-                </span>
+                <Wordmark className="text-[24px] text-bone" />
                 <div className="flex gap-5 sm:gap-[34px]">
                   <Link href="/listings" className={HERO_LINK}>
                     Listings

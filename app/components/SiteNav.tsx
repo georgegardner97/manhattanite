@@ -27,6 +27,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AccountMenu from "@/app/components/AccountMenu";
+import Wordmark from "@/app/components/Wordmark";
 
 type Viewer = "guest" | "account" | "member";
 
@@ -84,9 +85,9 @@ export default async function SiteNav() {
             drop their centered one. Clicking it takes you back "outside". */}
         <Link
           href="/"
-          className="font-serif text-[24px] leading-none text-ink transition-colors duration-[400ms] group-hover/nav:text-bone"
+          className="text-ink transition-colors duration-[400ms] group-hover/nav:text-bone"
         >
-          Manhattan<span className="italic">ite</span>
+          <Wordmark className="text-[24px] leading-none" />
         </Link>
 
         <div className="flex items-center gap-6 sm:gap-[34px] flex-wrap justify-end">

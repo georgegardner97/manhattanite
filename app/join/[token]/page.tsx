@@ -14,6 +14,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import JoinForm from "@/app/components/JoinForm";
 import AcceptInvitePanel from "@/app/components/AcceptInvitePanel";
+import Wordmark from "@/app/components/Wordmark";
 
 export const dynamic = "force-dynamic";
 
@@ -40,11 +41,8 @@ function Shell({
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
-          <Link
-            href="/"
-            className="font-serif font-extralight text-5xl md:text-6xl tracking-tighter leading-none text-ink"
-          >
-            Manhattan<span className="italic">ite</span>
+          <Link href="/" className="text-ink">
+            <Wordmark className="font-extralight text-5xl md:text-6xl tracking-tighter leading-none" />
           </Link>
         </div>
         <div className="text-center mb-12">
