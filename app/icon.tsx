@@ -1,11 +1,10 @@
 // app/icon.tsx — the browser-tab favicon, generated at build time.
 //
 // The mark: a serif "M" (Instrument Serif roman, the wordmark's face), bone
-// #F5F0E8 on a park #13241B tile with subtly rounded corners — paired with a
-// round dot to its right, vertically centered ON THE SAME LEVEL as the M (its
-// midline, not the baseline). The dot is ~14% of the tile height — split between
-// the small satellite and the big baseline dot that came before. The M stays
-// close to center, shifted just a few percent left to make room for it.
+// #F5F0E8 on a park #13241B tile with subtly rounded corners — followed by a
+// period sitting on the M's BASELINE, like a normal period after the letter,
+// just slightly larger than a natural one. Reads as "M." The M stays close to
+// center, shifted just a few percent left to make room for the period.
 //
 // The dot is DRAWN (a border-radius circle), not the font's period glyph: it
 // wants to be a deliberate round mark at a fixed size, and drawing it keeps it a
@@ -47,15 +46,13 @@ export default async function Icon({ id }: { id: Promise<string> }) {
   // Shift the M a few percent left to make room for the dot — still close to
   // center, nothing like the old pair-centered offset.
   const mShiftLeft = size * 0.04;
-  // A round dot, ~14% of the tile (18% at 16px so it survives). Sits to the
-  // right of the M and vertically centered on the M's level (its midline), not
-  // down on the baseline.
-  const dot = size * (isSmall ? 0.18 : 0.14);
-  const dotRight = size * 0.11;
-  // top:50% puts the dot's top edge at the tile's vertical center; this margin
-  // pulls it up by half its height and down by the M's nudge, so the dot's
-  // center lands on the M's optical center.
-  const dotMarginTop = mNudgeDown - dot / 2;
+  // A normal-period-sized dot, ~9% of the tile (13% at 16px so it survives) —
+  // slightly larger than a natural period. Sits to the right of the M, resting
+  // on the M's baseline.
+  const dot = size * (isSmall ? 0.13 : 0.09);
+  const dotRight = size * 0.15;
+  // Rest the dot on the M's baseline (its bottom ≈ the M's foot line).
+  const dotBottom = size * 0.2;
 
   return new ImageResponse(
     (
@@ -86,8 +83,7 @@ export default async function Icon({ id }: { id: Promise<string> }) {
           style={{
             position: "absolute",
             right: dotRight,
-            top: "50%",
-            marginTop: dotMarginTop,
+            bottom: dotBottom,
             width: dot,
             height: dot,
             borderRadius: dot / 2,
