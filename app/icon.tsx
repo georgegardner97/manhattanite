@@ -2,8 +2,9 @@
 //
 // The mark: a serif "M" (Instrument Serif roman, the wordmark's face), bone
 // #F5F0E8 on a park #13241B tile with subtly rounded corners — paired with a
-// large, confident round dot (the "J." favicon register) sitting on the M's
-// baseline in the lower right. The dot is ~20% of the tile height; the M stays
+// round dot to its right, vertically centered ON THE SAME LEVEL as the M (its
+// midline, not the baseline). The dot is ~14% of the tile height — split between
+// the small satellite and the big baseline dot that came before. The M stays
 // close to center, shifted just a few percent left to make room for it.
 //
 // The dot is DRAWN (a border-radius circle), not the font's period glyph: it
@@ -46,11 +47,15 @@ export default async function Icon({ id }: { id: Promise<string> }) {
   // Shift the M a few percent left to make room for the dot — still close to
   // center, nothing like the old pair-centered offset.
   const mShiftLeft = size * 0.04;
-  // A confident round dot, ~20% of the tile (22% at 16px so it survives).
-  const dot = size * (isSmall ? 0.22 : 0.2);
-  const dotRight = size * 0.1;
-  // Sit the dot ON the M's baseline (bottom of the dot ≈ the M's foot line).
-  const dotBottom = size * 0.21;
+  // A round dot, ~14% of the tile (18% at 16px so it survives). Sits to the
+  // right of the M and vertically centered on the M's level (its midline), not
+  // down on the baseline.
+  const dot = size * (isSmall ? 0.18 : 0.14);
+  const dotRight = size * 0.11;
+  // top:50% puts the dot's top edge at the tile's vertical center; this margin
+  // pulls it up by half its height and down by the M's nudge, so the dot's
+  // center lands on the M's optical center.
+  const dotMarginTop = mNudgeDown - dot / 2;
 
   return new ImageResponse(
     (
@@ -81,7 +86,8 @@ export default async function Icon({ id }: { id: Promise<string> }) {
           style={{
             position: "absolute",
             right: dotRight,
-            bottom: dotBottom,
+            top: "50%",
+            marginTop: dotMarginTop,
             width: dot,
             height: dot,
             borderRadius: dot / 2,
