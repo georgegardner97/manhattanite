@@ -6,6 +6,14 @@ Newest entries at the top.
 
 ---
 
+## 2026-07-22 · Mobile polish — arrows retired, membership copy, form + footer
+
+**Four small phone-view fixes from George's screenshot review, applied and live in the repo (not yet committed to git).** (1) The "→" glyph is retired from forward links sitewide: ArrowLink now renders a plain 14px link with a persistent hairline underline (45–50% strength at rest, full color on hover) — chosen from three live mockup options (small-caps, underline-only, caps-color); George picked underline-only. Back links keep "←" (direction, not decoration). The four hand-rolled "&rarr;" labels on the join/sponsor-request token pages lost their arrows too. (2) Membership headline is now "A marketplace that knows who it's dealing with." (utility-first framing, per strategy) replacing "Manhattan already trusts Manhattan. We just wrote it down." (3) The landing email form: field is now required + autoComplete/inputMode email, focus border works on tap (focus, not focus-visible), and the Apply button goes full-width when the row stacks under 520px. Confirmed behavior: the address submits as a GET to /signup and prefills the signup form. (4) The mobile footer's three link columns now sit side by side in one row (wordmark block spans above them) instead of stacking — the footer was a full screen of scroll on a phone.
+
+**Verified:** `tsc --noEmit` and `eslint` clean on all five touched files. Pending George: real-device look at the new footer row and underlined links, then git commit + deploy.
+
+---
+
 ## 2026-07-21 · Mobile pass — the emulated half, audited and fixed
 
 **Every reachable route swept at iPhone dimensions (390×844 DPR 3, spot-checked at 375×667) and the iOS trap list fixed within the existing system.** The big four: inputs now hit iOS's 16px threshold on phones so focusing a field no longer zooms the whole page; the landing hero measures itself in `svh` so it fills the visible screen instead of jumping with Safari's toolbar; the page opts into `viewport-fit=cover` with safe-area padding on the gutter, hero chrome and footer, so nothing sits under the notch or home indicator; and every small text link grew an invisible 44px tap target (coarse pointers only — desktop is untouched). Also: the three hand-written hover rules are now gated to hover-capable devices (no more stuck underlines after a tap — Tailwind's own hover utilities were already gated), and the browse category row scrolls the active chip into view on load (on "Everything else" it used to load fully offscreen).

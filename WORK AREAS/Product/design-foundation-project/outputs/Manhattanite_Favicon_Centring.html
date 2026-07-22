@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Favicon centring: three ways</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  body{font-family:Inter,system-ui,sans-serif;background:#F5F0E8;color:#0F0E0C;padding:56px 40px;-webkit-font-smoothing:antialiased}
+  h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:34px;margin-bottom:6px}
+  p.lede{color:#5A5A5A;max-width:62ch;font-size:14px;margin-bottom:44px}
+  .opt{margin-bottom:52px;border-top:1px solid rgba(15,14,12,.16);padding-top:16px}
+  .opt .cap{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:500;color:#5A5A5A;margin-bottom:4px}
+  .opt .name{font-family:'Instrument Serif',Georgia,serif;font-size:20px;margin-bottom:16px}
+  .row{display:flex;gap:44px;align-items:flex-start;flex-wrap:wrap}
+  .fav{position:relative;background:#13241B;color:#F5F0E8;font-family:'Instrument Serif',Georgia,serif;border-radius:6px}
+  .s64{width:64px;height:64px;font-size:40px}
+  .s32{width:32px;height:32px;font-size:20px}
+  .s16{width:16px;height:16px;font-size:10px;border-radius:3px}
+  .stack{display:flex;gap:18px;align-items:flex-end}
+  /* pair-centred: M shifted left (current, wrong) */
+  .pc{display:flex;align-items:center;justify-content:center}
+  .pc::after{content:"."}
+  /* M-central: M dead centre, dot hangs right */
+  .mc .m{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .mc .dot{position:absolute;bottom:14%;left:74%}
+  /* uncased */
+  .un{background:transparent;color:#13241B;border-radius:0}
+  .un.dark-c{color:#13241B}
+  .tabbar{border-radius:10px;overflow:hidden;max-width:560px;margin-top:14px}
+  .tabs{display:flex;gap:6px;padding:8px 10px 0}
+  .tab{display:flex;align-items:center;gap:8px;border-radius:8px 8px 0 0;padding:7px 14px;font-size:12px;max-width:250px;white-space:nowrap;overflow:hidden}
+  .light .tabs{background:#DEE1E6}.light .tab{background:#fff;color:#333}
+  .dark .tabs{background:#202124}.dark .tab{background:#35363A;color:#ddd}
+  .warn{font-size:12.5px;color:#8C2D2D;margin-top:10px;max-width:56ch}
+  .note{font-size:12.5px;color:#5A5A5A;margin-top:10px;max-width:56ch}
+</style></head><body>
+<h1>Centring the M.</h1>
+<p class="lede">Three treatments of the favicon, with the tab tests that matter. The M is the mark; the period is a satellite.</p>
+
+<div class="opt">
+  <div class="cap">Current (shipped)</div>
+  <div class="name">Pair centred — the M drifts left</div>
+  <div class="stack">
+    <div class="fav s64 pc">M</div>
+    <div class="fav s32 pc">M</div>
+    <div class="fav s16 pc">M</div>
+  </div>
+  <p class="note">What you screenshotted. "M." as a unit is centred, so the M itself sits left of the tile's middle — reads as off-centre.</p>
+</div>
+
+<div class="opt">
+  <div class="cap">Option 1</div>
+  <div class="name">M dead centre, the period hangs</div>
+  <div class="stack">
+    <div class="fav s64"><span class="m mc" style="position:static"><span class="m" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">M</span><span style="position:absolute;bottom:12%;right:12%">.</span></span></div>
+    <div class="fav s32" style="position:relative"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">M</span><span style="position:absolute;bottom:8%;right:11%;font-size:20px">.</span></div>
+    <div class="fav s16" style="position:relative"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">M</span><span style="position:absolute;bottom:4%;right:9%;font-size:10px">.</span></div>
+  </div>
+  <div class="tabbar light"><div class="tabs">
+    <div class="tab"><div class="fav s16" style="position:relative"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">M</span><span style="position:absolute;bottom:4%;right:9%">.</span></div> Manhattanite — Today&rsquo;s lis…</div>
+  </div></div>
+  <div class="tabbar dark"><div class="tabs">
+    <div class="tab"><div class="fav s16" style="position:relative"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">M</span><span style="position:absolute;bottom:4%;right:9%">.</span></div> Manhattanite — Today&rsquo;s lis…</div>
+  </div></div>
+  <p class="note">The M owns the tile; the period tucks into the corner like a signature&rsquo;s flourish. Works identically on light and dark chrome.</p>
+</div>
+
+<div class="opt">
+  <div class="cap">Option 2 — your uncased idea</div>
+  <div class="name">No tile — park-green "M." on transparent</div>
+  <div class="stack">
+    <div class="fav s64 un pc" style="display:flex;align-items:center;justify-content:center">M</div>
+    <div class="fav s32 un pc" style="display:flex;align-items:center;justify-content:center">M</div>
+    <div class="fav s16 un pc" style="display:flex;align-items:center;justify-content:center">M</div>
+  </div>
+  <div class="tabbar light"><div class="tabs">
+    <div class="tab"><div class="fav s16 un pc" style="display:flex;align-items:center;justify-content:center">M</div> Manhattanite — Today&rsquo;s lis…</div>
+  </div></div>
+  <div class="tabbar dark"><div class="tabs">
+    <div class="tab"><div class="fav s16 un pc" style="display:flex;align-items:center;justify-content:center">M</div> Manhattanite — Today&rsquo;s lis…</div>
+  </div></div>
+  <p class="warn">The trap, visible above: on dark browser chrome the park-green glyphs nearly vanish. Fixable — an SVG favicon can carry both versions and switch automatically (park glyphs on light chrome, bone glyphs on dark). Chrome and Firefox respect that; Safari uses its own monochrome mask icon anyway.</p>
+</div>
+
+</body></html>
