@@ -209,7 +209,7 @@ export default async function Home() {
             <p className="mh-label text-bone">Membership</p>
             <div>
               <h2 className="font-serif font-normal text-[38px] max-[860px]:text-[30px] leading-[1.18] max-w-[20ch] text-bone mb-5">
-                Manhattan already trusts Manhattan. We just wrote it down.
+                A marketplace that knows who it&rsquo;s dealing with.
               </h2>
               <p className="text-bone/60 max-w-[52ch] mb-[34px]">
                 Membership is by application and approval. Every member is
@@ -219,7 +219,11 @@ export default async function Home() {
 
               {/* The boxed email row. A plain GET form to /signup — creating an
                   account is still the first step of applying, and this slice
-                  adds no backend. */}
+                  adds no backend. The address typed here arrives at /signup in
+                  the query string and prefills the form there, so this reads
+                  as the first step of one action, not a field that threw the
+                  answer away. `required` + type=email let the browser catch an
+                  empty or malformed address before navigating. */}
               <form
                 action="/signup"
                 method="get"
@@ -232,12 +236,21 @@ export default async function Home() {
                   id="apply-email"
                   name="email"
                   type="email"
+                  required
+                  autoComplete="email"
+                  inputMode="email"
                   placeholder="you@example.com"
                   // 16px on phones or iOS zooms the page on focus — same
                   // threshold as .mh-input's mobile bump in globals.css.
-                  className="flex-1 min-w-0 border border-bone/75 border-r-0 max-[520px]:border-r bg-transparent px-4 py-[14px] text-[14px] max-[860px]:text-[16px] text-bone outline-none placeholder:text-bone/45 focus-visible:border-bone"
+                  className="flex-1 min-w-0 border border-bone/75 border-r-0 max-[520px]:border-r bg-transparent px-4 py-[14px] text-[14px] max-[860px]:text-[16px] text-bone outline-none placeholder:text-bone/45 focus:border-bone transition-colors"
                 />
-                <BoxButton surface="dark" type="submit" className="py-[14px]">
+                {/* Full-width when the row stacks, so the button doesn't float
+                    as a small island under a full-width field. */}
+                <BoxButton
+                  surface="dark"
+                  type="submit"
+                  className="py-[14px] max-[520px]:w-full max-[520px]:text-center"
+                >
                   Apply
                 </BoxButton>
               </form>

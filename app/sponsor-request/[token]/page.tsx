@@ -77,7 +77,7 @@ export default async function SponsorRequestPage({
                 href="/listings"
                 className="mh-link text-[11px] tracking-[0.22em] uppercase text-slate hover:text-ink"
               >
-                Browse listings &rarr;
+                Browse listings
               </Link>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default async function SponsorRequestPage({
               href="/login"
               className="mh-link inline-block text-[14px] tracking-[0.22em] uppercase text-ink"
             >
-              Sign in &rarr;
+              Sign in
             </Link>
           </div>
         ) : !isSponsor ? (

@@ -101,8 +101,13 @@ export default async function SiteFooter({
     <footer
       className={`mh-gutter mt-[120px] pb-[calc(46px+env(safe-area-inset-bottom))] ${s.body}`}
     >
-      <div className="mh-rule pt-[34px] grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 max-[860px]:grid-cols-1">
-        <div>
+      {/* Under 860px the three link columns sit side by side in one row (the
+          wordmark/contact block spans the full width above them) instead of
+          stacking — stacked, the footer alone was a full screen of scroll on a
+          phone. The lists are short and the labels narrow; the longest
+          ("Apply for membership") wraps to two lines and that's fine. */}
+      <div className="mh-rule pt-[34px] grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 max-[860px]:grid-cols-3 max-[860px]:gap-x-4 max-[860px]:gap-y-9">
+        <div className="max-[860px]:col-span-3">
           <Wordmark as="div" className={`text-[22px] ${s.wordmark}`} />
           <div className="text-[14px] leading-[1.7] mt-[22px]">
             <a
@@ -149,7 +154,7 @@ function FooterColumn({
       </span>
       <ul>
         {links.map((link) => (
-          <li key={link.label} className="mb-[9px] text-[14px]">
+          <li key={link.label} className="mb-[9px] text-[14px] max-[860px]:text-[13px]">
             <FooterLinkItem href={link.href}>{link.label}</FooterLinkItem>
           </li>
         ))}

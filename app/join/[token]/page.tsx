@@ -93,7 +93,7 @@ export default async function JoinPage({
               href="/"
               className="mh-link text-[13px] tracking-[0.22em] uppercase text-ink"
             >
-              Manhattanite &rarr;
+              Manhattanite
             </Link>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default async function JoinPage({
               href="/listings"
               className="mh-link text-[13px] tracking-[0.22em] uppercase text-ink"
             >
-              Browse the network &rarr;
+              Browse the network
             </Link>
           </div>
         </Shell>
