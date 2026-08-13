@@ -6,6 +6,24 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-13 · Week 12 hardening EXECUTED — RLS audit green, observability gaps found
+
+**The must-hit is DONE in one session, and it passed.** Ran a behavioral RLS/trust-gate audit against prod (new harness `scripts/audit-rls.ts`, 59 cells) attacking the **API not the UI** — every table across anon / Tier-1 / member, incl. all three privilege-escalation columns, cross-member tamper, storage, and the moderation wall. **59/59 matched expectation, zero unexpected ALLOWs.** The trust layer is launch-ready. Full matrix: `mvp-build-project/outputs/Manhattanite_RLS-Audit_v2.md`. **Friday is genuinely overflow.**
+
+**Two landmines found and handled mid-run:**
+1. **`george.gardner480+` is NOT safe to bulk-purge** — 4 permanent seed members (Anna/Max/Lila/Sam) live under it and own 10 of 20 published listings. The brief's "delete synthetic accounts" against the bare prefix would have wiped half the live catalog. Harness uses a unique `+rlsaudit` sub-prefix and asserts seed-member + published-listing counts unchanged. **Rule for all future prod harnesses: own sub-prefix, never the bare one.**
+2. **`signInWithPassword` is now Cloudflare-Turnstile-gated at the Auth API** (spam protection turned on since June). Every June harness (multi-sponsor, edit-archive, admin-console, listing-moderation) will now fail at sign-in. Fix: mint sessions via `admin.generateLink` → `verifyOtp` (no captcha, real authenticated JWT). The audit harness uses this; the others need the same one-line change.
+
+**Part 2 — the real output beyond RLS (two launch-relevant gaps):**
+- **Sentry is not wired at all** (no SDK, no script, no events) → no server-error observability in prod. Not verifiable as the brief assumed; it isn't installed. Decision needed: ship pre-launch?
+- **Plausible / any analytics is not deployed** (no script on any route) → no product analytics. Bonus: `/privacy` copy claims "privacy-respecting analytics" that don't exist — soften or ship.
+- **Resend:** DNS auth is healthy (DKIM present, `send.` delegated to SES, DMARC `p=reject` with relaxed alignment → Resend's DKIM aligns and passes). Code path intact (`sendListingContact`: Reply-To=sender, neighborhood renders). The one open item = the live inbox-vs-spam eyeball, which needs a logged-in prod member session (Turnstile-blocked for automation) — a 2-min manual check for George.
+- **Extras:** favicon renders on prod (closes the 21-Jul Phase-4A eyeball); no console errors on landing + browse.
+
+**Cleanup verified:** 0 synthetic rows, seed members intact (4/4), published listings intact (20/20), founder row byte-identical (`is_member=true`, `sponsor_id` null, `role=admin`). Code + docs committed.
+
+---
+
 ## 2026-08-13 · Strategy session — mind dump organized; Week 12 hardening runbook delivered; Laermer corrected
 
 **George's mind dump + Cole's voice notes + coaching output organized into `Growth/founding-member-acquisition-project/outputs/Manhattanite_Strategy-Session_2026-08-13.md`.** Logged as effectively decided: sublets are not the entry wedge (saturated); grassroots seeding per Cole (friends listing as a favor; invitation language first; taste/POV is the product); GdC-strictness doubled down as an advertised feature; design verdict "too AI" → professional designer to be engaged (serif/accent decisions FROZEN; the Aug-1 paperwork package becomes the designer brief); George wants a professional strategic partnership with Cole (pilot-scope proposal shape logged). Open threads: the audience question (plutocratic consumer vs young professional — resolve via 5 friend interviews + offering-reaction data, post-Newport) and whether the coaching three-pillar framing (locals-only discounts / community services / trusted buy-sell) is positioning or a category-roadmap change (flagged as mvp-spec scope shift; listing types already technically support services since 0019). Growth math logged: 20 seed members at r≈0.5/month referral conversion reaches the 50–100 year-end target; the 3-names ritual is the engine.

@@ -4,6 +4,24 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-08-13 (Week 12 hardening) · RLS audit v2 — trust gate proven, 59/59 green
+
+The Week-12 must-hit. New behavioral harness `scripts/audit-rls.ts` attacks the API (PostgREST + Storage) directly with the anon key and synthetic user JWTs — 3 principals (anon / Tier-1 / member) + a 2nd member + a synthetic admin, 59 cells. **Every cell matched expectation; zero unexpected ALLOWs.** Doc: `outputs/Manhattanite_RLS-Audit_v2.md`.
+
+- **The wall holds at the DB, not just React.** Anon can only teaser-read published listings + mint signed image URLs; everything else denied. Tier-1 can browse, edit own safe profile columns, apply — and cannot insert listings/contacts/invites/sponsorship-requests, cannot escalate `is_member`/`role`/`sponsor_id` (0001 `protect_account_columns` trigger fires: "X is protected"), cannot call `approve_application()` (42501). Member can post-into-review, edit/take-down own, contact others, invite, see own connections — and cannot self-publish (0017 trigger blocks both the INSERT-born-published door and the UPDATE→published door with 42501), tamper with another's rows, or read the locked tables.
+- **Moderation wall verified live:** a member's pending listing is invisible to anon/Tier-1/other-member by direct id read and absent from public browse, then visible to anon immediately after admin `approve_listing`.
+- **Storage:** unsigned object URL → HTTP 400; signed URL → 200; cross-user upload/delete refused; own upload/delete work.
+
+**Two operational landmines (also in session-log):**
+1. **Never bulk-purge the bare `george.gardner480+` prefix** — the 4 seed members (own 10/20 published listings) live there. Use a run-specific sub-prefix (this harness: `+rlsaudit`) and assert seed/published counts unchanged. Same pattern as June's `+modtest`.
+2. **`signInWithPassword` is now Turnstile-gated** — June harnesses will fail at sign-in until switched to `admin.generateLink` → `verifyOtp` (what `audit-rls.ts` does).
+
+**Part 2 gaps (not RLS, but pre-launch):** Sentry not wired (no SDK/script → no error observability); Plausible/analytics not deployed (no script on any route; `/privacy` copy over-claims analytics); Resend DNS+code healthy, only the live inbox eyeball outstanding (needs a member session, Turnstile-blocked for automation). Favicon renders on prod ✓; no console errors on landing/browse ✓.
+
+Cleanup clean: 0 synthetic rows, seed 4/4, published 20/20, founder untouched. One cosmetic leftover noted (an archived "QA TEST" listing in prod — harmless, delete via service role when convenient).
+
+---
+
 ## 2026-07-21 (Design Foundation) · Wordmark locked + favicon + OG card
 
 Shipped the locked wordmark and the two brand images it never had. George approved Concept D from the round-2 wordmark mockup: **"Manhattanite."** — Instrument Serif roman, italic "ite", closed by a roman period. The period is now part of the mark everywhere the brand signs its name.
