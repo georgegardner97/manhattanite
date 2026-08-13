@@ -109,3 +109,33 @@ Per George: (1) mover card broadened beyond apartment-hunting to all marketplace
 Category: Next steps
 
 George: pick the 3 week-1 coffees, personalise + send the first messages, fill contact info in the tracker. Fine-tune pitches after first real conversations. Hard-delete the archived QA-test listing before demos.
+
+### 2026-08-01 — Saturday sweep: pitch reworked, First 1000 closed, Laermer gap flagged
+
+Category: Progress
+
+One-line pitch rework delivered (`outputs/Manhattanite_One-Line-Pitch_v1.md`): "It's Craigslist, if everyone on it was vouched for" promoted to sole default opener, "Raya meets Craigslist" retired, four listener variants + the 30-second elevator pitch (doubles as Chloe's exercise deliverable). First 1000 research closed (`outputs/First-1000_Acquisition-Notes_v1.md`) — newsletter has pivoted to AI content; distilled its classic material + Lenny Rachitsky's equivalent research into 5 applicable patterns and 3 Week-11 actions (sequence flagged names first, vouch question as ritual, pilot one building via Lavoie).
+
+### 2026-08-01 — Blocker: Laermer meeting outcome never logged
+
+Category: Blocker
+
+The Richard Laermer meeting (2026-07-21, Chrysler Building — the first founding-member conversation) has no recorded outcome: no meeting note, tracker still "Idea". Needs George's 2-minute debrief before the tracker or next-wave sequencing can move. Task added to tasks.md.
+
+### 2026-08-13 — Laermer correction: meeting postponed indefinitely
+
+Category: Progress
+
+Correction to the 2026-08-01 blocker note: the Richard Laermer meeting (booked for 2026-07-21) never happened — postponed indefinitely, per George. He stays flagged "very important" in the tracker, parked; no re-chase scheduled.
+
+### 2026-08-13 — Cole call happened; George wants a professional strategic partnership
+
+Category: Progress
+
+Cole's voice-note advice distilled (full version in `outputs/Manhattanite_Strategy-Session_2026-08-13.md` §5): semi-grassroots bottom-up seeding (friends who list as a favor — she'd list things herself), nail the invitation language first (elegant, makes the invitee feel important), and what Manhattanite sells is taste/POV — curation as the product. Working terms: retainer or per-project, explicitly no pressure. George's call: pursue a professional partnership. Proposed shape logged: scoped 4–6 week pilot (invitation language + first grassroots wave) with a review gate.
+
+### 2026-08-13 — Strategy session: sublet de-emphasis, three-pillar framing, growth math
+
+Category: Decision
+
+From George's mind dump + Strawberry.me coaching: (1) sublets/apartments are NOT the entry wedge (market saturated) — a category, not the lead; (2) new starter framing under test: locals-only discounts / community-based services / buy-sell with trusted neighbors — flagged as a scope shift vs mvp-spec, treated as positioning input until validated; (3) audience question formally open (plutocratic consumer vs young professional) — to be resolved via 5 friend interviews + offering reactions, not debate; (4) growth math logged: from 20 seed members, r≈0.5/month referral conversion hits the 50–100 year-end target — the 3-names ritual is the engine, approval throughput the deliberate brake; (5) GdC-style strictness confirmed as a feature to advertise. All organized in `outputs/Manhattanite_Strategy-Session_2026-08-13.md`.

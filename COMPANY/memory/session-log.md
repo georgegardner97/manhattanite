@@ -6,6 +6,38 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-13 · Strategy session — mind dump organized; Week 12 hardening runbook delivered; Laermer corrected
+
+**George's mind dump + Cole's voice notes + coaching output organized into `Growth/founding-member-acquisition-project/outputs/Manhattanite_Strategy-Session_2026-08-13.md`.** Logged as effectively decided: sublets are not the entry wedge (saturated); grassroots seeding per Cole (friends listing as a favor; invitation language first; taste/POV is the product); GdC-strictness doubled down as an advertised feature; design verdict "too AI" → professional designer to be engaged (serif/accent decisions FROZEN; the Aug-1 paperwork package becomes the designer brief); George wants a professional strategic partnership with Cole (pilot-scope proposal shape logged). Open threads: the audience question (plutocratic consumer vs young professional — resolve via 5 friend interviews + offering-reaction data, post-Newport) and whether the coaching three-pillar framing (locals-only discounts / community services / trusted buy-sell) is positioning or a category-roadmap change (flagged as mvp-spec scope shift; listing types already technically support services since 0019). Growth math logged: 20 seed members at r≈0.5/month referral conversion reaches the 50–100 year-end target; the 3-names ritual is the engine.
+
+**Week 12 status: behind — no commits since Jul 22; the hardening must-hit hadn't started as of this morning.** Cowork delivered a ready-to-run session prompt: `mvp-build-project/outputs/Manhattanite_Week-12-Hardening_Claude-Code-Prompt_v1.md` (full RLS attack matrix across anon/Tier-1/member incl. privilege-escalation attempts, storage checks, moderation wall; then Sentry/Plausible/Resend deliverability incl. the never-verified real contact email). Today is the anchor day; weekend make-up rule if it slips (Newport eats Week 13).
+
+**Corrections + housekeeping:** the Laermer meeting never happened — postponed indefinitely (the Aug-1 note assuming it took place was wrong; tracker parked, still flagged important). Angie's List task closed as superseded by the audience/pillar thread. Docs commit executed by Cowork (the ~20-file uncommitted pile — the July doc-wipe condition — cleared).
+
+---
+
+## 2026-08-10 · Call prep for Cole Spike (potential marketing hire)
+
+**George has a phone call with Cole Spike** — marketing, part of John Doe & Co, has worked with Zero Bond among others; a candidate for Manhattanite's marketing. Cowork produced a one-page discussion-points doc: `WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Call-Prep_Cole-Spike_v1.md`. Five areas: chicken-and-egg cold start (present the seed plan, ask her to attack it), differentiation from Listings Project / Girls Who Sublet NYC / Ohana (they curate listings, nobody curates the people on both sides), whether to lead with sublets or furniture, **George's new open question: is 25–40 the right target, or should it skew to older wealthy New Yorkers for whom trust is a dealbreaker** (GdC's French base is families; worth a strategy revisit after the call), and a script for asking her fee structure professionally (ask engagement structure first, stage-honesty second, advisory-hours fallback). Also flagged: the call doubles as a fit test — no-ads posture and first-90-days deliverables are the tells.
+
+---
+
+## 2026-08-01 · Part-time income direction chosen — music teaching project created
+
+**George chose a part-time income direction alongside Manhattanite: teaching music and creativity to children** (1:1 bass/guitar lessons + small-group songwriting labs), landed on after an ideation session that started from skills-for-hire options. Target $2,500–4,000/month at ramp; teaching hours (weekday 3:30–7pm, weekends) deliberately sit outside the Manhattanite 9–4 block.
+
+**New work area and project created: `WORK AREAS/Income/music-teaching-project/`** (brief, memory, outputs). Deliverables drafted to outputs/: listserv blurb (2 versions), one-page site copy, and an agency shortlist with week-one actions (references, apply to Hey Joe Guitar + Musication, post blurb in own circles, build the one-pager site). Parent-facing copy uses American spelling, same call as Manhattanite copy.
+
+---
+
+## 2026-07-22 · Mobile polish pushed and verified on prod
+
+**The two mobile-polish commits Cowork made earlier today (2b169b4 + 1d10c1a) are pushed and live on manhattanite.com.** Cowork's sandbox couldn't push and left stale git lock files behind; those were cleaned up (renamed `*.lock.stale.*` / `stale-index.lock.*` files, ~170 leftover `tmp_obj_*` temp files in `.git/objects/`, and a 28MB temp tarball in `.next/`) before pushing. Push accepted cleanly, no force, history untouched.
+
+**Verified on production at 390px:** the membership headline "A marketplace that knows who it's dealing with." renders; the footer's BROWSE / MEMBERSHIP / INFO columns share one row (wordmark block spanning above); forward links ("Browse the network") render underlined with no "→" glyph, and no "→" appears in any link on the landing page.
+
+---
+
 ## 2026-07-22 · Mobile polish — arrows retired, membership copy, form + footer
 
 **Four small phone-view fixes from George's screenshot review, applied and live in the repo (not yet committed to git).** (1) The "→" glyph is retired from forward links sitewide: ArrowLink now renders a plain 14px link with a persistent hairline underline (45–50% strength at rest, full color on hover) — chosen from three live mockup options (small-caps, underline-only, caps-color); George picked underline-only. Back links keep "←" (direction, not decoration). The four hand-rolled "&rarr;" labels on the join/sponsor-request token pages lost their arrows too. (2) Membership headline is now "A marketplace that knows who it's dealing with." (utility-first framing, per strategy) replacing "Manhattan already trusts Manhattan. We just wrote it down." (3) The landing email form: field is now required + autoComplete/inputMode email, focus border works on tap (focus, not focus-visible), and the Apply button goes full-width when the row stacks under 520px. Confirmed behavior: the address submits as a GET to /signup and prefills the signup form. (4) The mobile footer's three link columns now sit side by side in one row (wordmark block spans above them) instead of stacking — the footer was a full screen of scroll on a phone.

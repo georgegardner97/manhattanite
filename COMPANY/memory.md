@@ -158,3 +158,22 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 - New work area: `WORK AREAS/Growth/founding-member-acquisition-project/` — two-week action plan + candidate tracker in outputs/. From week 3: 2-day-a-week founder routine (Mon outreach, Thu meets).
 - Week-1 to-dos: 30-name brain-dump (done — 38 names), fair-housing checklist (research done), outreach template, 3 coffees.
 - **Correction (verified on prod 2026-07-02): the seed listings ARE loaded** — example listings with photos live on `/listings`, guest teaser + landing image band working. The 2026-06-09 "not loaded; 2 text-only listings" note above is stale; it was resolved around the 2026-06-12 demo-ready push but never crossed off here.
+
+## 2026-08-01 — Reconciliation: where the build ACTUALLY is (read this before citing "next steps")
+
+**The design push is much further along than earlier notes (and recent morning briefs) suggest.** Between 2026-07-17 and 2026-07-22 the whole ICW redesign shipped: Slice 1 + 1.1 (dark landing, light browse, category rail), Slice 2 (listing detail + dark auth/apply), Slice 3 (forms, profile, mine, admin), Phase 4A (wordmark **"Manhattanite."** with the period, favicon, OG card), Phase 5 (all transactional emails restyled), and the full iPhone/mobile pass (last commits 2026-07-22). Any note saying "next: ICW Slice 2" is stale.
+
+**Prod verified 2026-08-01 (Cowork):** manhattanite.com serves the "Manhattanite." wordmark, the 1200×630 OG card, full OG/Twitter metadata, and the correct title/description. Only the favicon-in-tab render still wants a 5-second eyeball from George.
+
+**What actually remains, in order:**
+1. **Design Foundation close-out (Cowork paperwork):** photography rules + brand-guide v2 + final before/after re-grade — drafts delivered 2026-08-01 in `design-foundation-project/outputs/`, awaiting George's review. Small opens: licensed ≥2400px hero photo (retina), hello@ vs info@ footer email decision, Phase 2 serif call (numeral-1-as-l quirk) and accent call still formally open.
+2. **Seed phase / Growth (the active workstream):** one-line pitch rework (options delivered 2026-08-01, George to pick), Richard Laermer meeting outcome never logged (met 2026-07-21 — needs George's debrief), candidate tracker still all-"Idea", first-wave coffees not yet booked. First 1000 acquisition notes delivered 2026-08-01.
+3. **Launch blockers (deliberately parked until first dollar / ~50 members / strangers):** entity formation, attorney review of T&P, fair-housing counsel review.
+
+**Timeline check:** Week 10 of 14 closed 2026-08-02 with the must-hit long since shipped — the build is ahead; the *growth* motion is the lagging track. Week 11 (Aug 3–9): seed content + polish, "a stranger would believe it's real." Manhattanite deep-work blocks are on the calendar 9–4 weekdays through August (Newport Beach Aug 19–24 excluded).
+
+*No code sessions between 2026-07-22 and 2026-08-01 (George hosting visitors — verified via git log).*
+
+## 2026-08-13 — Strategy session + Week 12 push
+
+Big strategy session (full detail: `Growth/.../outputs/Manhattanite_Strategy-Session_2026-08-13.md` + session-log entry). Headlines: sublets demoted from entry wedge; grassroots seeding confirmed (Cole's advice — invitation language first, taste/POV is the product); **design going to a professional designer** (George: current design "too AI"; serif/accent calls frozen; Aug-1 paperwork = the brief); Cole partnership to be formalized (pilot scope); audience question (older/wealthier vs younger) + three-pillar framing (discounts/services/trusted buy-sell) are the open threads, to be resolved with friend-interview data post-Newport. Laermer meeting correction: postponed indefinitely, never happened. Week 12 hardening runbook delivered — RLS audit is the must-hit; no commits since Jul 22. Newport Beach Aug 19–24 removes most of Week 13.

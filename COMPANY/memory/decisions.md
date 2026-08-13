@@ -152,6 +152,8 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 - **`COMPANY/memory/`** holds the deep memory files: `decisions.md` (this file) + `session-log.md`. Opened on demand. (2026-05-16)
 - **`WORK AREAS/`** holds active project work.
 
+- **New work area `Income/` + project `music-teaching-project` created.** (2026-08-01) First non-Manhattanite work area, for part-time income work. George's chosen direction: teaching music and creativity to children (bass/guitar lessons + songwriting labs). Placed in this workspace because the CoWork OS layer tracks all of George's work; flagged for George to relocate if he'd rather keep this workspace Manhattanite-only.
+
 ## Profiles & identity photos (2026-06-08)
 
 - **Members may have a photo on their profile page, but NO inline avatar thumbnails next to their name anywhere else.** George's call: small face thumbnails by bylines/listings would look "scrappy." Correct brand instinct — tiny circular avatars are the visual signature of consumer social platforms (Facebook, Nextdoor, Vinted) and fight the editorial Soho House / Mr Porter / Le Labo register. (2026-06-08)

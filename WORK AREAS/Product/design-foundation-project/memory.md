@@ -107,3 +107,9 @@
 - Accent: park green vs brick red vs no accent — Phase 2. (Audit confirmed the live site is 100% monochrome in practice.)
 - Wordmark concept — Phase 4.
 - Mobbin Pro: only if the free cap bites — Phase 1.
+
+## 2026-08-01 — Close-out paperwork drafted (Cowork); prod verify done
+
+- The three remaining Cowork deliverables are drafted in outputs/, awaiting George's review: `Manhattanite_Photography-Rules_v1.md` (brand imagery + member-photo standards moderation applies + lead-photo rule), `Manhattanite_Brand-Guide_v2_Draft.md` (replaces COMPANY/brand-guide.md on approval — records wordmark/palette/type/action-system decisions with real tokens), and `Manhattanite_Design-ReGrade_v1.md` (before/after: B−/C+ screens → B+/A− across the board; desk-based, fresh screenshot pass optional).
+- Prod verified 2026-08-01: "Manhattanite." wordmark, OG card (1200×630) + full metadata live on manhattanite.com. Favicon-in-tab still wants George's 5-second look.
+- Project state: **done pending sign-off** on the two paper docs + the optional re-shoot. Backlog items (not project scope): ≥2400px hero asset, serif numeral review, srcset slice, dark /apply form eyeball, hello@ vs info@ decision.
