@@ -42,9 +42,22 @@ type Status =
   /** `credentials` drives the forgot-password reveal; `other` does not. */
   | { kind: "error"; message: string; reason: "credentials" | "other" };
 
-export default function ClSignIn() {
+/**
+ * "reveal"  — the landing: a pill that opens the form in place (the default).
+ * "inline"  — screen 09: the form is the card's content and is always open, so
+ *             there is no toggle and no collapsing wrapper.
+ */
+export type ClSignInVariant = "reveal" | "inline";
+
+export default function ClSignIn({
+  variant = "reveal",
+}: {
+  variant?: ClSignInVariant;
+}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const inline = variant === "inline";
+  // Inline starts open and never closes; the reveal starts closed.
+  const [open, setOpen] = useState(inline);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -53,18 +66,21 @@ export default function ClSignIn() {
   const emailRef = useRef<HTMLInputElement>(null);
 
   const close = useCallback(() => {
+    // The inline form has nowhere to close to — Escape should not blank the
+    // one thing on the card.
+    if (inline) return;
     setOpen(false);
     // The password does not survive a close. Leaving it in state means it sits
     // in memory — and in React DevTools — for the rest of the session on a page
     // someone may well walk away from.
     setPassword("");
     setStatus({ kind: "idle" });
-  }, []);
+  }, [inline]);
 
   // Focus the first field once the panel is open. Deferred a frame: focusing an
   // element inside a collapsed grid row scrolls the page to it mid-animation.
   useEffect(() => {
-    if (!open) return;
+    if (!open || inline) return;
     const id = requestAnimationFrame(() => emailRef.current?.focus());
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
@@ -74,7 +90,7 @@ export default function ClSignIn() {
       cancelAnimationFrame(id);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, close]);
+  }, [open, inline, close]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -113,31 +129,33 @@ export default function ClSignIn() {
     <div className="w-full">
       {/* The pill stays put and becomes the panel's toggle, so the control
           never moves out from under the pointer that just pressed it. */}
-      <div className="flex justify-center">
-        <button
-          type="button"
-          onClick={() => (open ? close() : setOpen(true))}
-          aria-expanded={open}
-          aria-controls="cl-signin-panel"
-          className="cl-pill"
-          style={{ padding: "13px 24px" }}
-        >
-          Sign in
-        </button>
-      </div>
+      {!inline && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => (open ? close() : setOpen(true))}
+            aria-expanded={open}
+            aria-controls="cl-signin-panel"
+            className="cl-pill"
+            style={{ padding: "13px 24px" }}
+          >
+            Sign in
+          </button>
+        </div>
+      )}
 
       <div
         id="cl-signin-panel"
-        className={`cl-reveal${open ? " cl-reveal-open" : ""}`}
+        className={inline ? "" : `cl-reveal${open ? " cl-reveal-open" : ""}`}
         // Collapsed content stays in the DOM so the height can animate, so it
         // must be hidden from assistive tech and taken out of the tab order.
         // `inert` does both in one attribute.
-        inert={!open || undefined}
+        inert={inline ? undefined : !open || undefined}
       >
         <div>
           <form
             onSubmit={onSubmit}
-            className="mx-auto mt-7 w-full max-w-[340px] text-left"
+            className={`w-full text-left${inline ? "" : " mx-auto mt-7 max-w-[340px]"}`}
           >
             <div>
               <label htmlFor="cl-email" className="cl-fieldlabel">

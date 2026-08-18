@@ -45,10 +45,34 @@ const BUILT: Screen[] = [
     note: "A typed query answered in rows, with the facets in play as removable chips.",
   },
   {
+    n: "05",
+    label: "Post a listing",
+    href: "/design/post",
+    note: "Three steps, one real form. Writes a genuine row as pending, into the moderation queue.",
+  },
+  {
     n: "06",
     label: "Saved",
     href: "/design/saved",
     note: "What you saved on Browse. Held in this browser, not in the database.",
+  },
+  {
+    n: "08",
+    label: "Member profile",
+    href: "/design/browse",
+    note: "Assembled from the public bylines only. Open a listing and click the member's name.",
+  },
+  {
+    n: "09",
+    label: "Request access and sign in",
+    href: "/design/access",
+    note: "Both cards wired. The left one knows which of four states you're in.",
+  },
+  {
+    n: "10",
+    label: "Account settings",
+    href: "/design/settings",
+    note: "Only the rows with a column behind them. Two of the design's toggles are deliberately absent.",
   },
   {
     n: "11",
@@ -67,35 +91,15 @@ const BUILT: Screen[] = [
   },
 ];
 
-// The five that were not built, each with the reason. These are not "todo" —
-// four of the five are blocked on a product decision rather than on time, and
-// building them anyway would have meant faking a control, and a faked control
-// in a preview is how a design gets approved for something it cannot do.
+// One screen left unbuilt, and it is not a "todo" — it is blocked on the
+// product not having the feature, rather than on time. Building it anyway would
+// have meant faking a control, and a faked control in a preview is how a design
+// gets approved for something it cannot do.
 const NOT_BUILT: { n: string; label: string; why: string }[] = [
-  {
-    n: "05",
-    label: "Post a listing",
-    why: "The three-step wizard writes real listings to the live database. A second post form, in a preview, pointed at production is a bad trade for a visual check — the live /listings/new already works. Worth building the day this system is chosen, not before.",
-  },
   {
     n: "07",
     label: "Messages",
-    why: "In-app messaging does not exist and is deliberately out of v1 (mvp-spec.md); contact is a form that sends email. The design file marks this screen the same way — “not built yet, kept for reference”.",
-  },
-  {
-    n: "08",
-    label: "Member profile",
-    why: "A public profile shows another member's name, their listing count and who vouched for them. `accounts` is read-own under RLS, so this needs a new policy or new denormalized columns — a data-exposure decision, not a design port.",
-  },
-  {
-    n: "09",
-    label: "Request access and sign in",
-    why: "Both forms exist and work. A non-submitting copy of a sign-in form is the one mockup with a real cost: someone types a real password into something that does nothing with it.",
-  },
-  {
-    n: "10",
-    label: "Account settings",
-    why: "Most of its rows — the weekly digest, name visibility, the list of people you have vouched for — have no column behind them. The screen would be five toggles that forget.",
+    why: "In-app messaging does not exist and is deliberately out of v1 (mvp-spec.md); contact is a form that sends email, logged for moderation. The design file marks this screen the same way — \u201cnot built yet, kept for reference\u201d. Building it would mean inventing a threads table, a read model and a notification story to illustrate a picture.",
   },
 ];
 

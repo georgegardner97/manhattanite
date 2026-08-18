@@ -308,9 +308,15 @@ export default async function ClassifiedsDetailPage({
             >
               <div className="cl-avatar h-10 w-10" aria-hidden="true" />
               <div className="min-w-0">
-                <div className="truncate text-[14.5px] font-medium">
+                {/* Through to screen 08. Their profile is assembled from the
+                    same public bylines this card is already showing, so the
+                    link discloses nothing the page hasn't. */}
+                <Link
+                  href={`/design/members/${listing.author_id}`}
+                  className="cl-cardlink block truncate text-[14.5px] font-medium"
+                >
                   {listerName}
-                </div>
+                </Link>
                 <div
                   className="text-[12.5px]"
                   style={{ color: "var(--cl-muted)" }}
