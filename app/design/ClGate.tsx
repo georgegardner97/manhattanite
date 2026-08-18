@@ -39,10 +39,10 @@ export default function ClGate({
       </p>
 
       <div className="flex flex-wrap justify-center gap-2.5">
-        <Link href="/login" className="cl-pill">
+        <Link href="/design/access" className="cl-pill">
           Sign in
         </Link>
-        <Link href="/apply" className="cl-ghost">
+        <Link href="/design/access#request" className="cl-ghost">
           Request access
         </Link>
       </div>

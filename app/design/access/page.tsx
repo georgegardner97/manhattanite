@@ -74,7 +74,10 @@ export default async function ClassifiedsAccessPage() {
       <main className="mx-auto w-full max-w-[1100px] px-[clamp(16px,2.4vw,28px)] pt-[clamp(24px,3vw,40px)] pb-[clamp(32px,4vw,56px)]">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-[clamp(20px,2.4vw,32px)]">
           {/* ---------- Request access ---------- */}
-          <section className="cl-panel p-[clamp(24px,3vw,44px)]">
+          {/* id="request": ClGate's secondary button deep-links straight to
+              this card, which matters on a narrow screen where the two panels
+              stack and the request card is the one below the fold. */}
+          <section id="request" className="cl-panel p-[clamp(24px,3vw,44px)]">
             <Wordmark className="text-[18px] leading-none" />
 
             {isMember ? (

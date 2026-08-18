@@ -36,11 +36,12 @@ const TABS: { label: string; href: string; match: (p: string) => boolean }[] = [
     match: (p) => p.startsWith("/design/browse") || p.startsWith("/design/listings"),
   },
   { label: "Saved", href: "/design/saved", match: (p) => p === "/design/saved" },
-  // The live post form, in the editorial system — screen 05 is not in this
-  // slice, and a second form that writes real listings is not something a
-  // design preview should own. See the note on app/design/page.tsx.
-  { label: "Post", href: "/listings/new", match: () => false },
-  { label: "Profile", href: "/profile", match: () => false },
+  { label: "Post", href: "/design/post", match: (p) => p === "/design/post" },
+  {
+    label: "Profile",
+    href: "/design/settings",
+    match: (p) => p === "/design/settings",
+  },
 ];
 
 // Two routes in this subtree are not product screens and must not carry product

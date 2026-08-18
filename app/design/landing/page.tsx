@@ -154,7 +154,7 @@ export default async function ClassifiedsLandingPage() {
           </p>
           {/* Standard pill, not the hero's larger setting — the size difference
               is what keeps the two asks in the right order. */}
-          <Link href="/apply" className="cl-pill">
+          <Link href="/design/access" className="cl-pill">
             Request access
           </Link>
         </div>

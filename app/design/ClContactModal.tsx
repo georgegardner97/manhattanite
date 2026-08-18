@@ -248,7 +248,7 @@ function GateBody({
         Messaging a lister is for members. Members are sponsored by an existing
         member, or approved on application.
       </p>
-      <Link href="/apply" className="cl-pill mt-4 inline-block">
+      <Link href="/design/access" className="cl-pill mt-4 inline-block">
         Apply for membership
       </Link>
     </>

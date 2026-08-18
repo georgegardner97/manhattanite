@@ -362,7 +362,7 @@ export default async function ClassifiedsDetailPage({
               ) : (
                 // The label sets the expectation instead of bouncing a guest to
                 // a bare login screen from an unlabelled button.
-                <Link href="/login" className="cl-pill w-full">
+                <Link href="/design/access" className="cl-pill w-full">
                   Sign in to get in touch
                 </Link>
               )}

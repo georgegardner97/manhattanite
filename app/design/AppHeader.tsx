@@ -21,12 +21,11 @@
 //      this preview shows the design's proposed Newsreader — the one place the
 //      two systems touch. Worth a look on screen.
 //
-//   2. Profile points at the LIVE /profile, not a Classifieds one. Screen 08
-//      is a public member profile — someone else's name, their listing count,
-//      who vouched for them — and publishing that is a data-exposure decision
-//      with an RLS policy behind it, not a design port. It is out of this
-//      slice (see the note on app/design/page.tsx), so the link goes where a
-//      profile actually exists today and visibly leaves this design system.
+//   2. Every link now stays inside the preview. The first slice sent Profile
+//      and the action pill to the live /profile and /listings/new, because
+//      neither screen existed yet. Both do now (10 and 05), and a header whose
+//      primary action drops you into the other design system is the fastest
+//      way to make a walkthrough incoherent.
 
 import Link from "next/link";
 import Wordmark from "@/app/components/Wordmark";
@@ -36,7 +35,9 @@ export type ClNavKey = "browse" | "saved" | "profile" | "none";
 const LINKS: { key: ClNavKey; label: string; href: string }[] = [
   { key: "browse", label: "Browse", href: "/design/browse" },
   { key: "saved", label: "Saved", href: "/design/saved" },
-  { key: "profile", label: "Profile", href: "/profile" },
+  // Profile means the account screen, which is how the design file itself
+  // reads it: screen 10 ("Account settings") is drawn with active="profile".
+  { key: "profile", label: "Profile", href: "/design/settings" },
 ];
 
 export default function AppHeader({ active = "none" }: { active?: ClNavKey }) {
@@ -87,7 +88,7 @@ export default function AppHeader({ active = "none" }: { active?: ClNavKey }) {
           </nav>
         </div>
 
-        <Link href="/listings/new" className="cl-pill cl-pill-sm">
+        <Link href="/design/post" className="cl-pill cl-pill-sm">
           Post a listing
         </Link>
       </div>
