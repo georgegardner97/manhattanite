@@ -12,7 +12,8 @@
     "test:edit-archive": "node --env-file=.env.local --import tsx scripts/test-edit-archive.ts",
     "test:admin-console": "node --env-file=.env.local --import tsx scripts/test-admin-console.ts",
     "test:listing-moderation": "node --env-file=.env.local --import tsx scripts/test-listing-moderation.ts",
-    "seed:examples": "node --env-file=.env.local --import tsx scripts/seed-example-listings.ts"
+    "seed:examples": "node --env-file=.env.local --import tsx scripts/seed-example-listings.ts",
+    "test:auth-error": "node --import tsx scripts/test-auth-error.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

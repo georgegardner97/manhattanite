@@ -37,8 +37,17 @@ const NAVLESS = new Set([
   "/apply",
 ]);
 
+// The one prefix rule, and the reason it is safe where a general one is not:
+// "/design" is a whole SUBTREE that belongs to a different design system and
+// brings its own header (app/design/AppHeader.tsx). There is no route under it
+// that wants the editorial nav, and — unlike the "/listings" vs "/login" trap
+// above — nothing else in the app starts with these characters.
+const NAVLESS_SUBTREE = "/design";
+
 export default function NavGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   if (NAVLESS.has(pathname)) return null;
+  if (pathname === NAVLESS_SUBTREE || pathname.startsWith(`${NAVLESS_SUBTREE}/`))
+    return null;
   return <>{children}</>;
 }
