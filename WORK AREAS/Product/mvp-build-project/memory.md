@@ -1163,6 +1163,25 @@ Estimated effort: ~2 focused hours. Best done fresh.
 **Next:**
 - Walk through Step 1 (export waitlist emails) with George.
 
+## 2026-08-18 · Classifieds design preview built at /design (branch, not live)
+
+**Worked on:**
+- Imported the Claude Design "Classifieds" system + "Landing v3" as working screens at `/design/*`, against the real listings table. 11 of 12 screens plus the landing. Branch `design/classifieds-preview`, ~5k lines, all under `app/design/` + `app/design/classifieds.css`.
+- Scoped so it cannot leak: own CSS scope (`.cl-root`), own fonts loaded in the `/design` layout only, `noindex`, `NavGate` stands the editorial nav down across the subtree. **Reverts with `rm -rf app/design` + two lines in `NavGate.tsx`.**
+- The trust gate is written **once** (`app/design/listings-read.ts`) and shared by Browse, Search and Saved — published rows only, 6 for a guest, 50 signed in, all filtering in memory over that one gated read so nothing can widen it.
+- Real write paths reused, not reimplemented: `createListing` (posts as `pending`, 0017 trigger pins it), `submitApplication`, `sendContact`, `signInWithPassword` behind Turnstile, `uploadListingImage`, `get_my_connections`.
+- Only shared file touched: `Wordmark.tsx` gained an optional `periodClassName` (period now always wrapped in a classless span — inert, every existing caller renders identically; verified on live `/`).
+- Fixed a genuine bug in the post wizard: `required` inputs inside a CSS-hidden step meant the browser blocked submit *and* couldn't focus the control to say why — Submit did nothing, silently. `onInvalid` now jumps to the offending step. **General trap in any hide-don't-unmount wizard.**
+
+**Decided:** see `COMPANY/memory/decisions.md` (2026-08-18 block) — preview not live edit; Classifieds better inside than outside; Landing v3 not promoted to `/`; no dead controls; member data stays behind RLS pending a decision.
+
+**Blockers:**
+- **Local sign-in is captcha-blocked** — `.env.local` holds Cloudflare's always-passes TEST Turnstile key, which the real Supabase secret rejects. So `/design/post`, `/design/settings` and the forgot-password reveal have **never been rendered**; gates verified, appearance not. Claude cannot close this (previews are behind Vercel SSO; those screens need a member password). **Same root cause as the Slice-3 prompt's still-open "Stage 0 localhost Turnstile key fix".**
+- `supabase/migrations/0026_member_profile.sql` written, **not applied**, nothing calls it. George runs migrations.
+- Local `main` has 2 unpushed commits (`dbfeaf7`, `06d7b60`) — docs and scripts only, so prod is functionally current, but the Week 12 audit exists only on the laptop.
+
+**Next:** George eyeballs the preview signed in; decide 0026; settle the landing-vs-browse naming inconsistency; decide on merging to `main` and pushing `main`.
+
 ---
 
 *Entry format: date · short title, then sections for Worked on / Decided / Blockers / Next.*

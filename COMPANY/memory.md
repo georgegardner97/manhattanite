@@ -177,3 +177,14 @@ Both Cowork-side and Claude-Code-side folders coexist at `~/Developer/manhattani
 ## 2026-08-13 — Strategy session + Week 12 push
 
 Big strategy session (full detail: `Growth/.../outputs/Manhattanite_Strategy-Session_2026-08-13.md` + session-log entry). Headlines: sublets demoted from entry wedge; grassroots seeding confirmed (Cole's advice — invitation language first, taste/POV is the product); **design going to a professional designer** (George: current design "too AI"; serif/accent calls frozen; Aug-1 paperwork = the brief); Cole partnership to be formalized (pilot scope); audience question (older/wealthier vs younger) + three-pillar framing (discounts/services/trusted buy-sell) are the open threads, to be resolved with friend-interview data post-Newport. Laermer meeting correction: postponed indefinitely, never happened. Week 12 hardening runbook delivered — RLS audit is the must-hit; no commits since Jul 22. Newport Beach Aug 19–24 removes most of Week 13.
+
+---
+
+## Working practice — Cowork vs Claude Code (2026-08-18)
+
+**Both read this folder, but they see different halves, and that decides where a conversation belongs.** Cowork reads the upper layer (`ABOUT ME/`, `COMPANY/`, `WORK AREAS/`, `RESOURCES/`). Claude Code reads that *and* `app/`, `lib/`, `supabase/`, git and the live site.
+
+- **Take it to Claude Code when the answer depends on what the product actually does.** Examples from 18 Aug that Cowork could not have answered: `accounts` is read-own under RLS so a public member profile needs a policy decision; the post form writes `pending` rows so a preview can safely have one; `manhattanite.com/design` returns 404 so nothing shipped; local `main` has two unpushed commits.
+- **Take it to Cowork for strategy with no code dependency** — the designer shortlist and brief, the audience question, GTM, positioning, copy strategy, PA work.
+- **Conversations that sit on the boundary** (e.g. "should this design ship?") are usually better in Claude Code, *because the answer turns on what the code supports* — but the **conclusion** belongs in the project memory so Cowork picks it up next session.
+- **Both write to the same memory files**, so nothing is lost either way. The discipline that matters is that Claude Code sessions log to all four (`COMPANY/memory.md`, `memory/decisions.md`, `memory/session-log.md`, and the relevant project memory), not just the project one — a code session that only updates its own project memory leaves Cowork blind to decisions that were genuinely strategic.
