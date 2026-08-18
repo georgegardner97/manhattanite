@@ -126,12 +126,23 @@ These are intentionally not in v1. They go on the v2 list or later.
 - **In-platform messaging.** Contact happens via the form → email forwarding.
 - **Jobs category.** Different listing structure, different curation rules. v2.
 - **Services category.** Same reason. v2 or later.
-- **Search filters.** Chronological feed only in v1.
-- **Saved listings / favorites.** v2.
+- ~~**Search filters.** Chronological feed only in v1.~~ **Moved INTO v1 on
+  2026-08-18.** Search shipped with the Classifieds design migration. The case
+  for pulling it forward: it was already built, and it cannot widen what anyone
+  sees — it narrows the same permission-checked read the browse page runs, in
+  memory, so it can never surface a row browse would not already show.
+- ~~**Saved listings / favorites.** v2.~~ **Moved INTO v1 on 2026-08-18.**
+  Shipped alongside search. Saved lives in the browser's own storage and touches
+  no database table, so it adds no data exposure and no schema. Cutting the two
+  would also have left the header nav thinner than the design it came from.
 - **Payments / pay-per-post.** v2 onward.
 - **Native mobile apps.** Web responsive only.
 - **Push notifications.** Email only.
 - **Public profiles outside the network.** Member profiles are members-and-account-holders only.
+  *(Refined 2026-08-18: `/members/[id]` is now a public route, but it shows only
+  what the listing bylines already say out loud — name, who vouched, and the
+  listings THAT VIEWER may already see. A logged-out visitor gets the profile
+  narrowed to their teaser six, never the member's full catalogue.)*
 - **Member-to-member messaging.** v2.
 - **Sponsorship request flow** ("ask Anna to sponsor me"). v2.
 - **Roommate-specific flow.** Apartment listings cover this informally in v1.
@@ -164,7 +175,7 @@ Miss any of these → extend rather than launch broken.
 | Stage | What we add | When |
 |---|---|---|
 | **v1.1** | Real founding cohort onboarded (10–20 members) | September 2026 |
-| **v1.5** | Jobs category, search filters, saved listings | Q4 2026 |
+| **v1.5** | Jobs category | Q4 2026 |
 | **v2** | In-platform messaging, sponsorship request flow, pay-per-post | 2027 |
 | **v3** | Services category, mobile-native experience, neighborhood guides | 2027+ |
 

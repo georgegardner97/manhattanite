@@ -10,7 +10,7 @@ import {
   resubmitListing,
   type ResubmitListingState,
 } from "@/lib/listings/resubmit";
-import type { ListingStatus } from "@/app/listings/mine/page";
+import type { ListingStatus } from "@/app/(ed)/listings/mine/page";
 
 // Status-aware controls for one row on /listings/mine. (Listing Moderation
 // slice — these match exactly the moves the 0017 trigger allows a member:)

@@ -48,3 +48,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scratch bin for stale git lock files — never committed
+_to_delete/

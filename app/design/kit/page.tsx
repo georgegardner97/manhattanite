@@ -11,8 +11,8 @@
 // the styles proves only that a picture can be drawn.
 
 import Link from "next/link";
-import AppHeader from "@/app/design/AppHeader";
-import ClListingCard from "@/app/design/ClListingCard";
+import AppHeader from "@/app/components/cl/AppHeader";
+import ClListingCard from "@/app/components/cl/ClListingCard";
 
 export default function ClassifiedsKitPage() {
   return (
@@ -46,13 +46,13 @@ export default function ClassifiedsKitPage() {
         <div className="cl-panel grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[clamp(28px,3vw,48px)] p-[clamp(24px,3vw,44px)]">
           <Group label="Buttons">
             <div className="flex flex-col items-start gap-3">
-              <Link href="/design/browse" className="cl-pill">
+              <Link href="/listings" className="cl-pill">
                 Primary action
               </Link>
-              <Link href="/design/browse" className="cl-ghost">
+              <Link href="/listings" className="cl-ghost">
                 Secondary action
               </Link>
-              <Link href="/design/browse" className="cl-quiet">
+              <Link href="/listings" className="cl-quiet">
                 Quiet link →
               </Link>
               {/* A real disabled control, not a styled span — the cursor and

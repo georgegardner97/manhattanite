@@ -1,45 +1,28 @@
-// /design — the Classifieds preview area.
+// /design — what is LEFT of the Classifieds preview.
 //
-// A proving ground, not a shipped surface. Screens 01 (Components) and 02
-// (Browse) from the Claude Design project are built here against the REAL
-// listings table so the new visual system can be judged on real data, real
-// photographs and real bylines before anything commits to it. Nothing outside
-// this directory changes behavior, and deleting `app/design/` plus the two
-// lines in NavGate reverts the whole slice.
+// The preview did its job. On 2026-08-18 the screens it proved were promoted to
+// the live site under the (cl) route group — landing, browse, listing detail,
+// member profile, search, saved. This directory keeps only the screens Slices 2
+// and 3 have not migrated yet:
 //
-// Three things this layout owns:
+//   kit       the component sheet (a reference surface, not a product screen)
+//   post      → becomes /listings/new in Slice 2
+//   settings  → becomes /profile in Slice 2
+//   access    → splits into /login and /apply in Slice 3
 //
-//   1. THE FONTS. The design proposes Newsreader + Instrument Sans against the
-//      live system's Instrument Serif + Inter. They are loaded here, not in the
-//      root layout, so the live pages never download or apply them — the two
-//      systems stay genuinely separate rather than sharing a body class.
+// They still need somewhere to run, and they still need to be unmistakably NOT
+// the live site — hence the strip and the noindex below, both of which the (cl)
+// layout deliberately drops.
 //
-//   2. THE SCOPE. `.cl-root` is where every token in classifieds.css resolves.
-//      One wrapper, one scope; no token leaks into the editorial system.
-//
-//   3. NOINDEX. This is unfinished design work on a live domain. It must not be
-//      crawled, and it must not turn up in a search for the brand.
+// The components and the stylesheet no longer live here: they are shared with
+// the live system at app/components/cl/, lib/cl/ and app/styles/classifieds.css.
+// That is the point — these previews now run on exactly the code that shipped,
+// so they cannot drift into showing something the live site does not do.
 
 import type { Metadata } from "next";
-import { Newsreader, Instrument_Sans } from "next/font/google";
-import "./classifieds.css";
-import MobileTabBar from "@/app/design/MobileTabBar";
-
-// Both faces are variable fonts, so no `weight` is declared — next/font ships
-// the full axis and the CSS picks weights off it. Newsreader carries an italic
-// axis too, which the wordmark needs.
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
+import "@/app/styles/classifieds.css";
+import { newsreader, instrumentSans, instrumentSerif } from "@/app/fonts";
+import MobileTabBar from "@/app/components/cl/MobileTabBar";
 
 export const metadata: Metadata = {
   title: "Classifieds preview — Manhattanite",
@@ -52,15 +35,14 @@ export default function DesignLayout({
   children: React.ReactNode;
 }) {
   return (
-    // Flex column with the content growing: it puts the tab bar at the bottom
-    // of the viewport on a short page, and lets it stick there on a long one.
+    // `cl-preview` restores --cl-strip-h to the strip's real height. It is 0 by
+    // default now, because the live hero fills a plain 100dvh with no strip
+    // above it. Without this class the strip would overhang the viewport here.
     <div
-      className={`${newsreader.variable} ${instrumentSans.variable} cl-root flex min-h-dvh flex-col`}
+      className={`${newsreader.variable} ${instrumentSans.variable} ${instrumentSerif.variable} cl-root cl-preview flex min-h-dvh flex-col`}
     >
       <PreviewStrip />
       <div className="flex-1">{children}</div>
-      {/* Screen 12. Hidden above 600px, which is where AppHeader's own nav
-          takes over — the two are one arrangement, not two. */}
       <MobileTabBar />
     </div>
   );
@@ -72,8 +54,7 @@ export default function DesignLayout({
 function PreviewStrip() {
   return (
     // .cl-strip fixes the height to --cl-strip-h rather than letting padding
-    // decide it, because the landing hero subtracts that same variable to fill
-    // exactly one screen. Padding here would silently detune the hero.
+    // decide it, because the landing hero subtracts that same variable.
     <div
       className="cl-strip px-[clamp(16px,2.4vw,28px)] text-center text-[11.5px]"
       style={{
@@ -82,7 +63,7 @@ function PreviewStrip() {
         letterSpacing: "0.06em",
       }}
     >
-      Design preview — the Classifieds system, not the live site
+      Design preview — screens not yet migrated to the live site
     </div>
   );
 }

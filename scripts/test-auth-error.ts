@@ -5,7 +5,7 @@
 // Cloudflare's TEST Turnstile key, so every local sign-in dies at the captcha
 // before a password is ever checked. Run with:  npm run test:auth-error
 
-import { classifyAuthError } from "../app/design/auth-error";
+import { classifyAuthError } from "../lib/cl/auth-error";
 
 const CASES: { raw: string; message: string; reason: string }[] = [
   {

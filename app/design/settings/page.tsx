@@ -35,7 +35,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppHeader from "@/app/design/AppHeader";
+import AppHeader from "@/app/components/cl/AppHeader";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -53,7 +53,7 @@ export default async function ClassifiedsSettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/design/access");
+  if (!user) redirect("/login");
 
   const { data: account } = await supabase
     .from("accounts")

@@ -1,20 +1,25 @@
+// The root layout — the frame, and nothing else.
+//
+// It owns <html>, <body>, the document metadata, the viewport, and the global
+// stylesheet. It deliberately owns NO fonts and NO navigation: since the
+// route-group split those belong to the two system layouts beside it —
+//
+//   app/(cl)/layout.tsx   the Classifieds system (Newsreader + Instrument Sans)
+//   app/(ed)/layout.tsx   the editorial system (Inter), SiteNav + NavGate
+//
+// Both are nested layouts under this one, not root layouts of their own. That
+// matters: multiple ROOT layouts would force a full page reload on every
+// crossing between the two systems (Next 16, route-groups.md, "Caveats"), and
+// a visitor moving from the Classifieds browse to the editorial /profile would
+// see the browser reload. One root, two nested layouts, client navigation
+// intact.
+//
+// globals.css stays here and does not move: it carries Tailwind's base layer,
+// which has to be global.
+
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
-import SiteNav from "@/app/components/SiteNav";
-import NavGate from "@/app/components/NavGate";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  weight: "400",
-  style: ["normal", "italic"],
-  subsets: ["latin"],
-});
 // metadataBase lets Next resolve the file-convention OG image (app/
 // opengraph-image.tsx) and any relative URL below to an absolute one, which is
 // what social scrapers require. Same title/description as before, now also
@@ -62,14 +67,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${instrumentSerif.variable} antialiased`}>
-        {/* NavGate hides the nav on "/" (the landing brings its own) and must
-            do it on the client — this layout does not re-render on navigation. */}
-        <NavGate>
-          <SiteNav />
-        </NavGate>
-        {children}
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

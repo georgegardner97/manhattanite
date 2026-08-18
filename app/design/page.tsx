@@ -1,15 +1,26 @@
-// /design — the contents page for the Classifieds preview.
+// /design — the contents page for the Classifieds preview, after the migration.
 //
-// The route existed with no page until now: app/design/layout.tsx wrapped a
-// subtree whose root was a 404. This is the way in, and it is also the honest
-// record of the port — which of the twelve screens in "Manhattanite
-// Classifieds.dc.html" were built against real data, which were not, and why
-// not. A preview that shows only the screens that worked out is a sales pitch.
+// It was the honest record of the port: which of the twelve screens in
+// "Manhattanite Classifieds.dc.html" were built against real data, which were
+// not, and why not. It stays that, and gains a second job — saying which ones
+// have SHIPPED, and where they went.
+//
+// A preview that keeps linking to itself after its screens have gone live is a
+// second, stale copy of the product. So the migrated rows link at the LIVE
+// routes and are labelled as live; only the rows still awaiting Slices 2 and 3
+// point back inside /design.
 
 import Link from "next/link";
-import AppHeader from "@/app/design/AppHeader";
+import AppHeader from "@/app/components/cl/AppHeader";
 
-type Screen = { n: string; label: string; href: string; note: string };
+type Screen = {
+  n: string;
+  label: string;
+  href: string;
+  note: string;
+  /** Where it went. Absent while a screen is still preview-only. */
+  live?: string;
+};
 
 const BUILT: Screen[] = [
   {
@@ -17,7 +28,8 @@ const BUILT: Screen[] = [
     // a separate file in the same design project.
     n: "L3",
     label: "Landing v3",
-    href: "/design/landing",
+    href: "/",
+    live: "/",
     note: "The public page: one-screen hero, the six teaser listings, hairline footer. Nobody is named.",
   },
   {
@@ -29,19 +41,22 @@ const BUILT: Screen[] = [
   {
     n: "02",
     label: "Browse",
-    href: "/design/browse",
+    href: "/listings",
+    live: "/listings",
     note: "Filter rail, sort, card grid. Real listings, real photographs, real bylines.",
   },
   {
     n: "03",
     label: "Listing detail",
-    href: "/design/browse",
+    href: "/listings",
+    live: "/listings/[id]",
     note: "Gallery, sticky price card, the contact popup. Open any listing from Browse.",
   },
   {
     n: "04",
     label: "Search and filters",
-    href: "/design/search",
+    href: "/search",
+    live: "/search",
     note: "A typed query answered in rows, with the facets in play as removable chips.",
   },
   {
@@ -53,13 +68,15 @@ const BUILT: Screen[] = [
   {
     n: "06",
     label: "Saved",
-    href: "/design/saved",
+    href: "/saved",
+    live: "/saved",
     note: "What you saved on Browse. Held in this browser, not in the database.",
   },
   {
     n: "08",
     label: "Member profile",
-    href: "/design/browse",
+    href: "/listings",
+    live: "/members/[id]",
     note: "Assembled from the public bylines only. Open a listing and click the member's name.",
   },
   {
@@ -77,7 +94,8 @@ const BUILT: Screen[] = [
   {
     n: "11",
     label: "Loading, members-only, 404",
-    href: "/design/listings/00000000-0000-0000-0000-000000000000",
+    href: "/listings/00000000-0000-0000-0000-000000000000",
+    live: "/listings/[id]",
     // The two walls are reached by the same URL and which one you get is the
     // point: a guest is never told whether a listing exists, so the access
     // wall answers first and the 404 is behind it. Signing in swaps them.
@@ -86,7 +104,8 @@ const BUILT: Screen[] = [
   {
     n: "12",
     label: "Mobile",
-    href: "/design/browse",
+    href: "/listings",
+    live: "/listings",
     note: "Narrow the window under 600px: the header nav folds into a bottom tab bar.",
   },
 ];
@@ -147,6 +166,14 @@ export default function ClassifiedsIndexPage() {
                 </span>
                 <span>
                   <span className="text-[15.5px]">{s.label}</span>
+                  {s.live && (
+                    <span
+                      className="cl-chip cl-chip-xs cl-tag-new ml-2 align-middle"
+                      title={`Live at ${s.live}`}
+                    >
+                      Live · {s.live}
+                    </span>
+                  )}
                   <span
                     className="mt-1 block text-[13px] leading-[1.55]"
                     style={{ color: "var(--cl-muted)" }}
@@ -193,9 +220,12 @@ export default function ClassifiedsIndexPage() {
             className="mt-8 max-w-[560px] text-[12.5px] leading-[1.6]"
             style={{ color: "var(--cl-faint)" }}
           >
-            Everything above lives in <code>app/design/</code> and{" "}
-            <code>app/design/classifieds.css</code>. Deleting that directory and
-            the two lines in <code>NavGate.tsx</code> reverts the whole slice.
+            The components now live in <code>app/components/cl/</code>,{" "}
+            <code>lib/cl/</code> and <code>app/styles/classifieds.css</code>,
+            shared with the live site — so the previews still listed here run on
+            exactly the code that shipped. The screens marked Live moved into{" "}
+            <code>app/(cl)/</code> on 18 August. Reverting is no longer a deleted
+            directory; it is a revert of the merge commit.
           </p>
         </div>
       </main>

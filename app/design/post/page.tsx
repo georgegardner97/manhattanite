@@ -6,9 +6,9 @@
 // in full rather than assumed from the UI that linked you in.
 
 import { createClient } from "@/lib/supabase/server";
-import AppHeader from "@/app/design/AppHeader";
-import ClGate from "@/app/design/ClGate";
-import ClPostForm from "@/app/design/ClPostForm";
+import AppHeader from "@/app/components/cl/AppHeader";
+import ClGate from "@/app/components/cl/ClGate";
+import ClPostForm from "@/app/components/cl/ClPostForm";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
@@ -20,7 +20,7 @@ export default async function ClassifiedsPostPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/design/access");
+  if (!user) redirect("/login");
 
   // Read-own: this is the viewer's own row and nobody else's.
   const { data: account } = await supabase

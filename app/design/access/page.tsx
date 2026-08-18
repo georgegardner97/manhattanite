@@ -22,9 +22,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Wordmark from "@/app/components/Wordmark";
-import AppHeader from "@/app/design/AppHeader";
-import ClSignIn from "@/app/design/ClSignIn";
-import ClApplyForm from "@/app/design/ClApplyForm";
+import AppHeader from "@/app/components/cl/AppHeader";
+import ClSignIn from "@/app/components/cl/ClSignIn";
+import ClApplyForm from "@/app/components/cl/ClApplyForm";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -84,14 +84,14 @@ export default async function ClassifiedsAccessPage() {
               <Settled
                 title="You’re a member"
                 note="Nothing to request. The network is open to you."
-                href="/design/browse"
+                href="/listings"
                 cta="Browse listings"
               />
             ) : hasPendingApplication ? (
               <Settled
                 title="We have your request"
                 note="A person reads every one, usually within a week. You’ll hear back by email."
-                href="/design/browse"
+                href="/listings"
                 cta="Look around meanwhile"
               />
             ) : user ? (
@@ -154,7 +154,7 @@ export default async function ClassifiedsAccessPage() {
                     Signed in as {user.email}.
                   </p>
                   <div className="mt-6 flex flex-wrap gap-2.5">
-                    <Link href="/design/browse" className="cl-pill">
+                    <Link href="/listings" className="cl-pill">
                       Browse listings
                     </Link>
                     {/* A POST route, so this is a form and not a link — a
