@@ -76,6 +76,16 @@ Category: Brand / design
 
 A photo on a member's profile page is fine and on-brand. Small face thumbnails next to names — on listing bylines, the browse grid, anywhere inline — are NOT wanted; George finds them scrappy. They read as consumer-social (Facebook/Nextdoor/Vinted) and fight the editorial Soho House / Mr Porter / Le Labo voice. GdC-faithful: the trust value of a real photo is delivered on the profile (viewable on click-through), not by sprinkling thumbnails. Photo earns its place on the profile page (generous, well-shot) and, at most, a tasteful "about the lister" block on listing detail — never a thumbnail, never on browse bylines. Full rationale in COMPANY/memory/decisions.md.
 
+### 2026-08-14 — Manhattanite work block is now 90 minutes, not 9 to 4
+Category: Working style / Time
+
+George said the 9:00 to 16:00 deep-work block was unrealistic and demotivating, he'd rather do a real 90-minute session daily than miss a 7-hour one and feel bad. New rule: schedule ONE 90-minute Manhattanite block per weekday with ONE pre-picked task named in the morning briefing. The block is the floor, not the ceiling, keep going if rolling, but 90 minutes = the day is a win. Briefings must stop proposing multi-hour splits. No guilt loops when a block is missed, just re-anchor tomorrow. The Life canonical preferences file still says 11:00 to 16:00, update it next time the Life workspace is writable.
+
+### 2026-08-14 — Calendar/Todoist separation: no overlay, alerts via Todoist push
+Category: Tool / Time
+
+Calendar = real time commitments only (morning routine, AA, the 90-min Manhattanite block, rehearsals, social, travel). Todoist = all tasks and habits, kept OFF the calendar (the Todoist overlay in Google Calendar is unticked; don't re-enable it). Time-sensitive Todoist tasks carry push reminders at due time instead. When adding a new timed Todoist task for George, add an at-time push reminder by default.
+
 ### 2026-06-08 — Flag the "explore the website" pause at end of Slice C
 Category: Working style / build cadence
 

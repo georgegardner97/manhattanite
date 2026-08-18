@@ -11,7 +11,9 @@ Format per task:
 
 - [ ] **Run the Week 12 Hardening session** — RLS audit with synthetic accounts (prove the trust gate holds at the API layer) + Sentry/Plausible/Resend verification. Ready-to-run prompt: `Product/mvp-build-project/outputs/Manhattanite_Week-12-Hardening_Claude-Code-Prompt_v1.md`. **[Claude Code]** *(Source: timeline Week 12 must-hit, added 2026-08-13, area: Product / Hardening)*
 
-- [ ] **React to the 5 example offerings + pick 5 interview friends** — coaching action item; draft candidates across the three pillars are in `Growth/.../outputs/Manhattanite_Strategy-Session_2026-08-13.md` §7, interview script in §8. 15 minutes. *(Source: Strawberry.me session, added 2026-08-13, area: GTM / Positioning)*
+- [ ] **Run the First-Five-Offerings playbook** — the 5 offerings broken into ≤15-min micro-steps with ask scripts: `Growth/.../outputs/Manhattanite_First-Five-Offerings_Playbook_v1.md`. Order: your music-lessons listing (today, 30 min, no ask needed) → Cole → Cody → mover → shop perk. Outcome: 3–4 first real members + 5 real listings across all three pillars. *(Source: Strawberry.me session + George, added 2026-08-13, area: GTM / Seed)*
+
+- [ ] **Pick the 5 interview friends** — script in `Manhattanite_Strategy-Session_2026-08-13.md` §8; 5 minutes with your contacts list. *(Source: Strawberry.me session, added 2026-08-13, area: GTM / Research)*
 
 - [ ] **Run 5 friend interviews** — the script in Strategy-Session §8. Feeds the audience decision (older/wealthier vs younger), the three-pillar test, and the vouched bench. *(Source: George mind dump, added 2026-08-13, area: GTM / Research)*
 

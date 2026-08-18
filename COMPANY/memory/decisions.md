@@ -175,6 +175,13 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 - **Category framing widened for conversations:** apartments + furniture are the *focus*, but Manhattanite is open to any right listing from day one. Product caveat: the listings table currently supports only the apartment/furniture types, so an off-category listing needs a small build change before it can actually post. (2026-07-13)
 - **Moderation language corrected:** "never rewrite" means the platform never rewrites a listing *itself* (Section 230 posture). Sending a listing back and asking the poster to rewrite is fine and expected — that's the quality bar working. (2026-07-13)
 
+## Design direction (2026-08-18)
+
+- **The Classifieds system becomes the site, not a reference for a designer.** George's call, reversing the read logged the same morning (that its highest value was "as input to the designer's brief, not the thing to ship"). The `/design` preview built 17–18 Aug stops being a proving ground and becomes the live visual system. (2026-08-18)
+- **This supersedes the 2026-08-13 design freeze in practice.** That decision — design reads "too AI", open design calls frozen, engage a professional — was made about the editorial ICW system. George has been shown that the Classifieds direction is itself Claude-generated and chose it anyway. The designer shortlist and independent-designer research stay on file; whether a studio is still engaged, and for what, is now an open question rather than the plan. (2026-08-18)
+- **Migration is three slices, not one merge.** Merging the preview branch changes nothing a visitor sees: everything lives under `/design/*` and no live page file is touched. Making it the site means route groups, promoting the fonts and `classifieds.css` out of the preview layout, and repointing routes — Slice 1 covers the logged-out experience, Slice 2 the member screens, Slice 3 admin and the edges. Prompt: `WORK AREAS/Product/design-foundation-project/outputs/Manhattanite_Classifieds-Migration_Claude-Code-Prompt_v1.md`. (2026-08-18)
+- **Four decisions block Slice 1, still open:** whether the landing names members (it currently anonymises bylines while browse names everyone, to the same logged-out visitor); whether the wordmark stays Instrument Serif against the Classifieds system's Newsreader; whether Saved and Search ship, which is an `mvp-spec.md` scope change since both are listed out of v1; and migration 0026, recommended to stay unapplied since nothing calls it. (2026-08-18)
+
 ---
 
 *Decisions are dated. If something here conflicts with later work, the later decision wins — but log the change rather than silently edit.*

@@ -21,3 +21,18 @@ Timestamped entries from conversation and scheduled runs. Newest at the bottom o
 ## 2026-08-13 (Thursday)
 **07:00** — Morning briefing ran. (Note: the 12 Aug run didn't fire — no daily file or log entry exists for yesterday.)
 **10:45–11:30** — Strategy session (Cowork): George's mind dump + Cole voice notes + coaching output organized into Manhattanite_Strategy-Session_2026-08-13.md. Decisions logged: sublets not the wedge, grassroots seeding, pro designer (design "too AI", serif/accent frozen), Cole partnership to formalize, GdC strictness doubled down. Laermer corrected: postponed indefinitely (never happened). Angie's List closed as superseded. Week 12 hardening runbook delivered for today's Claude Code block (RLS attack matrix + Sentry/Plausible/Resend). tasks.md rebuilt: 7 open items incl. the 15-min offerings-reaction, 5 friend interviews, Cole pilot message, designer shortlist, post-Newport reconciliation decision. Docs commit executed by Cowork — the ~20-file uncommitted pile cleared.
+
+## 2026-08-14 (Friday)
+**07:00** — Morning briefing ran.
+**19:55** — September populated with the new template: Morning routine (daily 5:15–6:30) and Manhattanite — 90 min deep work (weekdays 9:00–10:30, Tangerine) created as recurring series Sep 1–30. AA meetings already recur indefinitely; Todoist recurring tasks roll forward on their own. Farrell 5pm nudge set earlier (daily incl. weekends, push at 17:00).
+**19:30** — Calendar clean-up (George's call): Todoist overlay unticked in Google Calendar (via browser), so tasks no longer double up as calendar events. New architecture: Calendar = real time commitments only; Todoist = tasks/habits with push reminders at due time (added to deep work, harmonica, evening journal, songwriting). "Manhattanite — 90 min deep work" also added as a Todoist recurring task (weekdays 9am, p1). Evening journal was never a calendar event, it only appeared via the overlay.
+**19:20** — George flagged he's struggling to motivate himself for Manhattanite work and asked for help. Decision: the 9:00–16:00 deep-work block is replaced by ONE 90-minute block, 9:00–10:30 weekdays, one pre-picked task per block named in the morning briefing. Floor not ceiling — keep going if rolling, but 90 min = a win. Calendar series updated through 31 Aug (Newport days already excluded), preference logged. Briefings will stop proposing multi-hour splits. Next week has two blocks only (Mon 17, Tue 18) before Newport.
+
+## 2026-08-16 (Sunday)
+**15:37** — Morning briefing ran (late; the 07:00 schedule did not fire. Saturday 15 Aug did not fire at all — no daily file or log entry exists for it).
+
+## 2026-08-17 (Monday)
+**07:00** — Morning briefing ran.
+
+## 2026-08-18 (Tuesday)
+**07:00** — Morning briefing ran. Reconstructed yesterday from git + sent mail because no EOD ran: Mon 17 Aug went to design work (2 commits, 2 designer research docs, outreach to James Anderson + Special Sauce Branding), not the planned Sentry/Plausible. RED COUCH taping today 12:00 in LIC, RSVP still unanswered.

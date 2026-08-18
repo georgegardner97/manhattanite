@@ -6,6 +6,22 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-18 · Design direction reversed — Classifieds becomes the site; migration plan delivered (Cowork)
+
+**George's call, mid-session: "This is the design direction now."** The Classifieds system stops being a preview. This reverses the strategic read logged this morning — that its highest value was as input to a designer's brief rather than the thing to ship — and in practice supersedes the 13 Aug freeze. He was told the preview is itself Claude-generated and chose it anyway. The designer shortlist stays on file; whether a studio is engaged, and for what, is now open.
+
+**The correction that changed the session.** George asked to commit and push so the website would update. It would not have. Diffed against `main`, the preview branch touches five files outside `app/design/`: `NavGate.tsx` (two lines), `Wordmark.tsx` (an optional prop, every existing caller identical), `package.json`, a test script, and unapplied migration 0026. **No live page file is touched.** Merging puts the preview on the real domain at `/design` and changes nothing a visitor sees. Said so rather than running the merge.
+
+**Also established: the design file is exhausted.** All twelve Classifieds screens plus Landing v3 are accounted for — eleven built, 07 Messages deliberately not. "More screens" now means designing rather than porting; about fourteen live routes have no Classifieds treatment (my listings, edit, contact, admin ×4, invite/join, sponsor request, resets, thank-you, terms, privacy).
+
+**Delivered: `WORK AREAS/Product/design-foundation-project/outputs/Manhattanite_Classifieds-Migration_Claude-Code-Prompt_v1.md`.** Three slices, Slice 1 specified in full: Next route groups so the two design systems coexist by layout instead of URL prefix, fonts and `classifieds.css` promoted out of the preview layout, components moved to `app/components/cl/`, landing + browse + detail + member profile repointed, every `/design/*` link rewritten, rollback by revert on a branch, and a verification list that puts the 59-cell RLS audit ahead of the visual check. Slice 0 fixes the `.env.local` Turnstile key first, because it is the reason three member screens have never been rendered by anyone.
+
+**Four decisions block Slice 1,** all with recommendations in the prompt: the landing anonymises bylines while browse names everyone to the same logged-out visitor, and the landing becomes the indexed `/`; Instrument Serif wordmark against Newsreader body; whether Saved and Search ship, which is an `mvp-spec.md` scope change since both are out of v1; migration 0026, recommended to stay unapplied since nothing calls it.
+
+**Housekeeping:** `main` is still two commits ahead of `origin/main` (`dbfeaf7`, `06d7b60`) and unpushed — production has run 22 July code for a month. Cowork cannot push (no network on the device bridge, and git index writes leave stale `.git/index.lock` files on the mount — one was cleared into `_to_delete/` this session). Docs from this session are uncommitted and need a commit from Claude Code or George.
+
+---
+
 ## 2026-08-18 · Classifieds design system imported and built on real data (Claude Code)
 
 **What happened:** the Claude Design project ("Manhattanite Classifieds.dc.html" + "Manhattanite Landing v3.dc.html") was imported and built as a working preview at **`/design`**, against the real listings table — real rows, real photographs, real bylines. **Eleven of the twelve screens plus the landing.** Only 07 Messages is unbuilt, and it stays unbuilt because in-app messaging doesn't exist and is out of v1; drawing it would mean inventing a threads table to illustrate a picture.
