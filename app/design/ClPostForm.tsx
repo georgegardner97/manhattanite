@@ -42,6 +42,15 @@ const STEPS = [
   { label: "Review", note: "Read by a person before it goes live." },
 ];
 
+// Which step each required field lives on, so an invalid one can be shown
+// rather than silently blocking the submit. Keyed by the input's `name`.
+const STEP_OF_FIELD: Record<string, number> = {
+  type: 0,
+  title: 0,
+  price: 0,
+  description: 0,
+};
+
 export default function ClPostForm({
   userId,
   authorName,
@@ -64,8 +73,25 @@ export default function ClPostForm({
   const isApartment = type === "apartment";
   const last = step === STEPS.length - 1;
 
+  // A `required` input inside a `hidden` step is the trap this layout sets. The
+  // browser refuses to submit an invalid form AND refuses to focus a hidden
+  // control to explain why, so pressing Submit from step 3 with an empty title
+  // does nothing at all — no message, no movement. Catching it here turns that
+  // dead press into a jump back to the step that needs filling in.
+  function handleInvalid(e: React.InvalidEvent<HTMLFormElement>) {
+    const field = e.target as HTMLInputElement | HTMLTextAreaElement;
+    const target = STEP_OF_FIELD[field.name];
+    if (target !== undefined && target !== step) {
+      setStep(target);
+      // The step only becomes visible after this render, so the browser has to
+      // be asked again on the next frame — before that the control is still
+      // hidden and reportValidity() has nothing it can point at.
+      requestAnimationFrame(() => field.reportValidity());
+    }
+  }
+
   return (
-    <form action={formAction}>
+    <form action={formAction} onInvalid={handleInvalid}>
       {/* ---------- Step pills ---------- */}
       <div className="mb-[26px] flex flex-wrap gap-1.5">
         {STEPS.map((s, i) => (
