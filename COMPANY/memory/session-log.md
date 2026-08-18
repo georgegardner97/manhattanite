@@ -6,6 +6,22 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-18 · Classifieds Slice 1 shipped to a branch — the public face is now the Classifieds system (Claude Code)
+
+**The four blocking decisions, settled.** Landing bylines stay anonymous ("Vouched by a member") — George's call, explicitly held rather than settled, so browse still names everyone to the same logged-out visitor and the tension is now recorded in the code rather than in a doc. Wordmark stays Instrument Serif against Newsreader body, after looking at the two together on a real screen. Saved and Search ship, and `mvp-spec.md` was updated to move both into v1 rather than leaving the spec contradicting the product. Migration 0026 — George chose to apply it, against the recommendation; it is written and verified but NOT run, because migrations go through him in the SQL editor.
+
+**Slice 0 is blocked, and not by the key.** The prompt assumed the fix was pasting the real Turnstile site key into `.env.local`. Tried it: Cloudflare returns **error 110200 — domain not allowed**, and no challenge renders at all. This is the same wall recorded in the file's own comment on 20 July. The real key is now in place, so the moment `localhost` is added to that widget's allowed hostnames in the Cloudflare dashboard it starts working with no further edit. **That dashboard change is George's to make.** Consequence: the signed-in Tier 1 and member screens still have not been rendered by anyone locally.
+
+**Slice 1 built and pushed to `design/classifieds-live`.** Route groups `app/(cl)` and `app/(ed)` split the two design systems by layout while every URL stays exactly where it was — `/`, `/listings`, `/listings/[id]` and the member-only routes under `/listings` now resolve across two groups without a single redirect. Both are nested layouts under one root, so crossing between systems stays a client navigation. Fonts moved to `app/fonts.ts`; the editorial typography that used to hang off `<body>` moved into a new `.ed-root` scope mirroring `.cl-root`. 85 files, every move recorded as a rename.
+
+**A real trust hole found during verification, and fixed.** `/members/[id]` ran its own listings query and never applied the six-row teaser cap. The cap is an application rule, not an RLS one — migration 0010 permits anonymous reads of published rows — so a logged-out visitor was being shown up to 24 of a member's listings, including ones whose own detail page answers with the members-only wall. It was harmless while the page was a noindex preview; promoting it would have made it a public, crawlable way around the trust gate. Now routed through a new `readMemberListings()` that narrows the permitted set for a guest instead of querying around it. **This is the argument for the verification list being ordered the way it is: the RLS audit passed 59/59 before and after, because the hole was above the database, not in it.**
+
+**Verified:** build clean; RLS audit 59/59 with zero unexpected ALLOWs against prod (seed members intact, all 20 published listings intact, founder row byte-identical); guest walk shows exactly six listings and the wall on a seventh; every migrated screen captured at 390px and desktop into `outputs/classifieds-migration-screens/`. **Not verified:** the signed-in UI states, per Slice 0 above.
+
+**Also done:** `main` pushed — it had been two commits ahead on this laptop with production running 22 July code. Uncommitted docs were committed *before* any git operation this time, and a stale `.git/index.lock` was moved aside rather than deleted.
+
+---
+
 ## 2026-08-18 · Design direction reversed — Classifieds becomes the site; migration plan delivered (Cowork)
 
 **George's call, mid-session: "This is the design direction now."** The Classifieds system stops being a preview. This reverses the strategic read logged this morning — that its highest value was as input to a designer's brief rather than the thing to ship — and in practice supersedes the 13 Aug freeze. He was told the preview is itself Claude-generated and chose it anyway. The designer shortlist stays on file; whether a studio is engaged, and for what, is now open.

@@ -4,6 +4,26 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-08-18 · Classifieds migration Slice 1 — the public face, on a branch
+
+Branch `design/classifieds-live` (one commit, 85 files), pushed. `main` pushed too — it had been two commits ahead locally while production ran 22 July code.
+
+**What changed for a visitor:** `/` is now the Classifieds landing (was the park-green editorial hero, retired to git history), `/listings` and `/listings/[id]` are the Classifieds browse and detail, and `/members/[id]`, `/search`, `/saved` are new public routes. The member area, admin console, threshold screens, terms and privacy are untouched and still editorial — that is Slices 2 and 3.
+
+**How, without moving a URL:** route groups `app/(cl)` and `app/(ed)`, both nested under one root layout so crossing between systems stays a client navigation rather than a full reload. Components to `app/components/cl/`, logic to `lib/cl/`, stylesheet to `app/styles/classifieds.css`; the surviving preview screens (kit, post, settings, access) now run on that same shared code, so they cannot drift from what shipped.
+
+**Fonts:** new `app/fonts.ts`. The root `<body>` used to carry the next/font variables that `globals.css` and `Wordmark` both depend on, so editorial typography moved into a `.ed-root` scope mirroring `.cl-root`. Instrument Serif is imported by both group layouts on purpose — the wordmark stays Instrument Serif while Classifieds body type is Newsreader.
+
+**Trust regression found and fixed before merge.** `/members/[id]` ran its own listings query and never applied the six-row teaser cap. That cap is application-level, not RLS — 0010 permits anonymous reads of published rows — so guests were being shown listings whose detail page refuses them. Routed through a new `readMemberListings()`. **The 59-cell RLS audit passed before and after; it cannot see this class of bug.** New rule: any screen listing listings goes through `lib/cl/listings-read.ts`.
+
+**Verified:** build clean, `npm run audit:rls` (new script) 59/59 with zero unexpected ALLOWs against prod, seed members and all 20 published listings intact, founder row byte-identical; guest walk shows six listings and the wall on a seventh; desktop + 390px screenshots for every migrated screen.
+
+**Blocked:** signed-in UI states. Cloudflare rejects `localhost` for the Turnstile widget (**error 110200**), so local sign-in cannot complete — George must allowlist `localhost` on that widget. **Slice 2 migrates member-only screens and should not start until that is done.**
+
+**Waiting on George:** apply `supabase/migrations/0026_member_profile.sql` in the SQL editor (his decision; nothing calls it yet, so it is inert until wired).
+
+---
+
 ## 2026-08-13 (Week 12 hardening) · RLS audit v2 — trust gate proven, 59/59 green
 
 The Week-12 must-hit. New behavioral harness `scripts/audit-rls.ts` attacks the API (PostgREST + Storage) directly with the anon key and synthetic user JWTs — 3 principals (anon / Tier-1 / member) + a 2nd member + a synthetic admin, 59 cells. **Every cell matched expectation; zero unexpected ALLOWs.** Doc: `outputs/Manhattanite_RLS-Audit_v2.md`.
