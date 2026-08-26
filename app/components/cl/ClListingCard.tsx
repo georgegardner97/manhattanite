@@ -35,14 +35,41 @@ export type ClCard = {
   isExample: boolean;
 };
 
-export default function ClListingCard({ card }: { card: ClCard }) {
+/**
+ * `href` defaults to the listing's public page. It is nullable for ONE caller:
+ * /listings/mine, where a pending or draft listing of your own has no public
+ * page at all — RLS reads published rows only, so the link would 404 for its
+ * own author. A card with no destination renders as a card and not a link,
+ * rather than as a link that lies.
+ */
+export default function ClListingCard({
+  card,
+  href = `/listings/${card.id}`,
+  showSave = true,
+}: {
+  card: ClCard;
+  href?: string | null;
+  /** Off on /listings/mine — saving your own listing is a control that does
+   *  nothing for you, and Saved is a shortlist of other people's things. */
+  showSave?: boolean;
+}) {
+  // Static markup when there is nowhere to go, so the whole card stops being
+  // interactive — not an <a> with its href quietly removed.
+  const Media = href
+    ? ({ children }: { children: React.ReactNode }) => (
+        <Link href={href} className="cl-cardlink block">
+          {children}
+        </Link>
+      )
+    : ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
+
   return (
     <div>
       {/* The save pill is a SIBLING of the link, not a child: a <button> inside
           an <a> is invalid, and nesting it would make every save click a
           navigation the moment the handler failed. */}
       <div className="relative">
-        <Link href={`/listings/${card.id}`} className="cl-cardlink block">
+        <Media>
           <div
             className="cl-media"
             style={{ height: "clamp(170px, 15vw, 210px)" }}
@@ -57,11 +84,11 @@ export default function ClListingCard({ card }: { card: ClCard }) {
               <img src={card.coverUrl} alt="" />
             )}
           </div>
-        </Link>
-        <SaveButton id={card.id} title={card.title} />
+        </Media>
+        {showSave && href && <SaveButton id={card.id} title={card.title} />}
       </div>
 
-      <Link href={`/listings/${card.id}`} className="cl-cardlink block">
+      <Media>
         <div className="mt-3.5 flex items-baseline justify-between gap-3.5">
           {/* min-w-0 + truncate: a long neighborhood must shrink rather than
               shove the price off the card's right edge. */}
@@ -86,7 +113,7 @@ export default function ClListingCard({ card }: { card: ClCard }) {
           )}
           {card.meta}
         </div>
-      </Link>
+      </Media>
     </div>
   );
 }

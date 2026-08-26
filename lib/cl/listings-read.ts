@@ -32,6 +32,10 @@ import {
 import { relativeDay } from "@/lib/cl/filters";
 import type { ClCard } from "@/app/components/cl/ClListingCard";
 
+/** The four states a listing moves through. Shared so the page, the actions
+ *  and the reader all agree on the vocabulary. */
+export type ListingStatus = "pending" | "published" | "draft" | "archived";
+
 export type BrowseRow = ListingRow & {
   // author_id is selected so readMemberListings() can narrow the permitted set
   // by author in memory, rather than running a second, ungated query.
@@ -122,6 +126,54 @@ export async function readMemberListings(
     .returns<BrowseRow[]>();
 
   return { rows: data ?? [], isGuest: false };
+}
+
+/** A row on your own listings: the card columns plus what only that screen
+ *  needs — the status and the moderator's note. */
+export type OwnRow = BrowseRow & {
+  status: ListingStatus;
+  moderation_note: string | null;
+};
+
+/**
+ * Your own listings, every status, newest first.
+ *
+ * ADDED 2026-08-26 (Slice 2) RATHER THAN INLINED ON THE PAGE, which is the whole
+ * point. /members/[id] shipped a trust hole in Slice 1 by writing its own
+ * listings query and never applying the teaser cap, and the RLS audit passed
+ * 59/59 either side of it because the hole was above the database. The rule that
+ * came out of it: a screen that lists listings calls a reader in this module, or
+ * it is wrong. This screen needed a narrowing no existing helper covered — own
+ * rows at ANY status — so the narrowing is written here instead of on the page.
+ *
+ * There is no teaser question to get wrong: the author_id filter plus
+ * listings_read_own (0016) return exactly the caller's own rows, and the policy
+ * is keyed on auth.uid(), so passing someone else's id returns nothing. The cap
+ * that guards the public feed has nothing to guard here — but the read still
+ * lives beside it, so the next person looking for "how do I read listings" finds
+ * every answer in one file.
+ */
+export async function readOwnListings(): Promise<OwnRow[]> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // No session, no own listings. The page redirects before this, so this is
+  // the belt to that braces.
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("listings")
+    .select(
+      "id, type, title, description, price_cents, created_at, images, details, is_example, author_id, author_name, sponsor_names, status, moderation_note"
+    )
+    .eq("author_id", user.id)
+    .order("created_at", { ascending: false })
+    .returns<OwnRow[]>();
+
+  return data ?? [];
 }
 
 /**

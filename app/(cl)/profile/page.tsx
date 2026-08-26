@@ -31,11 +31,26 @@
 // A settings screen is the worst place in a product to draw a control that does
 // nothing, because the whole promise of the screen is that flipping things
 // changes them.
+//
+// ---------------------------------------------------------------------------
+// PROMOTED TO /profile 2026-08-26 (Slice 2), with two changes to what was drawn.
+//
+// 1. THE PHOTO ROW IS BACK. Screen 10 has no profile photo. Shipping it as
+//    drawn would have removed a working feature — 0023 added avatar_path,
+//    AvatarUpload has been live since, and the 2026-06-08 decision put a real
+//    photo here deliberately as the identity surface. See ClAvatarUpload.
+//
+// 2. /profile AND /profile/edit COLLAPSED INTO THIS ONE SCREEN. The design puts
+//    every field on one page with inline rows, so the rows now carry their own
+//    write paths (ClProfileForm) and /profile/edit is a redirect here rather
+//    than a deleted route — an old link in an email still lands somewhere.
+// ---------------------------------------------------------------------------
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/app/components/cl/AppHeader";
+import ClProfileForm from "@/app/components/cl/ClProfileForm";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -57,15 +72,22 @@ export default async function ClassifiedsSettingsPage() {
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("name, neighborhood, bio, linkedin_url, is_member")
+    .select("name, neighborhood, bio, avatar_path, linkedin_url, is_member")
     .eq("id", user.id)
     .maybeSingle<{
       name: string | null;
       neighborhood: string | null;
       bio: string | null;
+      avatar_path: string | null;
       linkedin_url: string | null;
       is_member: boolean;
     }>();
+
+  // Public bucket → a plain URL, no signing.
+  const avatarUrl = account?.avatar_path
+    ? supabase.storage.from("avatars").getPublicUrl(account.avatar_path).data
+        .publicUrl
+    : null;
 
   // Own connections only — the function is keyed on auth.uid(), so there is no
   // way to ask it about anyone else. Non-members simply have none yet.
@@ -100,24 +122,16 @@ export default async function ClassifiedsSettingsPage() {
             Account
           </h1>
 
-          <div className="flex flex-col">
-            <Row label="Name" value={account?.name} href="/profile/edit" />
-            {/* Read-only: changing an email is an auth operation with a
-                confirmation round-trip, not a profile field. */}
-            <Row label="Email" value={user.email ?? null} />
-            <Row
-              label="Neighborhood"
-              value={account?.neighborhood}
-              href="/profile/edit"
-            />
-            <Row label="Bio" value={account?.bio} href="/profile/edit" />
-            <Row
-              label="LinkedIn"
-              value={account?.linkedin_url}
-              href="/profile/edit"
-            />
-            <Row label="Password" value="••••••••" href="/reset-request" cta="Reset" />
-          </div>
+          <ClProfileForm
+            userId={user.id}
+            email={user.email ?? ""}
+            name={account?.name ?? null}
+            neighborhood={account?.neighborhood ?? null}
+            bio={account?.bio ?? null}
+            linkedinUrl={account?.linkedin_url ?? null}
+            avatarPath={account?.avatar_path ?? null}
+            avatarUrl={avatarUrl}
+          />
 
           {/* ---------- Vouching ---------- */}
           <div id="vouching" className="cl-grouplabel mt-8 mb-3.5">
@@ -189,39 +203,5 @@ export default async function ClassifiedsSettingsPage() {
         </div>
       </main>
     </>
-  );
-}
-
-function Row({
-  label,
-  value,
-  href,
-  cta = "Edit",
-}: {
-  label: string;
-  value: string | null | undefined;
-  href?: string;
-  cta?: string;
-}) {
-  return (
-    <div
-      className="grid grid-cols-[1fr_auto] items-center gap-5 border-t py-[18px]"
-      style={{ borderColor: "var(--cl-hairline)" }}
-    >
-      <div className="min-w-0">
-        <div className="text-[14.5px]">{label}</div>
-        <div
-          className="mt-1 truncate text-[13px]"
-          style={{ color: value ? "var(--cl-muted)" : "var(--cl-disabled)" }}
-        >
-          {value || "Not set"}
-        </div>
-      </div>
-      {href && (
-        <Link href={href} className="cl-quiet text-[13px]">
-          {cta}
-        </Link>
-      )}
-    </div>
   );
 }

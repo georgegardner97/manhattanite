@@ -25,11 +25,13 @@
 //      mark would reopen a locked decision and orphan the favicon and OG card,
 //      which are already cut in Instrument Serif.
 //
-//   2. Profile and the action pill point at /profile and /listings/new, which
-//      are still EDITORIAL screens until Slice 2 migrates them. Crossing design
-//      systems mid-navigation is a real seam, and it is accepted here rather
-//      than hidden: the alternative is a header whose primary action goes
-//      nowhere. Slice 2 closes it by migrating the two destinations.
+//   2. Profile and the action pill point at /profile and /listings/new. Slice 1
+//      shipped this header with both destinations still on the EDITORIAL side —
+//      a real seam, accepted rather than hidden, because the alternative was a
+//      header whose primary action went nowhere. SLICE 2 CLOSED IT: both are
+//      Classifieds screens now, as are /login, /signup, /apply, /listings/mine
+//      and the edit and contact routes. Every destination this header offers
+//      stays inside the system it is drawn in.
 
 import Link from "next/link";
 import Wordmark from "@/app/components/Wordmark";

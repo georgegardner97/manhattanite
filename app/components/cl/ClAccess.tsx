@@ -1,4 +1,11 @@
-// Screen 09 — Request access and sign in, in the Classifieds system.
+// Screen 09 — the way in, in the Classifieds system. Promoted from the preview
+// on 2026-08-26 to cover /login, /signup and /apply.
+//
+// WHY THIS IS ONE COMPONENT AND NOT THREE PAGES. ClGate — the members-only wall
+// a guest meets on a seventh listing — links to /login and /apply. Until this
+// slice both were editorial, so the highest-traffic conversion moment on the
+// logged-out path exited the design system mid-journey. Three routes now render
+// one screen, so there is no seam left to cross.
 //
 // The design's two cards side by side: the way in on the left, the way back on
 // the right. Both are wired to the real thing.
@@ -14,21 +21,39 @@
 //   applied already  → we have it; here is what happens next.
 //   member           → you're in. Nothing to ask for.
 //
+// THE RIGHT CARD IS THE `pane` PROP, and it is the whole reason /signup is not a
+// loop. Screen 09 draws a sign-in card and a "Create an account" link beside it;
+// if /signup rendered this same screen unchanged, that link would point at the
+// page it was already on. So the right card carries sign-in on /login and /apply
+// and the real create-account form on /signup, and each offers the other.
+//
 // WHAT IS NOT HERE: "Email me a link". The design's sign-in card offers a magic
 // link beside the password. Magic-link-only was the original plan and was
 // overridden in Phase 1 Slice 2 (decisions log, 2026-05-27) — auth is email and
 // password, and there is no passwordless path to point that link at.
+//
+// NO REDIRECTS FOR THE SETTLED STATES, deliberately. The editorial /apply sent a
+// member to /profile and a signed-in visitor to /login saw the form again. Both
+// are answered here on the page instead: a member reads "you're a member", a
+// signed-in visitor reads "you're signed in". Nothing is gated differently —
+// these are the same four outcomes, said out loud rather than bounced.
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Wordmark from "@/app/components/Wordmark";
 import AppHeader from "@/app/components/cl/AppHeader";
 import ClSignIn from "@/app/components/cl/ClSignIn";
+import ClSignUp from "@/app/components/cl/ClSignUp";
 import ClApplyForm from "@/app/components/cl/ClApplyForm";
 
-export const dynamic = "force-dynamic"; // session state varies per request.
+/** Which door the right-hand card opens. */
+export type ClAccessPane = "signin" | "signup";
 
-export default async function ClassifiedsAccessPage() {
+export default async function ClAccess({
+  pane = "signin",
+}: {
+  pane?: ClAccessPane;
+}) {
   const supabase = await createClient();
 
   const {
@@ -124,20 +149,36 @@ export default async function ClassifiedsAccessPage() {
                   <Step n={2} label="Tell us who you are and who’s vouching for you." />
                   <Step n={3} label="A person reads it, usually within a week." />
                 </ol>
-                <Link href="/signup" className="cl-pill mt-7">
-                  Create an account
-                </Link>
-                <p
-                  className="mt-4 text-[12.5px]"
-                  style={{ color: "var(--cl-faint)" }}
-                >
-                  Free, and it lets you look around while you wait.
-                </p>
+                {/* On /signup the form for step 1 is already on this screen, so
+                    a pill pointing at /signup would point at the page it is on.
+                    The steps stand alone there and the eye goes to the card
+                    beside them. */}
+                {pane === "signup" ? (
+                  <p
+                    className="mt-7 text-[12.5px]"
+                    style={{ color: "var(--cl-faint)" }}
+                  >
+                    Step one is the form beside this. Free, and it lets you look
+                    around while you wait.
+                  </p>
+                ) : (
+                  <>
+                    <Link href="/signup" className="cl-pill mt-7">
+                      Create an account
+                    </Link>
+                    <p
+                      className="mt-4 text-[12.5px]"
+                      style={{ color: "var(--cl-faint)" }}
+                    >
+                      Free, and it lets you look around while you wait.
+                    </p>
+                  </>
+                )}
               </>
             )}
           </section>
 
-          {/* ---------- Sign in ---------- */}
+          {/* ---------- Sign in / Create an account ---------- */}
           <section className="cl-panel flex flex-col p-[clamp(24px,3vw,44px)]">
             <Wordmark className="text-[18px] leading-none" />
 
@@ -166,6 +207,22 @@ export default async function ClassifiedsAccessPage() {
                     </form>
                   </div>
                 </div>
+              ) : pane === "signup" ? (
+                <>
+                  <h2 className="mt-[26px] text-[clamp(21px,2.2vw,27px)] font-medium tracking-[-0.02em]">
+                    Create an account
+                  </h2>
+                  <p
+                    className="mt-2.5 text-[13.5px] leading-[1.55]"
+                    style={{ color: "var(--cl-muted)" }}
+                  >
+                    Free. It lets you browse and apply — posting and messaging
+                    come with membership.
+                  </p>
+                  <div className="mt-6">
+                    <ClSignUp />
+                  </div>
+                </>
               ) : (
                 <>
                   <h2 className="mt-[26px] text-[clamp(21px,2.2vw,27px)] font-medium tracking-[-0.02em]">
@@ -186,10 +243,21 @@ export default async function ClassifiedsAccessPage() {
                   color: "var(--cl-muted)",
                 }}
               >
-                Not a member yet?{" "}
-                <Link href="/signup" style={{ color: "var(--cl-ink)" }}>
-                  Request access
-                </Link>
+                {pane === "signup" ? (
+                  <>
+                    Already have an account?{" "}
+                    <Link href="/login" style={{ color: "var(--cl-ink)" }}>
+                      Sign in
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    Not a member yet?{" "}
+                    <Link href="/signup" style={{ color: "var(--cl-ink)" }}>
+                      Create an account
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </section>

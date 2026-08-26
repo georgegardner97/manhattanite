@@ -19,15 +19,40 @@
 // reach the network without passing the moderation queue at /admin/moderation.
 // That is the only reason a preview is allowed to have a working post form.
 //
+// EDITING REUSES THIS FORM, WITHOUT THE STEPS (Slice 2). `initial` pre-fills it
+// and switches the write to updateListing; `stepped={false}` renders every field
+// on one page with no step chrome. The steps exist to stop a blank form feeling
+// like a wall — an edit form is not blank, and you arrived to change one field,
+// so making you page through three of them to reach it is friction with nothing
+// on the other side. Because every field is already mounted the whole time and
+// the steps only toggle visibility, this is a presentation flag and not a second
+// code path: the same inputs post the same FormData either way.
+//
 // CATEGORIES ARE THE FOUR THAT EXIST. The design offers nine (Apartment, Sublet,
 // Room, Furniture, Bike, Art, Service, Ticket, Job); the listings type enum has
 // four, and this slice makes no schema changes. Same call as the browse rail.
 
 import { useActionState, useState } from "react";
 import { createListing, type CreateListingState } from "@/lib/listings/create";
+import { updateListing } from "@/lib/listings/update";
 import ClImageUpload from "@/app/components/cl/ClImageUpload";
+import ClRemoveListing from "@/app/components/cl/ClRemoveListing";
+import type { ListingStatus } from "@/lib/cl/listings-read";
 
 const INITIAL: CreateListingState = { error: null };
+
+/** An existing listing, pre-filled for editing. */
+export type ClPostFormInitial = {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  /** Whole dollars as a string, the way the price input shows it. */
+  price: string;
+  details: Record<string, unknown>;
+  images: { path: string; previewUrl: string }[];
+  status: ListingStatus;
+};
 
 const TYPES = [
   { value: "apartment", label: "Apartment" },
@@ -55,22 +80,42 @@ export default function ClPostForm({
   userId,
   authorName,
   sponsorNames,
+  initial,
 }: {
   userId: string;
   authorName: string | null;
   sponsorNames: string[];
+  /** Present on the edit route: pre-fills the form and switches the write. */
+  initial?: ClPostFormInitial;
 }) {
-  const [state, formAction, isPending] = useActionState(createListing, INITIAL);
+  const editing = Boolean(initial);
+
+  // Same FormData either way, so the only difference is which action reads it.
+  // updateListing re-checks session, membership and ownership itself and leans
+  // on the RLS update policy as the real gate — picking the action here changes
+  // nothing about what the database will allow.
+  const [state, formAction, isPending] = useActionState(
+    editing ? updateListing : createListing,
+    INITIAL
+  );
+
+  // Editing renders every field at once, so `step` never moves. See the note at
+  // the top: this is presentation, not a second code path.
   const [step, setStep] = useState(0);
 
   // Controlled only for the fields the review step has to read back. Everything
   // else stays uncontrolled — the form element is the source of truth.
-  const [type, setType] = useState<string>("apartment");
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
+  const [type, setType] = useState<string>(initial?.type ?? "apartment");
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [price, setPrice] = useState(initial?.price ?? "");
+  const [neighborhood, setNeighborhood] = useState(
+    detail(initial, "neighborhood")
+  );
 
   const isApartment = type === "apartment";
+  const isFurniture = type === "furniture";
+  // "other" carries a condition too; service carries only an area served.
+  const hasCondition = isFurniture || type === "other";
   const last = step === STEPS.length - 1;
 
   // A `required` input inside a `hidden` step is the trap this layout sets. The
@@ -79,6 +124,9 @@ export default function ClPostForm({
   // does nothing at all — no message, no movement. Catching it here turns that
   // dead press into a jump back to the step that needs filling in.
   function handleInvalid(e: React.InvalidEvent<HTMLFormElement>) {
+    // Nothing is hidden when editing, so the browser can already point at the
+    // offending field itself.
+    if (editing) return;
     const field = e.target as HTMLInputElement | HTMLTextAreaElement;
     const target = STEP_OF_FIELD[field.name];
     if (target !== undefined && target !== step) {
@@ -92,31 +140,41 @@ export default function ClPostForm({
 
   return (
     <form action={formAction} onInvalid={handleInvalid}>
+      {/* Which row updateListing is allowed to touch. Ownership is re-checked
+          server-side against auth.uid(); this is the address, not the key. */}
+      {initial && <input type="hidden" name="id" value={initial.id} />}
+
       {/* ---------- Step pills ---------- */}
-      <div className="mb-[26px] flex flex-wrap gap-1.5">
-        {STEPS.map((s, i) => (
-          <button
-            key={s.label}
-            type="button"
-            onClick={() => setStep(i)}
-            aria-current={i === step ? "step" : undefined}
-            className={`cl-chip${i === step ? " cl-chip-on" : ""}`}
-            style={{ fontSize: "12.5px" }}
-          >
-            {i + 1} · {s.label}
-          </button>
-        ))}
-      </div>
+      {!editing && (
+        <div className="mb-[26px] flex flex-wrap gap-1.5">
+          {STEPS.map((s, i) => (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => setStep(i)}
+              aria-current={i === step ? "step" : undefined}
+              className={`cl-chip${i === step ? " cl-chip-on" : ""}`}
+              style={{ fontSize: "12.5px" }}
+            >
+              {i + 1} · {s.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <h2 className="text-[clamp(22px,2.4vw,30px)] font-medium tracking-[-0.02em]">
-        {STEPS[step].label}
+        {editing ? "Edit your listing" : STEPS[step].label}
       </h2>
       <p className="mt-2.5 text-[13.5px]" style={{ color: "var(--cl-muted)" }}>
-        {STEPS[step].note}
+        {editing
+          ? initial!.status === "draft"
+            ? "Make the changes the moderator asked for, then send it back."
+            : "Change anything. It goes back through review before it’s live again."
+          : STEPS[step].note}
       </p>
 
       {/* ---------- 1 · Details ---------- */}
-      <div hidden={step !== 0} className="mt-7 flex flex-col gap-[18px]">
+      <div hidden={!editing && step !== 0} className="mt-7 flex flex-col gap-[18px]">
         <fieldset>
           <legend className="cl-fieldlabel">Category</legend>
           <div className="flex flex-wrap gap-2">
@@ -149,7 +207,7 @@ export default function ClPostForm({
             id="cl-title"
             name="title"
             required
-            maxLength={140}
+            maxLength={80}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="cl-input"
@@ -175,7 +233,7 @@ export default function ClPostForm({
           </div>
           <div>
             <label htmlFor="cl-hood" className="cl-fieldlabel">
-              Neighborhood
+              {type === "service" ? "Area served" : "Neighborhood"}
             </label>
             <input
               id="cl-hood"
@@ -188,20 +246,94 @@ export default function ClPostForm({
           </div>
         </div>
 
-        {/* Apartment-only extras. `hidden` again rather than unmounted, so
-            switching category twice doesn't lose what was typed. */}
-        <div hidden={!isApartment} className="grid grid-cols-2 gap-3.5 max-[520px]:grid-cols-1">
+        {/* Type-specific extras. `hidden` again rather than unmounted, so
+            switching category twice doesn't lose what was typed.
+
+            THESE ARE THE FIELDS create.ts AND update.ts ALREADY READ. The post
+            form shipped with only two of them, which was survivable while it
+            only ever created rows — the unread ones simply stayed unset. It
+            stops being survivable on the edit route: updateListing rebuilds
+            `details` WHOLESALE from what is posted, so a furniture listing
+            edited through a form with no condition/dimensions/brand inputs
+            would come back with those keys silently deleted. Rendering every
+            field the actions read is what makes the round-trip lossless. */}
+        <div hidden={!isApartment} className="grid grid-cols-3 gap-3.5 max-[520px]:grid-cols-1">
           <div>
             <label htmlFor="cl-beds" className="cl-fieldlabel">
               Bedrooms
             </label>
-            <input id="cl-beds" name="bedrooms" inputMode="numeric" className="cl-input" placeholder="1" />
+            <input
+              id="cl-beds"
+              name="bedrooms"
+              inputMode="numeric"
+              defaultValue={detail(initial, "bedrooms")}
+              className="cl-input"
+              placeholder="1"
+            />
+          </div>
+          <div>
+            <label htmlFor="cl-baths" className="cl-fieldlabel">
+              Bathrooms
+            </label>
+            <input
+              id="cl-baths"
+              name="bathrooms"
+              inputMode="numeric"
+              defaultValue={detail(initial, "bathrooms")}
+              className="cl-input"
+              placeholder="1"
+            />
           </div>
           <div>
             <label htmlFor="cl-from" className="cl-fieldlabel">
               Available from
             </label>
-            <input id="cl-from" name="available_from" className="cl-input" placeholder="June 15" />
+            <input
+              id="cl-from"
+              name="available_from"
+              defaultValue={detail(initial, "available_from")}
+              className="cl-input"
+              placeholder="June 15"
+            />
+          </div>
+        </div>
+
+        <div hidden={!hasCondition} className="grid grid-cols-3 gap-3.5 max-[520px]:grid-cols-1">
+          <div>
+            <label htmlFor="cl-condition" className="cl-fieldlabel">
+              Condition
+            </label>
+            <input
+              id="cl-condition"
+              name="condition"
+              defaultValue={detail(initial, "condition")}
+              className="cl-input"
+              placeholder="Barely used"
+            />
+          </div>
+          <div hidden={!isFurniture}>
+            <label htmlFor="cl-dimensions" className="cl-fieldlabel">
+              Dimensions
+            </label>
+            <input
+              id="cl-dimensions"
+              name="dimensions"
+              defaultValue={detail(initial, "dimensions")}
+              className="cl-input"
+              placeholder="84 × 36 × 30 in"
+            />
+          </div>
+          <div hidden={!isFurniture}>
+            <label htmlFor="cl-brand" className="cl-fieldlabel">
+              Brand
+            </label>
+            <input
+              id="cl-brand"
+              name="brand"
+              defaultValue={detail(initial, "brand")}
+              className="cl-input"
+              placeholder="Vitra"
+            />
           </div>
         </div>
 
@@ -213,7 +345,8 @@ export default function ClPostForm({
             id="cl-desc"
             name="description"
             required
-            maxLength={4000}
+            maxLength={2000}
+            defaultValue={initial?.description ?? ""}
             className="cl-textarea"
             placeholder="Condition, timing, anything a buyer should know."
           />
@@ -221,12 +354,16 @@ export default function ClPostForm({
       </div>
 
       {/* ---------- 2 · Photos ---------- */}
-      <div hidden={step !== 1} className="mt-7">
-        <ClImageUpload userId={userId} />
+      <div hidden={!editing && step !== 1} className="mt-7">
+        {editing && <div className="cl-grouplabel mb-3.5">Photos</div>}
+        <ClImageUpload userId={userId} initial={initial?.images} />
       </div>
 
-      {/* ---------- 3 · Review ---------- */}
-      <div hidden={step !== 2} className="mt-7">
+      {/* ---------- 3 · Review ----------
+          The review card is the answer to "you are about to post something you
+          cannot see yet". On the edit route the listing already exists, so the
+          preview would just restate the fields sitting directly above it. */}
+      <div hidden={editing || step !== 2} className="mt-7">
         <div
           className="rounded-[12px] border p-[22px]"
           style={{
@@ -264,7 +401,15 @@ export default function ClPostForm({
 
       {/* ---------- Controls ---------- */}
       <div className="mt-[30px] flex flex-wrap items-center gap-4">
-        {last ? (
+        {editing ? (
+          <button
+            type="submit"
+            disabled={isPending}
+            className={isPending ? "cl-pill-disabled" : "cl-pill"}
+          >
+            {isPending ? "Saving…" : "Save changes"}
+          </button>
+        ) : last ? (
           <button
             type="submit"
             disabled={isPending}
@@ -280,19 +425,40 @@ export default function ClPostForm({
           </button>
         )}
 
-        {step > 0 && (
+        {!editing && step > 0 && (
           <button type="button" onClick={() => setStep(step - 1)} className="cl-quiet">
             Back
           </button>
         )}
       </div>
 
-      {last && (
+      {!editing && last && (
         <p className="mt-4 text-[12.5px]" style={{ color: "var(--cl-faint)" }}>
           Submitted listings wait for a moderator. Yours will show as pending
           until then.
         </p>
       )}
+
+      {/* Taking it down. Destructive, so it sits below the save, carries the
+          red accent, asks first, and says what archiving actually does. It is a
+          sibling of this form and not a nested one — a <form> inside a <form>
+          is invalid and the browser drops the inner one. */}
+      {editing && initial!.status !== "archived" && (
+        <ClRemoveListing listingId={initial!.id} status={initial!.status} />
+      )}
     </form>
   );
+}
+
+/**
+ * One key out of a listing's `details` JSON, as the string an input wants.
+ *
+ * Empty string for anything missing, so an uncontrolled input's defaultValue is
+ * never `undefined` — React would treat the field as controlled-by-accident and
+ * warn on the first keystroke.
+ */
+function detail(initial: ClPostFormInitial | undefined, key: string): string {
+  const value = initial?.details?.[key];
+  if (value === undefined || value === null) return "";
+  return String(value);
 }

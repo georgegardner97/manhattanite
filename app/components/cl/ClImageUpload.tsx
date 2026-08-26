@@ -20,8 +20,18 @@ import {
 
 type Item = { path: string; previewUrl: string };
 
-export default function ClImageUpload({ userId }: { userId: string }) {
-  const [items, setItems] = useState<Item[]>([]);
+export default function ClImageUpload({
+  userId,
+  initial,
+}: {
+  userId: string;
+  /** The listing's current photos, on the edit route. */
+  initial?: Item[];
+}) {
+  // Seeded once. The existing paths ride along in the same hidden `images`
+  // field as new uploads, because updateListing replaces the set wholesale —
+  // an existing photo left out of the submit is an existing photo removed.
+  const [items, setItems] = useState<Item[]>(initial ?? []);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -55,7 +65,9 @@ export default function ClImageUpload({ userId }: { userId: string }) {
     setItems((prev) => {
       const gone = prev.find((p) => p.path === path);
       // Release the blob URL, or every removed photo leaks for the page's life.
-      if (gone) URL.revokeObjectURL(gone.previewUrl);
+      // Only ours: an already-stored photo arrives as a signed https URL, and
+      // revoking one of those is a no-op at best.
+      if (gone?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(gone.previewUrl);
       return prev.filter((p) => p.path !== path);
     });
     setError(null);
@@ -63,7 +75,8 @@ export default function ClImageUpload({ userId }: { userId: string }) {
 
   return (
     <div>
-      {/* What createListing actually reads. The previews are for the person. */}
+      {/* What createListing and updateListing actually read. The previews are
+          for the person. */}
       <input
         type="hidden"
         name="images"

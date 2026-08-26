@@ -1,4 +1,6 @@
-// Screen 05 — Post a listing, in the Classifieds system.
+// /listings/new — post a listing. Screen 05, promoted from the preview
+// 2026-08-26 (Slice 2). The URL is unchanged; the header's primary action now
+// lands inside the design system it was drawn in.
 //
 // Member-gated exactly as the live /listings/new is: no session → the access
 // screen, an account that isn't a member → the members-only wall. Posting is
