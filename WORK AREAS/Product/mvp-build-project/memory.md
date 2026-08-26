@@ -1205,3 +1205,28 @@ Estimated effort: ~2 focused hours. Best done fresh.
 ---
 
 *Entry format: date · short title, then sections for Worked on / Decided / Blockers / Next.*
+
+## 2026-08-26 — Slice 2: the member-only screens, migrated and actually looked at
+
+**The blocker cleared first.** Cloudflare Turnstile now allows `localhost` — the widget renders, challenges and verifies. Slice 1 died at error 110200 with no challenge at all, which is why its signed-in states shipped unverified. This slice's did not.
+
+**What moved.** `/login`, `/signup`, `/apply` (screen 09 → `ClAccess`, one state-aware component across four cases); `/listings/new` (screen 05); `/profile` (screen 10). `/profile/edit` collapsed into `/profile` and left behind as a redirect.
+
+**What was designed rather than ported**, because no screen existed: `/listings/mine`, `/listings/[id]/edit`, `/listings/[id]/contact`.
+
+**Judgement calls worth keeping.**
+- **The profile photo stays.** Screen 10 doesn't draw one. Shipping it as drawn would have deleted `AvatarUpload` and reversed the 2026-06-08 identity decision by omission. A mockup that predates a decision does not get to overturn it.
+- **`/signup` needed a real form.** The design's guest card links to `/signup`; rendering the same screen there would have pointed that link at itself.
+- **Edit drops the three-step pills.** The steps stop a blank form feeling like a wall; an edit form is not blank. Presentation flag only — the form already mounts every field.
+- **My listings keeps the July audit's structure.** Cards for active, compact rows for archived. `ClListingRow` was not reused (built for search, leads with a thumbnail, links unconditionally); `ClArchivedRow` is a sibling with neither.
+- **Contact is one body in two frames** (page + modal), so they cannot disagree. The Tier-1 gate copy is verbatim from `voice-and-copy.md` again — the modal had been paraphrasing it.
+
+**Two real bugs caught in passing.** The post form allowed 140-char titles and 4000-char descriptions against server caps of 80 and 2000. And — worse — `updateListing` rebuilds `details` wholesale, while the form rendered only two of the six detail fields the action reads: editing a furniture listing would have silently deleted its condition, dimensions and brand. Both fixed.
+
+**New in the toolkit: `npm run audit:gates`.** 21 route gates asserted over HTTP as guest / Tier 1 / member, self-fixturing and self-cleaning. It exists because the RLS audit passed 59/59 on both sides of Slice 1's trust hole — that class of bug lives above the database. Note for next time: Next 16 encodes `redirect()`/`notFound()` in the RSC payload with a 200 document when streaming has begun, so asserting on HTTP status alone produces confident false failures.
+
+**Verified:** build clean; `audit:rls` 59/59 with prod state identical before and after; `audit:gates` 21/21; every screen rendered signed in as a member with listings in all four statuses; all four Tier-1 walls; the guest walk in-system; 390px and desktop; 34 screenshots (08–24).
+
+**Caught only by looking:** duplicate primary CTA, a Save pill on your own listing, and a redundant "Archived" label on every archived row. None visible in a diff.
+
+**Next:** Slice 3 — `/admin` ×4, `/invite`, `/join/[token]`, `/sponsor-request/[token]`, `/reset-request`, `/reset-password`, `/thank-you`, `/terms`, `/privacy`. Then `app/design/` and the `(ed)` group retire together. Slices 1 and 2 merge to `main` together, not separately.

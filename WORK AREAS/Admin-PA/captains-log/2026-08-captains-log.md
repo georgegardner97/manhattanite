@@ -36,3 +36,5 @@ Timestamped entries from conversation and scheduled runs. Newest at the bottom o
 
 ## 2026-08-18 (Tuesday)
 **07:00** — Morning briefing ran. Reconstructed yesterday from git + sent mail because no EOD ran: Mon 17 Aug went to design work (2 commits, 2 designer research docs, outreach to James Anderson + Special Sauce Branding), not the planned Sentry/Plausible. RED COUCH taping today 12:00 in LIC, RSVP still unanswered.
+
+**14:32** — Added six NANM gig days to the personal calendar for September: Fri 18 (16:00–21:00 load in / VIP), Sat 19 (08:00–19:00), Sun 20 (08:30–22:30), Fri 25 (16:00–21:00 load in / VIP), Sat 26 (08:00–19:00), Sun 27 (08:30–22:30). All Tomato (colorId 11) per the gig-work colour rule; public show hours 10:00–18:00 noted in each description. Both weekends are now fully committed, so the weekend make-up rule has no spare day in those two weeks. Deleted the Mon 21 Sep and Mon 28 Sep instances of the 05:15 morning routine and 07:30 AA — SOS to protect recovery after the 22:30 Sunday finishes. Single-instance deletions only; both recurring series intact. The 09:00 Manhattanite deep-work block was left in place on both Mondays.
