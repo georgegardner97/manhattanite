@@ -250,3 +250,22 @@
 **Caught only by looking:** duplicate primary CTA, a Save pill on your own listing, and a redundant "Archived" label on every archived row. None visible in a diff.
 
 **Next:** Slice 3 — `/admin` ×4, `/invite`, `/join/[token]`, `/sponsor-request/[token]`, `/reset-request`, `/reset-password`, `/thank-you`, `/terms`, `/privacy`. Then `app/design/` and the `(ed)` group retire together. Slices 1 and 2 merge to `main` together, not separately.
+
+### Slice 3 scope, as verified against the repo on 2026-08-26
+
+Twelve routes remain in the `(ed)` group. Not a guess — enumerated from `app/(ed)/**/page.tsx` after Slice 2 landed:
+
+| Route | Who reaches it | Notes |
+|---|---|---|
+| `/reset-request` | **Any member, and anyone who fails sign-in** | **Highest priority.** The only editorial screen reachable from *inside* the Classifieds system by a normal user — from `ClSignIn`'s earned "Forgot your password?" and from the Password → Reset row on `/profile`. |
+| `/reset-password` | Anyone following a reset email | Second half of the same flow; migrate with it. |
+| `/terms`, `/privacy` | Anyone | Linked from the landing footer (`app/(cl)/page.tsx`). Static content, lowest risk. |
+| `/thank-you` | Post-application | Check whether anything still routes here now `/apply` answers its own states on the page. |
+| `/invite` | Members (future) | Exists but has no in-product entry point. Migrating it unblocks restoring the **"I have an invite →"** CTA that `voice-and-copy.md` pairs with the contact gate — deliberately omitted in Slice 2 rather than pointed at an editorial screen. |
+| `/join/[token]` | Invitees | Pairs with `/invite`. |
+| `/sponsor-request/[token]` | Sponsors | Token flow, no in-product entry point yet. |
+| `/admin`, `/admin/applications`, `/admin/members`, `/admin/moderation` | **Founder only** | Reached through `AccountMenu` → `SiteNav`, which are editorial components not mounted anywhere in `(cl)`. So the admin console is currently unreachable from the Classifieds system at all — worth deciding deliberately: does the founder get a Classifieds route in, or does `/admin` stay a separate editorial tool? |
+
+**Retiring together, once those land:** `app/design/` (now just `/design`, `/design/kit` and its layout — the preview index and component kit; screens 05, 09 and 10 were consumed by Slice 2) and the whole `(ed)` route group, plus the editorial components only it uses (`PageShell`, `AuthShell`, `BoxButton`, `ArrowLink`, `MetaRows`, `SiteNav`, `AccountMenu`, `ListingCard`, `NewListingForm`, `ProfileEditForm`, `ContactForm`, `ImageUpload`, `AvatarUpload`, `SiteFooter` — audit before deleting; some are still shared).
+
+**One open question Slice 2 surfaced and did not answer:** a member can currently open `/listings/[id]/contact` on **their own** listing and send themselves a message. Harmless, but it is a control that does nothing — worth a cheap guard whenever contact is next touched.
