@@ -269,3 +269,25 @@ Twelve routes remain in the `(ed)` group. Not a guess — enumerated from `app/(
 **Retiring together, once those land:** `app/design/` (now just `/design`, `/design/kit` and its layout — the preview index and component kit; screens 05, 09 and 10 were consumed by Slice 2) and the whole `(ed)` route group, plus the editorial components only it uses (`PageShell`, `AuthShell`, `BoxButton`, `ArrowLink`, `MetaRows`, `SiteNav`, `AccountMenu`, `ListingCard`, `NewListingForm`, `ProfileEditForm`, `ContactForm`, `ImageUpload`, `AvatarUpload`, `SiteFooter` — audit before deleting; some are still shared).
 
 **One open question Slice 2 surfaced and did not answer:** a member can currently open `/listings/[id]/contact` on **their own** listing and send themselves a message. Harmless, but it is a control that does nothing — worth a cheap guard whenever contact is next touched.
+
+## 2026-08-26 — Slice 3a: the byline decision settled, and eight more screens in the system
+
+**The decision, first, because it is the half that is hard to walk back.** George: a logged-out visitor sees no member name and no sponsor name, anywhere. This settles the tension the landing had carried in a comment since 18 August — it anonymised while browse, search, saved, listing detail and the member profile named the same guest one click away, on pages Google indexes. **Browse changed to match the landing.** Signed in, nothing changed at all.
+
+- **One function, one deletion.** The landing's `anonymousMeta()` is gone and is now the guest branch of `cardMeta()` in `lib/cl/listings-read.ts`. `toClCards()` takes a **required** viewer instead of an optional meta override, so a new screen cannot get named bylines by saying nothing — it will not compile until it states who is looking.
+- **`/members/[id]` is the members-only wall for a guest.** The page is a named member from top to bottom; anonymised it says nothing. Side effect worth having: member pages stop being indexable.
+- **Not an RLS change, deliberately.** The names are denormalised onto every listing (0006) and published rows are anonymously readable (0010). Application rule, same as the teaser cap — which is why `audit:rls` passes 59/59 either way and the new assertions in `audit:gates` are the actual guarantee. 30 assertions now; the first run caught a false positive worth knowing about (a member named **Max**, and the price filter's "Max" placeholder), so the check reads visible text for every name and the full payload for full names only.
+
+**Eight routes migrated:** `/reset-request` + `/reset-password` (first, because reset was the only editorial screen a normal person could still reach from inside the Classifieds system), `/thank-you`, `/terms`, `/privacy`, `/invite`, `/join/[token]`, `/sponsor-request/[token]`.
+
+**Two new pieces of the kit, and one of them is a real gap closed.**
+- **`ClAuthCard`** — screen 09's grammar with the second panel removed. One card, one field, one action. Used by both resets, `/thank-you`, `/join` and `/sponsor-request`.
+- **`.cl-doc` + `ClDocument`** — the long-form treatment the design file never had. Nothing in the twelve screens sets a measure, a heading scale for a document, or a draft-notice box. Decisions recorded in the CSS: 66-character measure; body goes UP to 15px (13.5px is right for a label and a wall for a legal page); one heading level only; **no serif** — Newsreader stays the wordmark, and a legal page is exactly where a house serif sneaks back in as "editorial". The standards page `trust-and-moderation.md` wants will use this.
+
+**Content work done while inside those pages.** The privacy policy's analytics claim came out — the site runs none, and a policy that overclaims is worse than a thin one, particularly one about to be read by a lawyer. The working-draft notices stay until counsel has actually reviewed both pages. The stale bullet in `legal-and-policy.md` is corrected: **listings are public, member names are not**.
+
+**Flagged, not fixed: "I have an invite →".** Migrating `/invite` was supposed to unblock the CTA. It does not — `/invite` is where a member *sends* an invitation, so a Tier-1 account pressing it at the contact gate lands on their own profile. The gate now says "Open the link in that email" instead. Turning it back into a link means designing a tokenless "I have an invitation" screen. George's call.
+
+**Evidence:** screenshots 25–40 in `outputs/classifieds-migration-screens/` (desktop + 390px), including the guest-anonymity walk and the signed-in control beside it.
+
+**Next:** Slice 3b — `/admin` ×4 — then `app/design/` and the `(ed)` group retire together. **Slices 1, 2 and 3a merge to `main` together.**

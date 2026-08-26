@@ -6,6 +6,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-26 · Classifieds Slice 3a — the byline decision, then the screens people still see (Claude Code)
+
+**Step 1 was the decision, and it is the half that is hard to walk back.** George's call: a logged-out visitor sees no member name and no sponsor name, anywhere. The landing had anonymised since 18 August while `/listings` named everyone to the same guest one click away — one of the two pages was wrong about how public a member's name is, and now that the landing is `/`, it is the one Google indexes. Browse changed to match the landing.
+
+**One function, not a flag through five pages.** The landing's page-local `anonymousMeta()` is deleted; it is now the guest branch of `cardMeta()` in `lib/cl/listings-read.ts`, which browse, search, saved and the landing all already read. `toClCards()` gained a REQUIRED viewer argument in place of an optional meta override — so a screen used to get named bylines by saying nothing, and now a new screen will not compile until it states who is looking. Two screens needed more than a different string: `/listings/[id]` anonymises the lister and the sponsor inset for a guest (and drops the link through to their profile), and **`/members/[id]` becomes the members-only wall for a guest entirely** — the whole page is a named member, so anonymised it says nothing. Side effect worth having: member profiles stop being indexable.
+
+**The assertion is the point, not the change.** This is the same class of bug as Slice 1's trust hole — application-layer, invisible to `audit:rls`, which passes 59/59 either way. `npm run audit:gates` now fetches every guest-reachable route and searches the response for the real names in the database. **Its first run failed, correctly and awkwardly:** it found "Max" on `/listings` — the price filter's placeholder, and also a real seed member. The check is now two-channel: every name against the VISIBLE text (tags stripped, so a placeholder cannot trip it), and full names only against the whole response including the RSC payload (which caught a genuine payload-only leak on `/saved` during the negative-control run — cards serialised to a client component, invisible on screen, one View Source away). Both channels were negative-controlled by breaking the rule and watching them fail. 30 assertions now, all green.
+
+**Then the screens.** Eight of the twelve remaining `(ed)` routes moved: `/reset-request` and `/reset-password` first, because reset was the only editorial screen a normal person could still reach from inside the new system (from the sign-in failure and the Password row on `/profile`); then `/thank-you`; `/terms` and `/privacy`; and the growth loop — `/invite`, `/join/[token]`, `/sponsor-request/[token]`. Only the four admin screens are left, and George is the only person who sees those.
+
+**Terms and privacy needed designing, not porting** — the Classifieds kit had no prose treatment at all: no measure, no heading scale for a document, no draft-notice box. Built once as `.cl-doc` + `ClDocument`, because the standards page will want the same thing. Body type goes UP to 15px there (13.5px is right for a label, and a wall for a legal document), the measure is 66 characters, and the serif stays out — Newsreader is the wordmark, not a heading face.
+
+**Two corrections made while inside those files.** The privacy policy claimed "basic, privacy-respecting analytics" and "lightweight analytics"; the site runs none — no Plausible, no Google, no Vercel Analytics, nothing. That came out, with a line saying the tool will be named here when analytics land. And a stale bullet in `legal-and-policy.md` ("not making listings public to non-account-holders") was corrected — untrue since the 9 June D1 decision; the accurate line is now **listings are public, member names are not**, which both Terms and Privacy also say on the page.
+
+**A real bug caught on the way across: the invite sign-up had no captcha.** Supabase gates sign-up at the project level, so `signUp` without a Turnstile token is rejected before an account is created. The editorial `JoinForm` never rendered the widget — every invitee reaching that screen would have been told their sign-up failed, with no way to pass. Nobody has hit it because `/join` has no in-product entry point, which is luck, not design. `ClJoinForm` has the widget.
+
+**"I have an invite →" still does not go back as a button** — and the reason is not the dead-link rule any more. `/invite` is where a member SENDS an invitation; a Tier-1 account pressing that CTA would be bounced to their profile. The gate now says "Have an invitation? Open the link in that email". Making it a link again means building a tokenless lookup screen — George's call.
+
+**Verified:** build clean; `audit:rls` 59/59 with prod state identical before and after; `audit:gates` 30/30 including the new name-leak assertions and a positive control (a signed-in member still sees "Lila" on her profile); guest walk checked in the rendered HTML, not just on screen; 390px and desktop; screenshots 25–40 in `design-foundation-project/outputs/classifieds-migration-screens/`.
+
+**Next:** Slice 3b — `/admin` ×4 — then `app/design/` and the `(ed)` group retire together. **Slices 1, 2 and 3a merge to `main` together.**
+
+---
+
 ## 2026-08-26 · Classifieds Slice 2 — the member-only screens migrate, and are verified for the first time (Claude Code)
 
 **Slice 0 is cleared. The Turnstile widget renders on localhost.** The Cloudflare hostname allowlist that blocked Slice 1 entirely (error 110200, no challenge rendered at all, retested 20 Jul and 18 Aug) has been fixed. The widget now loads, challenges, and verifies on `http://localhost:3000`. That single change is what made this slice's verification possible — and it is the reason Slice 1's signed-in states shipped unlooked-at while this slice's did not.

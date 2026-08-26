@@ -188,3 +188,17 @@ Big strategy session (full detail: `Growth/.../outputs/Manhattanite_Strategy-Ses
 - **Take it to Cowork for strategy with no code dependency** — the designer shortlist and brief, the audience question, GTM, positioning, copy strategy, PA work.
 - **Conversations that sit on the boundary** (e.g. "should this design ship?") are usually better in Claude Code, *because the answer turns on what the code supports* — but the **conclusion** belongs in the project memory so Cowork picks it up next session.
 - **Both write to the same memory files**, so nothing is lost either way. The discipline that matters is that Claude Code sessions log to all four (`COMPANY/memory.md`, `memory/decisions.md`, `memory/session-log.md`, and the relevant project memory), not just the project one — a code session that only updates its own project memory leaves Cowork blind to decisions that were genuinely strategic.
+
+---
+
+## 2026-08-26 — Classifieds Slice 3a: names are for members, and eight more screens moved
+
+**The rule to remember, because it changes what a stranger sees:** a logged-out visitor gets listings, prices, photographs and neighborhoods — and **no member name and no sponsor name, anywhere**. Signed in, nothing changed: the full "Listed by X · sponsored by Y" byline is exactly as it was. George settled this on 26 Aug, reversing the question held open on the 18th; browse changed to match the landing rather than the reverse. `/members/[id]` is now the members-only wall for a guest (so member profiles are no longer indexable), and Terms and Privacy both say the new line out loud: **listings are public, member names are not**.
+
+**Where it is enforced, and where it is NOT.** One function — `cardMeta()` in `lib/cl/listings-read.ts` — not an RLS policy, because the database is entitled to hand those names over and does. Same class as the six-row teaser cap, which means `npm run audit:rls` cannot see it. `npm run audit:gates` now fetches every guest-reachable route and searches the response for the real names in the database; 30 assertions, all green.
+
+**Eight of the twelve remaining editorial screens are now Classifieds screens:** the two password-reset screens, `/thank-you`, `/terms`, `/privacy`, `/invite`, `/join/[token]`, `/sponsor-request/[token]`. Only `/admin` ×4 is left in the old system, and George is the only person who sees those. **Slices 1, 2 and 3a merge to `main` together.**
+
+**Two things George should know:**
+1. **The privacy policy overclaimed and has been corrected.** It said the site keeps "privacy-respecting analytics"; the site runs none. Softened to match reality, with a line saying the tool will be named when analytics actually ship. The stale "not making listings public to non-account-holders" bullet in `legal-and-policy.md` is fixed too.
+2. **"I have an invite →" stays a sentence, not a button.** `/invite` is for a member SENDING an invitation, so pointing the contact gate's second CTA there would bounce a Tier-1 account to their profile. Making it a real link needs a tokenless "I have an invitation" lookup screen — a small build, and a decision for George.
