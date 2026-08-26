@@ -188,7 +188,20 @@ export default async function ClassifiedsDetailPage({
     viewerName = viewer?.name ?? null;
   }
 
-  const listerName = listing.author_name ?? "this member";
+  // WHO IS NAMED, AND TO WHOM (founder decision, 2026-08-26). A logged-out
+  // visitor sees no member name and no sponsor name — the same rule cardMeta()
+  // applies to every card, restated here because this page assembles its member
+  // block by hand rather than through toClCards. The names are in the row
+  // either way: 0006 denormalized them and 0010 lets an anonymous reader select
+  // a published listing. This is an application rule, deliberately, and it is
+  // the audit in scripts/audit-gates.ts that holds it — not a policy.
+  //
+  // Nothing changes for a signed-in reader: the byline, the link through to the
+  // member and the sponsor inset are exactly what they were.
+  const isGuest = !user;
+  const listerName = isGuest
+    ? "A member"
+    : listing.author_name ?? "this member";
 
   return (
     <>
@@ -308,15 +321,25 @@ export default async function ClassifiedsDetailPage({
             >
               <div className="cl-avatar h-10 w-10" aria-hidden="true" />
               <div className="min-w-0">
-                {/* Through to screen 08. Their profile is assembled from the
-                    same public bylines this card is already showing, so the
-                    link discloses nothing the page hasn't. */}
-                <Link
-                  href={`/members/${listing.author_id}`}
-                  className="cl-cardlink block truncate text-[14.5px] font-medium"
-                >
-                  {listerName}
-                </Link>
+                {/* Through to screen 08 — for a signed-in reader. Their profile
+                    is assembled from the same public bylines this card is
+                    already showing, so the link discloses nothing the page
+                    hasn't. A guest gets no link, because /members/[id] answers
+                    them with the members-only wall now: a link that leads to a
+                    door is worse than no link, and the unlinked line is also
+                    the honest shape of "A member". */}
+                {isGuest ? (
+                  <div className="block truncate text-[14.5px] font-medium">
+                    {listerName}
+                  </div>
+                ) : (
+                  <Link
+                    href={`/members/${listing.author_id}`}
+                    className="cl-cardlink block truncate text-[14.5px] font-medium"
+                  >
+                    {listerName}
+                  </Link>
+                )}
                 <div
                   className="text-[12.5px]"
                   style={{ color: "var(--cl-muted)" }}
@@ -334,10 +357,19 @@ export default async function ClassifiedsDetailPage({
                 how many sponsors are named — see below. */}
             {listing.sponsor_names.length > 0 && (
               <p className="cl-inset mt-4">
-                Sponsored by{" "}
-                <strong className="font-medium">
-                  {formatSponsors(listing.sponsor_names)}
-                </strong>
+                {isGuest ? (
+                  // The trust fact survives; the person does not. Dropping the
+                  // inset entirely would tell a guest less than the truth —
+                  // somebody did vouch for this listing.
+                  <>Vouched for by a member.</>
+                ) : (
+                  <>
+                    Sponsored by{" "}
+                    <strong className="font-medium">
+                      {formatSponsors(listing.sponsor_names)}
+                    </strong>
+                  </>
+                )}
               </p>
             )}
 

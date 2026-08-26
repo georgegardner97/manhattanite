@@ -931,3 +931,107 @@ details[open] > .cl-summary .cl-caret {
     animation: none;
   }
 }
+
+/* ----------------------------------------------------------------------------
+   LONG-FORM DOCUMENTS
+   ----------------------------------------------------------------------------
+   Terms, privacy — and, next, the standards page. NOT PORTED FROM THE DESIGN
+   FILE, because the design file has no prose in it: twelve screens of listings,
+   cards, forms and rails, and nothing that sets a measure, a heading scale, or
+   the rhythm of a document somebody has to read a thousand words of. So the
+   treatment is built once, here, and the pages that need it share it rather
+   than each inventing a stack of Tailwind classes that drift apart.
+
+   Three decisions worth the words:
+
+   1. THE MEASURE IS THE POINT. 66 characters, which is the top of the range
+      that stays comfortable, and it is set on the paragraph rather than the
+      column so a heading can sit at the full width of the page's grid while the
+      reading line stays where the eye can carry it.
+
+   2. BODY GOES UP TO 15px, NOT DOWN TO 13.5px. Everywhere else in this system
+      13.5px is right, because everywhere else the text is a label, a byline or
+      a field — read in glances. A privacy policy is read in paragraphs, and at
+      13.5px over a 66-character line it becomes a wall to be skipped, which for
+      a legal document is a real failure and not a cosmetic one.
+
+   3. NO SERIF. Newsreader is reserved for the wordmark and display numerals in
+      this system (see TYPE, above), and a legal page is exactly the surface
+      that would tempt a house serif back in as "editorial". Instrument Sans at
+      a longer measure and a looser leading does the job without reopening a
+      settled type decision.
+   -------------------------------------------------------------------------- */
+
+.cl-doc {
+  max-width: 680px;
+}
+
+.cl-doc p,
+.cl-doc li {
+  max-width: 66ch;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--cl-body);
+}
+
+.cl-doc p {
+  margin-bottom: 15px;
+}
+
+/* Sentence case, medium weight, and only ONE level. A working draft with an
+   h3 under an h2 is a document pretending to a structure it has not earned. */
+.cl-doc h2 {
+  margin-top: 40px;
+  margin-bottom: 9px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--cl-ink);
+}
+
+/* The heading and its first line belong together. */
+.cl-doc h2 + p {
+  margin-top: 0;
+}
+
+/* Emphasis inside prose is a term being defined — "an account", "membership" —
+   so it darkens rather than fattens. */
+.cl-doc strong {
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+
+/* Underline links IN THE PROSE only. The page's own chrome — the wordmark in
+   the footer, the sibling-document links beside it — are navigation, and
+   underlining them makes the foot of the document look like a list of
+   citations. */
+.cl-doc p a,
+.cl-doc li a {
+  color: var(--cl-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.cl-doc ul {
+  margin: 0 0 15px;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-doc li {
+  position: relative;
+  margin-bottom: 8px;
+  padding-left: 18px;
+}
+
+/* A hairline rather than a bullet — this system draws lines, not dots. */
+.cl-doc li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.85em;
+  width: 9px;
+  height: 1px;
+  background: var(--cl-faint);
+}

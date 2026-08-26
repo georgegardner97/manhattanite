@@ -14,6 +14,10 @@
 //     query, exactly as it is on /listings, because viewing is the funnel and
 //     the action layer is the gate.
 //   - Signed-in accounts and members get the full feed, capped at 50.
+//   - A GUEST IS SHOWN NO NAMES. The byline on a card is assembled here too
+//     (cardMeta), and for a logged-out reader it names neither the lister nor
+//     the sponsor. Same reasoning as the cap: the data layer will hand the
+//     names over, so the rule has to hold in the one place every screen reads.
 //
 // Every screen then filters, sorts and counts IN MEMORY over this one result
 // set. At a 50-row ceiling that is one round-trip instead of several, and it
@@ -53,6 +57,11 @@ export type GatedListings = {
   rows: BrowseRow[];
   isGuest: boolean;
 };
+
+/** Who is looking. The only thing a card needs to know about a reader, and the
+ *  one fact that decides whether anyone is named on it. `GatedListings` already
+ *  answers it, so a gated read can be passed straight through. */
+export type Viewer = { isGuest: boolean };
 
 export async function readPermittedListings(): Promise<GatedListings> {
   const supabase = await createClient();
@@ -94,6 +103,12 @@ export async function readPermittedListings(): Promise<GatedListings> {
  * A guest therefore sees only this member's rows that are ALREADY in their
  * teaser six — never a row they could not reach from browse. A signed-in viewer
  * reads the member directly, capped at 24, which is the behavior as built.
+ *
+ * SINCE 2026-08-26 /members/[id] shows a guest the members-only wall instead of
+ * calling this at all, so the guest branch below is no longer reached from that
+ * page. It stays: it is this module's guarantee about what a guest may be shown,
+ * and the next screen to read a member's listings may not have a wall in front
+ * of it.
  */
 export async function readMemberListings(
   authorId: string
@@ -213,15 +228,52 @@ export function neighborhoodsIn(rows: BrowseRow[]): string[] {
 }
 
 /**
- * The default meta line under a card: the shared byline plus the relative date
- * this design system's cards carry.
+ * The meta line under a card — AND THE ONE PLACE A MEMBER'S NAME IS DECIDED.
+ *
+ * THE RULE (founder, 2026-08-26): a logged-out visitor sees no member name and
+ * no sponsor name, anywhere. Signed in — account or member — nothing changes:
+ * the full byline is exactly what it always was, and the vouching mechanic is
+ * intact for everyone actually in the building.
+ *
+ * It settles the tension the landing page had been carrying in a comment since
+ * 18 August. The landing anonymized; browse, search, saved and the member
+ * profile named the same visitor one click away. Browse changed to match the
+ * landing, not the other way round.
+ *
+ * WHY IT LIVES HERE AND NOT IN AN RLS POLICY. `author_name` and `sponsor_names`
+ * are denormalized onto every listing (0006) and published rows are anonymously
+ * readable (0010). The database will keep handing the names over, and that is
+ * correct — the byline is public data to a signed-in reader, and this is a
+ * presentation rule about one audience. So, like the six-row teaser cap, it is
+ * an APPLICATION rule.
+ *
+ * Which makes it exactly the class of bug that produced Slice 1's trust hole:
+ * `audit:rls` passes 59/59 whether this is right or wrong. The assertions that
+ * actually hold it are in scripts/audit-gates.ts — every guest-reachable route
+ * is fetched and its body checked for real member names.
+ *
+ * It is one function rather than a flag threaded through five pages: the two
+ * bylines are written once, here, and `toClCards` is the only caller. The
+ * landing used to carry its own `anonymousMeta()`; this is that function, moved
+ * to where every screen already reads.
  */
-export function defaultMeta(row: BrowseRow): string {
+export function cardMeta(row: BrowseRow, isGuest: boolean): string {
+  const when = relativeDay(row.created_at);
+
+  if (isGuest) {
+    // "Vouched by a member · 4 days ago" — the trust fact, no name attached.
+    // Nobody has sponsored it yet, so there is no vouching to claim: saying so
+    // plainly beats implying a sponsor that does not exist.
+    const who =
+      row.sponsor_names.length > 0
+        ? "Vouched by a member"
+        : "Listed by a member";
+    return `${who} · ${when}`;
+  }
+
   // renderByline stays the single source of truth for how sponsors are named
   // (the hybrid-at-2 rule); this system only adds the date.
-  return `${renderByline(row.author_name, row.sponsor_names)} · ${relativeDay(
-    row.created_at
-  )}`;
+  return `${renderByline(row.author_name, row.sponsor_names)} · ${when}`;
 }
 
 /**
@@ -231,12 +283,16 @@ export function defaultMeta(row: BrowseRow): string {
  * read: a signed URL is a grant, and there is no reason to mint fifty of them
  * to render six cards.
  *
- * `renderMeta` overrides the byline. The landing page passes its own, because
- * it names nobody — see the note there.
+ * `viewer` IS REQUIRED, AND THAT IS THE POINT. It used to be an optional
+ * `renderMeta` override, which meant a screen got the named byline by saying
+ * nothing — the failure mode that let the landing and browse disagree about how
+ * public a member's name is. Now every screen has to state who is looking, and
+ * a new one will not compile until it does. `GatedListings` satisfies the shape,
+ * so the usual call is `toClCards(visible, gated)`: these rows, for this read.
  */
 export async function toClCards(
   rows: BrowseRow[],
-  renderMeta: (row: BrowseRow) => string = defaultMeta
+  viewer: Viewer
 ): Promise<ClCard[]> {
   const coverUrlByPath = await signImagePaths(
     rows
@@ -251,7 +307,7 @@ export async function toClCards(
       title: row.title,
       place: placeOf(row),
       price: formatPrice(row.price_cents, row.type),
-      meta: renderMeta(row),
+      meta: cardMeta(row, viewer.isGuest),
       coverUrl: coverPath ? coverUrlByPath.get(coverPath) ?? null : null,
       isExample: row.is_example,
     };

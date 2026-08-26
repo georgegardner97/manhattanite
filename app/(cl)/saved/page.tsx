@@ -12,13 +12,13 @@ import { readPermittedListings, toClCards } from "@/lib/cl/listings-read";
 export const dynamic = "force-dynamic"; // session state varies per request.
 
 export default async function ClassifiedsSavedPage() {
-  const { rows } = await readPermittedListings();
+  const gated = await readPermittedListings();
 
   // Every permitted row is signed, not just the saved ones — the server has no
   // way to know which those are. At the 50-row ceiling that is one round-trip
   // for a handful of unused signatures, which is the price of keeping the gate
   // on the server; it would be worth revisiting if the ceiling ever moved.
-  const cards = await toClCards(rows);
+  const cards = await toClCards(gated.rows, gated);
 
   return (
     <>

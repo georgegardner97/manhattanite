@@ -107,7 +107,9 @@ export default async function MyListingsPage({
   // slot, not `meta`: the byline underneath stays as it is everywhere else, so
   // a listing of yours still reads as the same object it is on browse.
   const statusById = new Map(active.map((row) => [row.id, row.status]));
-  const cards = (await toClCards(active)).map((card) => ({
+  // Your own screen: the page redirects a guest long before this, so the byline
+  // is the named one. Stated rather than defaulted — see the note on toClCards.
+  const cards = (await toClCards(active, { isGuest: false })).map((card) => ({
     ...card,
     place: STATUS_LABEL[statusById.get(card.id)!],
   }));

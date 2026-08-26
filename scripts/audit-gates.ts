@@ -14,6 +14,15 @@
 // over HTTP, as each principal, reading what the page returns. The two audits
 // are complements, and neither substitutes for the other.
 //
+// THE SECOND RULE IT HOLDS, ADDED 2026-08-26: a logged-out visitor sees no
+// member name and no sponsor name, anywhere. That is a founder decision, it is
+// enforced in application code (cardMeta in lib/cl/listings-read.ts), and it is
+// invisible to the RLS audit for exactly the same reason the teaser cap is —
+// the database is entitled to return those names and does. So every
+// guest-reachable route is fetched here and its BODY is searched for the real
+// names in the database. Without this, the next screen someone adds re-opens
+// the hole and nothing fails.
+//
 // NEXT 16 DOES NOT ALWAYS ANSWER redirect()/notFound() WITH AN HTTP STATUS. A
 // dynamic Server Component that has begun streaming encodes the outcome in the
 // RSC payload and the document itself is 200. Asserting on res.status alone
@@ -25,6 +34,8 @@ import {
   up,
   down,
   gateIds,
+  guestReachable,
+  memberNames,
   sessionCookie,
   type GateIds,
 } from "./screen-fixtures";
@@ -97,6 +108,88 @@ async function check(
   );
 }
 
+// The names as a reader would see them. React escapes apostrophes and
+// ampersands into entities on the way out, and the RSC payload carries its own
+// copy of every string — both are searched, because both are "the page".
+function decodeEntities(body: string): string {
+  return body
+    .replace(/&#x27;|&#39;|&apos;/g, "'")
+    .replace(/&quot;|&#34;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** What a person actually reads: script and style contents dropped, tags
+ *  replaced by a space so neighbouring text can't be glued into a false match,
+ *  entities decoded, whitespace collapsed. */
+function visibleText(body: string): string {
+  return decodeEntities(
+    body
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+  ).replace(/\s+/g, " ");
+}
+
+/**
+ * Fetch a route AS A GUEST and fail if a member is named in what comes back.
+ *
+ * TWO CHANNELS, AND THE REASON IS A MEMBER CALLED MAX. Matching every name
+ * against the raw document is the strictest thing to do and it fails on its
+ * first run — the price filter's placeholder is "Max", and the seed network has
+ * a member of that name. Chrome and people share short words, so the check is
+ * split by what a collision is plausible in:
+ *
+ *   VISIBLE TEXT — every name, including single first names. This is where a
+ *   leak actually shows up: a byline, a heading, a sponsor line. Tags are
+ *   stripped, so a placeholder or an aria-label cannot trip it.
+ *
+ *   THE WHOLE RESPONSE, RSC payload included — full names only ("George
+ *   Gardner"), which no interface label is going to collide with. This is the
+ *   channel that catches a name serialized into a Client Component's props but
+ *   never rendered: invisible on screen, one View Source away.
+ *
+ * What that trades: a single first name hidden in an attribute or a client prop
+ * and never displayed would pass. Worth knowing, and worth less than a check
+ * that cries wolf on "max-width" every run — a trust check nobody trusts is
+ * already broken.
+ *
+ * Case-sensitive and word-bounded throughout, so "Max" never matches `max-w-`.
+ */
+async function checkNoNames(
+  label: string,
+  url: string,
+  names: string[]
+): Promise<void> {
+  const res = await fetch(`${BASE}${url}`, { redirect: "manual", headers: {} });
+  const raw = await res.text();
+  const text = visibleText(raw);
+  const decodedRaw = decodeEntities(raw);
+
+  const hit = (haystack: string, name: string) =>
+    new RegExp(`\\b${escapeRegExp(name)}\\b`).test(haystack);
+
+  const found = [
+    ...names.filter((name) => hit(text, name)).map((n) => `${n} (on screen)`),
+    ...names
+      .filter((name) => /\s/.test(name) && hit(decodedRaw, name))
+      .map((n) => `${n} (in the payload)`),
+  ];
+
+  const ok = found.length === 0;
+  if (!ok) fails++;
+  console.log(
+    `  ${ok ? "✓" : "✗ NAME LEAK"} [guest] ${url} — ${
+      ok ? "no member name in the response" : `found ${[...new Set(found)].join(", ")}`
+    }`
+  );
+}
+
 async function main() {
   console.log("\n── FIXTURES ──");
   await up();
@@ -134,6 +227,39 @@ async function main() {
     });
   }
 
+  console.log("\n── GUEST: NOBODY IS NAMED ──");
+  const names = await memberNames();
+  const reachable = await guestReachable();
+  console.log(`  ${names.length} real names to look for, longest first`);
+
+  // Every route a logged-out visitor can actually open. The listing and the
+  // member id are taken from the live rows, not invented: the newest published
+  // listing is inside the teaser by definition, so it is the one a guest can
+  // read — and its author is the member page that must answer with the wall.
+  await checkNoNames("landing", "/", names);
+  await checkNoNames("browse", "/listings", names);
+  await checkNoNames("browse filtered", "/listings?type=apartment", names);
+  await checkNoNames("saved", "/saved", names);
+  if (reachable.searchTerm) {
+    await checkNoNames(
+      "search",
+      `/search?q=${encodeURIComponent(reachable.searchTerm)}`,
+      names
+    );
+  }
+  if (reachable.listingId) {
+    await checkNoNames("listing detail", `/listings/${reachable.listingId}`, names);
+  }
+  if (reachable.memberId) {
+    // The member page is now the wall for a guest, so this asserts two things at
+    // once: no name, and — below — that it is the wall they are looking at.
+    await checkNoNames("member profile", `/members/${reachable.memberId}`, names);
+    await check("guest", `/members/${reachable.memberId}`, null, {
+      status: 200,
+      contains: "Members only",
+    });
+  }
+
   console.log("\n── TIER 1 (account, not a member) ──");
   await check("t1", "/listings/new", T, { status: 200, contains: "Members post" });
   await check("t1", "/listings/mine", T, { status: 200, contains: "Members post" });
@@ -164,6 +290,15 @@ async function main() {
     status: 200,
     contains: "Introduce yourself",
   });
+
+  // The other half of the rule, and the reason it is asserted at all: hiding
+  // names from guests must not quietly turn into hiding them from everybody.
+  if (reachable.namedMemberId && reachable.namedMemberName) {
+    await check("m", `/members/${reachable.namedMemberId}`, M, {
+      status: 200,
+      contains: reachable.namedMemberName,
+    });
+  }
 
   console.log("\n── MEMBER, SOMEONE ELSE'S LISTING ──");
   if (otherPublished) {

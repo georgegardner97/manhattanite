@@ -26,34 +26,29 @@
 // and every card links to a detail page that same visitor can actually open —
 // the landing leads somewhere for a stranger, which is the whole job of it.
 //
-// NOBODY IS NAMED, AND THAT IS THE DESIGN'S CALL, NOT A DATA LIMIT. Inside the
-// product a card reads "Listed by Lila · sponsored by George Gardner". The
-// design's landing card reads "Vouched by a member since 2023" — the trust
-// signal without the person. On the one page that is meant to be indexed and
-// shared, that is the better instinct, and it is followed here.
+// NOBODY IS NAMED HERE, AND AS OF 2026-08-26 NOBODY IS NAMED TO A LOGGED-OUT
+// VISITOR ANYWHERE. This page had the instinct first — the design's card reads
+// "Vouched by a member", the trust signal without the person — and browse,
+// search, saved and the member profile named the same guest one click away. Put
+// to the founder on 18 August it was held open; asked again on the 26th the
+// answer was to hide names from guests everywhere and make browse match the
+// landing. So the page-local anonymousMeta() this file used to carry is gone:
+// it IS cardMeta()'s guest branch now, in lib/cl/listings-read.ts, and this
+// page gets it by doing nothing special.
 //
-//   The year is dropped: "member since 2023" needs a join date from `accounts`,
-//   which is read-own under RLS, so it is not available to a logged-out reader.
-//   The line keeps the shape and loses the number rather than inventing one.
+//   The design's "member since 2023" loses its year: that needs a join date
+//   from `accounts`, which is read-own under RLS and so unavailable to a
+//   logged-out reader. The line keeps the shape rather than inventing a number.
 //
-//   PUT TO THE FOUNDER 2026-08-18 AND HELD, NOT SETTLED. /listings shows the
-//   same guest the same six listings WITH everyone's names on them, so one of
-//   the two pages is wrong about how public a member's name is — and now that
-//   this page is "/", it is the one Google indexes. Asked directly, the answer
-//   was to keep the landing anonymous for now and leave the question open.
-//   So the tension is real, known, and deliberately unresolved. Reversing it is
-//   one function: return the named byline from anonymousMeta() below.
+//   A SIGNED-IN VISITOR TO "/" NOW SEES THE FULL BYLINE, which is the rule
+//   working, not an exception to it: nothing changes for anyone who is actually
+//   in the building.
 
 import Link from "next/link";
 import Wordmark from "@/app/components/Wordmark";
 import ClLandingCard from "@/app/components/cl/ClLandingCard";
 import ClSignIn from "@/app/components/cl/ClSignIn";
-import {
-  readPermittedListings,
-  toClCards,
-  type BrowseRow,
-} from "@/lib/cl/listings-read";
-import { relativeDay } from "@/lib/cl/filters";
+import { readPermittedListings, toClCards } from "@/lib/cl/listings-read";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -61,20 +56,9 @@ export const dynamic = "force-dynamic"; // session state varies per request.
 // to fifty, and the landing is not a browse page — it stays at six either way.
 const LANDING_COUNT = 6;
 
-// "Vouched by a member · 4 days ago" — the trust fact, no name attached.
-function anonymousMeta(row: BrowseRow): string {
-  const who =
-    row.sponsor_names.length > 0
-      ? "Vouched by a member"
-      : // Nobody has sponsored it yet, so there is no vouching to claim. Saying
-        // so plainly beats implying a sponsor that does not exist.
-        "Listed by a member";
-  return `${who} · ${relativeDay(row.created_at)}`;
-}
-
 export default async function ClassifiedsLandingPage() {
-  const { rows } = await readPermittedListings();
-  const cards = await toClCards(rows.slice(0, LANDING_COUNT), anonymousMeta);
+  const gated = await readPermittedListings();
+  const cards = await toClCards(gated.rows.slice(0, LANDING_COUNT), gated);
 
   return (
     <>
@@ -163,7 +147,10 @@ export default async function ClassifiedsLandingPage() {
       </section>
 
       {/* ---------- The footer ---------- */}
-      <footer className="border-t" style={{ borderColor: "var(--cl-hairline)" }}>
+      <footer
+        className="border-t"
+        style={{ borderColor: "var(--cl-hairline)" }}
+      >
         <div
           className="mx-auto flex w-full max-w-[1240px] flex-wrap items-center justify-between gap-5 px-[clamp(16px,3vw,32px)] py-5 text-[12.5px]"
           style={{ color: "var(--cl-faint)" }}

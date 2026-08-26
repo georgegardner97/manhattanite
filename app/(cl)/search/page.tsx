@@ -69,7 +69,7 @@ export default async function ClassifiedsSearchPage({
       ? [...matched].sort((a, b) => a.price_cents - b.price_cents)
       : matched;
 
-  const cards = await toClCards(visible);
+  const cards = await toClCards(visible, gated);
   const chips = activeChips(q);
 
   return (

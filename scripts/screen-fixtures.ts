@@ -234,6 +234,119 @@ export async function gateIds(): Promise<GateIds> {
   };
 }
 
+/**
+ * Every real member name in the database, plus the individual words they are
+ * made of.
+ *
+ * FOR THE NAME-LEAK ASSERTIONS in audit-gates.ts. The founder's 2026-08-26 rule
+ * is that a logged-out visitor sees no member name and no sponsor name
+ * anywhere, and that rule lives in application code (cardMeta) because the data
+ * layer will keep handing the names over — 0006 denormalized them onto every
+ * listing and 0010 lets an anonymous reader select a published row. `audit:rls`
+ * therefore passes whether the rule holds or not, exactly as it did either side
+ * of Slice 1's trust hole. So the check is: fetch the page as a guest, and look
+ * for the actual strings.
+ *
+ * The words are included as well as the full names because a first-name-only
+ * leak ("Message Anna.") is the likelier kind. They are matched case-sensitively
+ * on a word boundary by the caller, which is what keeps "Max" out of `max-width`
+ * and `max-w-[1240px]`.
+ */
+export async function memberNames(): Promise<string[]> {
+  const { data: accounts } = await admin
+    .from("accounts")
+    .select("name")
+    .not("name", "is", null)
+    .returns<{ name: string }[]>();
+
+  // The denormalized byline is its own source of truth — a listing can carry a
+  // name whose account row has since changed, and it is the listing's copy that
+  // renders.
+  const { data: listings } = await admin
+    .from("listings")
+    .select("author_name, sponsor_names")
+    .eq("status", "published")
+    .returns<{ author_name: string | null; sponsor_names: string[] | null }[]>();
+
+  const full = [
+    ...(accounts ?? []).map((a) => a.name),
+    ...(listings ?? []).flatMap((l) => [l.author_name, ...(l.sponsor_names ?? [])]),
+  ]
+    .filter((n): n is string => typeof n === "string" && n.trim().length > 0)
+    .map((n) => n.trim());
+
+  const words = full.flatMap((n) => n.split(/\s+/)).filter((w) => w.length >= 3);
+
+  // Longest first, so a failure reports "George Gardner" rather than "George".
+  return [...new Set([...full, ...words])].sort((a, b) => b.length - a.length);
+}
+
+export type GuestReachable = {
+  /** The newest published listing — a guest may open this one's detail page. */
+  listingId: string | null;
+  /** Its author, whose /members/[id] page a guest must NOT be able to read. */
+  memberId: string | null;
+  /** A word from its title, so a guest search actually returns a card. */
+  searchTerm: string | null;
+  /** A REAL member with published listings, and the name on them — the positive
+   *  control. Hiding names from guests is only half the rule; a signed-in
+   *  member must still see them, and an over-correction that walls everybody
+   *  would otherwise pass every check in the file. */
+  namedMemberId: string | null;
+  namedMemberName: string | null;
+};
+
+/** What a logged-out visitor can actually reach, taken from the live rows
+ *  rather than assumed: the teaser is "the six newest published listings", so
+ *  the newest one is guest-reachable by definition. */
+export async function guestReachable(): Promise<GuestReachable> {
+  const { data } = await admin
+    .from("listings")
+    .select("id, title, author_id")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .returns<{ id: string; title: string; author_id: string }[]>();
+
+  const row = data?.[0];
+
+  // Someone with a name on a published listing. Deliberately read separately
+  // from the newest row: the newest row is usually the fixture's, and a member
+  // reading their own profile proves less than one reading somebody else's.
+  const { data: named } = await admin
+    .from("listings")
+    .select("author_id, author_name")
+    .eq("status", "published")
+    .not("author_name", "is", null)
+    .order("created_at", { ascending: false })
+    .returns<{ author_id: string; author_name: string }[]>();
+
+  const other = named?.find((l) => l.author_id !== row?.author_id) ?? null;
+
+  if (!row) {
+    return {
+      listingId: null,
+      memberId: null,
+      searchTerm: null,
+      namedMemberId: other?.author_id ?? null,
+      namedMemberName: other?.author_name ?? null,
+    };
+  }
+
+  const word = row.title
+    .split(/[^A-Za-z]+/)
+    .filter((w) => w.length >= 4)
+    .sort((a, b) => b.length - a.length)[0];
+
+  return {
+    listingId: row.id,
+    memberId: row.author_id,
+    searchTerm: word ?? null,
+    namedMemberId: other?.author_id ?? null,
+    namedMemberName: other?.author_name ?? null,
+  };
+}
+
 export async function down(): Promise<void> {
   for (const addr of [MEMBER_EMAIL, TIER1_EMAIL]) {
     const user = await findUser(addr);

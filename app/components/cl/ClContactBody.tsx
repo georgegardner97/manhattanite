@@ -221,14 +221,30 @@ function GateBody({
         by an existing member or approved through application.
       </p>
 
-      {/* The library's second CTA is "I have an invite →". /invite exists but is
-          still an editorial screen — Slice 3 owns it — and pointing at it from
-          here would walk someone straight out of this design system at the exact
-          moment the slice was written to keep them inside it. It goes back when
-          /invite is migrated, not before. */}
       <Link href="/apply" className="cl-pill mt-5 inline-block">
         Apply for membership
       </Link>
+
+      {/* THE LIBRARY'S SECOND CTA, AS A SENTENCE RATHER THAN A BUTTON, AND THE
+          REASON IS WORTH KEEPING. voice-and-copy.md pairs this gate with
+          "I have an invite →". It was commented out in Slice 2 under the
+          dead-link rule because /invite was still an editorial screen; Slice 3a
+          migrated /invite, and the button STILL does not go back, because
+          /invite is where a member SENDS an invitation — a Tier-1 account
+          reading this gate would press it and be redirected to their profile.
+          The real destination is /join/[token], and the token only exists in
+          the invitation email.
+
+          So the honest version of the CTA is the instruction: go and find the
+          email. If a tokenless "I have an invitation" lookup screen is ever
+          built, this becomes a link again. */}
+      <p
+        className="mt-4 max-w-[46ch] text-[12.5px] leading-[1.5]"
+        style={{ color: "var(--cl-faint)" }}
+      >
+        Have an invitation? Open the link in that email instead — it arrives with
+        your sponsor already attached.
+      </p>
     </>
   );
 }

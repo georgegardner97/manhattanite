@@ -32,11 +32,28 @@
 //   records that a message was sent, never that one came back.
 //
 // The stat row therefore carries the two figures that are true.
+//
+// ---------------------------------------------------------------------------
+// MEMBERS ONLY TO A LOGGED-OUT VISITOR, AS OF 2026-08-26. The founder's rule is
+// that a guest sees no member name and no sponsor name anywhere; everywhere
+// else that is a byline that changes wording, but this whole page IS a named
+// member — the name is the headline, the sponsors are the subtitle, and the
+// grid is "their listings". Anonymized it says nothing at all. So a guest gets
+// the wall instead, and the refusal happens BEFORE the listings are read: no
+// name is ever loaded into a page a guest is looking at.
+//
+// Two consequences worth having. Nothing in the Classifieds system links a
+// guest here any more — the lister's name on /listings/[id] is unlinked text
+// for them. And the page stops being indexable by doing nothing special: a
+// crawler is a logged-out visitor, and it gets the wall.
+// ---------------------------------------------------------------------------
 
 import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { formatPrice, placeOf } from "@/lib/listings/card";
 import AppHeader from "@/app/components/cl/AppHeader";
+import ClGate from "@/app/components/cl/ClGate";
 import ClListingCard, { type ClCard } from "@/app/components/cl/ClListingCard";
 import { readMemberListings } from "@/lib/cl/listings-read";
 import { relativeDay } from "@/lib/cl/filters";
@@ -49,6 +66,26 @@ export default async function ClassifiedsMemberPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // The wall, before the read. See the note at the top.
+  if (!user) {
+    return (
+      <>
+        <AppHeader active="none" />
+        <main className="mx-auto w-full max-w-[1000px] px-[clamp(16px,2.4vw,28px)] pt-[clamp(40px,6vw,80px)] pb-[clamp(32px,4vw,56px)]">
+          <ClGate
+            title="Members only"
+            note="Who someone is, and who vouched for them, is for people inside the network. Sign in, or request access."
+          />
+        </main>
+      </>
+    );
+  }
 
   // Published rows only, THROUGH THE SHARED GATE. This page used to run its own
   // query here and that was a hole: the six-row teaser is an application cap,
@@ -56,7 +93,11 @@ export default async function ClassifiedsMemberPage({
   // /listings/[id] would then refuse them. readMemberListings() narrows the
   // permitted set for a guest instead of querying around it — see the note on
   // it in lib/cl/listings-read.ts.
-  const { rows, isGuest } = await readMemberListings(id);
+  // Signed in by the time we get here, so this is the direct read capped at 24.
+  // The guest branch inside readMemberListings() still exists and still narrows
+  // to the teaser — it is the module's guarantee, not this page's, and the next
+  // screen to call it may not have a wall in front of it.
+  const { rows } = await readMemberListings(id);
 
   // A member with no listings this viewer may see is, to this page, not a member
   // it can describe: there is no public fact to show. For a guest that is also
@@ -132,14 +173,9 @@ export default async function ClassifiedsMemberPage({
           className="mt-7 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] overflow-hidden rounded-[12px] border"
           style={{ borderColor: "var(--cl-hairline)" }}
         >
-          {/* For a guest this counts the rows ON THIS PAGE, which is the only
-              honest number available: their view is the teaser slice, so a
-              network-wide total would be a fact they cannot check and a second
-              way to learn how much is being withheld. */}
-          <Stat
-            label={isGuest ? "Listings shown" : "Listings"}
-            value={String(rows.length)}
-          />
+          {/* Everything they have published, capped at 24 — which is the true
+              count for anyone who can reach this page now that a guest cannot. */}
+          <Stat label="Listings" value={String(rows.length)} />
           <Stat
             label={sponsors.length === 1 ? "Vouched by" : "Vouched by"}
             value={String(sponsors.length)}
