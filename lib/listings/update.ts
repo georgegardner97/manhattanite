@@ -139,10 +139,15 @@ export async function updateListing(
     const condition = String(formData.get("condition") ?? "").trim();
     const dimensions = String(formData.get("dimensions") ?? "").trim();
     const brand = String(formData.get("brand") ?? "").trim();
+    // See the note in create.ts. It matters more on this side: `details` is
+    // rebuilt wholesale below, so a furniture listing that HAD a neighborhood
+    // lost it on any edit — including one that never touched the field.
+    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
 
     if (condition) details.condition = condition;
     if (dimensions) details.dimensions = dimensions;
     if (brand) details.brand = brand;
+    if (neighborhood) details.neighborhood = neighborhood;
   } else if (type === "other") {
     const condition = String(formData.get("condition") ?? "").trim();
     const neighborhood = String(formData.get("neighborhood") ?? "").trim();

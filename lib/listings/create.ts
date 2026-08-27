@@ -112,10 +112,18 @@ export async function createListing(
     const condition = String(formData.get("condition") ?? "").trim();
     const dimensions = String(formData.get("dimensions") ?? "").trim();
     const brand = String(formData.get("brand") ?? "").trim();
+    // Furniture HAS a neighborhood, it just doesn't lead with one. The post
+    // form renders the field for every category, and every other category
+    // read it — so furniture was the one type where a member could type a
+    // neighborhood and have it thrown away on submit. It is also the value
+    // search matches on (neighborhoodOf), which is what makes "tribeca" find
+    // a Tribeca coffee table; dropping it here broke that quietly.
+    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
 
     if (condition) details.condition = condition;
     if (dimensions) details.dimensions = dimensions;
     if (brand) details.brand = brand;
+    if (neighborhood) details.neighborhood = neighborhood;
   } else if (type === "other") {
     const condition = String(formData.get("condition") ?? "").trim();
     const neighborhood = String(formData.get("neighborhood") ?? "").trim();
