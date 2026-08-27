@@ -36,3 +36,4 @@ Append-only. Most recent at the bottom.
 - 2026-07-13 · Founding-Members_Pitch-Cards_v1.md · Growth/founding-member-acquisition-project — per-type pitch cards (spine + swap system)
 - 2026-07-13 · Founding-Members_Pitch-Cards_v1.pdf · Growth/founding-member-acquisition-project — printable pitch cards (generator: generators/generate_pitch_cards_pdf.py)
 - 2026-07-13 · Manhattanite_Company-Briefing_v1.pdf · Growth/founding-member-acquisition-project — founder's briefing: model, plan, finances, legal, hard Q&A (generator: generators/generate_company_briefing_pdf.py)
+- 2026-08-27 · Manhattanite_Pricing-Model_v1.md · WORK AREAS/Product/monetization-project/outputs/ · pricing analysis: comparators, unit economics, revenue by member count
