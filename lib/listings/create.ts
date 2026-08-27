@@ -71,18 +71,24 @@ export async function createListing(
     };
   }
 
-  const priceDollars = Number(priceRaw);
-  if (!priceRaw || Number.isNaN(priceDollars) || priceDollars < 0) {
-    return {
-      error:
-        type === "apartment"
-          ? "Add a monthly rent, in dollars."
-          : type === "service"
-            ? "Add a rate or price, in dollars."
-            : "Add an asking price, in dollars.",
-    };
+  // A BLANK PRICE IS LEGITIMATE (George, 2026-08-27). Not everything on a
+  // classifieds board has a number: a members' rate, a service quoted on
+  // request, a perk extended through a member. Requiring one made those
+  // unpostable honestly, so blank is now allowed and stores NULL.
+  //
+  // NULL, not 0 — free is a real asking price and has to stay sayable. A price
+  // that is PRESENT but nonsense is still rejected; only absence is permitted.
+  let price_cents: number | null = null;
+  if (priceRaw) {
+    const priceDollars = Number(priceRaw);
+    if (Number.isNaN(priceDollars) || priceDollars < 0) {
+      return {
+        error:
+          "That price doesn't look right — give a number in dollars, or leave it blank.",
+      };
+    }
+    price_cents = Math.round(priceDollars * 100);
   }
-  const price_cents = Math.round(priceDollars * 100);
 
   // ---- Build the type-specific details (JSONB) ----
   // Only non-empty values go in, so the detail page doesn't render blank rows.

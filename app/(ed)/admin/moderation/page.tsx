@@ -23,7 +23,7 @@ type PendingListing = {
   type: "apartment" | "furniture" | "other" | "service";
   title: string;
   description: string;
-  price_cents: number;
+  price_cents: number | null;
   details: Record<string, unknown>;
   images: { path: string }[];
   author_name: string | null;
@@ -32,7 +32,15 @@ type PendingListing = {
   created_at: string;
 };
 
-function formatPrice(cents: number, type: PendingListing["type"]): string {
+// The ONE screen that says "No price" out loud instead of rendering nothing.
+// A moderator has to be able to tell a deliberate blank from a broken row, and
+// silence reads as broken. Everywhere a member or a visitor looks, no price
+// means no line at all.
+function formatPrice(
+  cents: number | null,
+  type: PendingListing["type"]
+): string {
+  if (cents === null) return "No price";
   const dollars = Math.round(cents / 100).toLocaleString("en-US");
   return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
 }

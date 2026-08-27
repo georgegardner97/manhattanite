@@ -16,6 +16,7 @@ import Link from "next/link";
 import {
   CATEGORIES,
   buildHref,
+  hoodApplies,
   type ClQuery,
 } from "@/lib/cl/filters";
 import type { ListingType } from "@/lib/listings/card";
@@ -30,6 +31,13 @@ export type RailProps = {
 };
 
 export default function FilterRail(props: RailProps) {
+  // NEIGHBORHOOD IS AN APARTMENTS CONTROL (George, 2026-08-27). The rail used
+  // to offer it for every category, so a coffee table could be filtered by
+  // Tribeca. The predicate is shared with buildHref, which is what makes a
+  // stale ?hood= leave the URL when you switch category rather than sitting
+  // there filtering invisibly — hiding the group alone would not do that.
+  const showHoods = hoodApplies(props.q) && props.hoods.length > 0;
+
   return (
     <>
       {/* ---------- Desktop: the design's rail ---------- */}
@@ -38,7 +46,7 @@ export default function FilterRail(props: RailProps) {
           <CategoryRows {...props} />
         </Group>
 
-        {props.hoods.length > 0 && (
+        {showHoods && (
           <Group label="Neighborhood">
             <HoodRows {...props} />
           </Group>
@@ -84,13 +92,13 @@ export default function FilterRail(props: RailProps) {
             className="cl-summary flex cursor-pointer list-none items-center gap-1.5 text-[13px]"
             style={{ color: "var(--cl-muted)" }}
           >
-            Neighborhood and price
+            {showHoods ? "Neighborhood and price" : "Price"}
             <span className="cl-caret" aria-hidden="true">
               ▾
             </span>
           </summary>
           <div className="mt-3.5 flex flex-col gap-[22px]">
-            {props.hoods.length > 0 && (
+            {showHoods && (
               <Group label="Neighborhood">
                 <HoodRows {...props} />
               </Group>
@@ -172,13 +180,18 @@ function HoodRows({ q, hoods }: RailProps) {
 }
 
 // A plain GET form. The hidden fields carry the facets the visitor did NOT
-// touch — without them, submitting a price would silently clear the category
-// and neighborhood they had already chosen.
+// touch — without them, submitting a price would silently clear the category,
+// neighborhood and (since search moved onto Browse) the term they typed.
 function PriceForm({ q }: { q: ClQuery }) {
   return (
     <form action="/listings" method="get">
+      {q.text && <input type="hidden" name="q" value={q.text} />}
       {q.type && <input type="hidden" name="type" value={q.type} />}
-      {q.hood && <input type="hidden" name="hood" value={q.hood} />}
+      {/* Only while it applies, for the same reason buildHref refuses to
+          write it — otherwise applying a price would resurrect a dead ?hood=. */}
+      {q.hood && hoodApplies(q) && (
+        <input type="hidden" name="hood" value={q.hood} />
+      )}
       {q.sort !== "newest" && (
         <input type="hidden" name="sort" value={q.sort} />
       )}

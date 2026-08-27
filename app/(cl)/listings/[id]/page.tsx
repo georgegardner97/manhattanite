@@ -33,7 +33,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
-import { formatPostedDate, placeOf } from "@/lib/listings/card";
+import { formatPostedDate, neighborhoodOf } from "@/lib/listings/card";
 import { relativeDay } from "@/lib/cl/filters";
 import { TEASER_LIMIT } from "@/lib/cl/listings-read";
 import AppHeader from "@/app/components/cl/AppHeader";
@@ -49,7 +49,7 @@ type ListingDetail = {
   type: "apartment" | "furniture" | "other" | "service";
   title: string;
   description: string;
-  price_cents: number;
+  price_cents: number | null;
   created_at: string;
   details: Record<string, unknown>;
   images: { path: string }[];
@@ -75,7 +75,14 @@ const TYPE_HREF: Record<ListingDetail["type"], string> = {
   service: "/listings?type=service",
 };
 
-function formatPrice(cents: number, type: ListingDetail["type"]): string {
+// Null when the listing carries no price — see the note on the shared
+// formatPrice in lib/listings/card.ts. The contact card omits the line entirely
+// rather than leaving an empty heading-sized gap above the byline.
+function formatPrice(
+  cents: number | null,
+  type: ListingDetail["type"]
+): string | null {
+  if (cents === null) return null;
   const dollars = Math.round(cents / 100).toLocaleString("en-US");
   return type === "apartment" ? `$${dollars}/mo` : `$${dollars}`;
 }
@@ -311,9 +318,11 @@ export default async function ClassifiedsDetailPage({
               background: "var(--cl-white)",
             }}
           >
-            <div className="text-[clamp(22px,2.2vw,28px)] tabular-nums">
-              {formatPrice(listing.price_cents, listing.type)}
-            </div>
+            {formatPrice(listing.price_cents, listing.type) && (
+              <div className="text-[clamp(22px,2.2vw,28px)] tabular-nums">
+                {formatPrice(listing.price_cents, listing.type)}
+              </div>
+            )}
 
             <div
               className="mt-[22px] flex items-center gap-3 border-t pt-5"
@@ -344,8 +353,14 @@ export default async function ClassifiedsDetailPage({
                   className="text-[12.5px]"
                   style={{ color: "var(--cl-muted)" }}
                 >
-                  {listing.type === "apartment" ? "Listing" : "Selling"} in{" "}
-                  {placeOf(listing)}
+                  {/* neighborhoodOf, NOT placeOf. placeOf is the card kicker
+                      and now leads non-apartments with their category, so it
+                      would render this line as "Selling in Furniture". The
+                      clause is dropped entirely when the listing has no
+                      neighborhood — "Selling" on its own is true; "Selling in
+                      Other" never was. */}
+                  {listing.type === "apartment" ? "Listing" : "Selling"}
+                  {neighborhoodOf(listing) ? ` in ${neighborhoodOf(listing)}` : ""}
                 </div>
               </div>
             </div>

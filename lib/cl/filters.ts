@@ -1,4 +1,10 @@
-// Browse filter state — parsing, counting and link building for screen 02.
+// Browse filter state — parsing, counting, chips and link building for screen 02.
+//
+// SEARCH LIVES HERE TOO. /search was a separate screen until 2026-08-27, when
+// it retired into Browse: it was the same read (same parseQuery, same
+// buildHref, same gated rows, same filters) differing only in presentation,
+// and nothing in the product ever linked to it. One screen, one URL shape —
+// ?q=&type=&hood=&min=&max=&sort=.
 //
 // The filters are URL-driven (?type=&hood=&min=&max=&sort=), the same way the
 // live /listings page drives its category filter. The design's canvas prototype
@@ -36,9 +42,10 @@ export type ClQuery = {
   max: number | null;
   sort: ClSort;
   /**
-   * The typed search term (screen 04). Browse never sets it, but it lives in
-   * the same shape so one parser and one link builder serve both screens — and
-   * so a term survives when someone narrows a search by category.
+   * The typed search term. It lives in the same shape as every other facet
+   * because search IS browse with a term added (2026-08-27) — same parse, same
+   * link builder, same gated read — so a term survives when someone then
+   * narrows by category, and a category survives when they then type.
    */
   text: string | null;
 };
@@ -102,7 +109,26 @@ export function parseQuery(
 }
 
 export const BROWSE_PATH = "/listings";
-export const SEARCH_PATH = "/search";
+
+/**
+ * DOES THE NEIGHBORHOOD FILTER APPLY AT ALL?
+ *
+ * Only to apartments (George, 2026-08-27). The rail used to offer Neighborhood
+ * for every category, so a coffee table could be filtered by Tribeca — a
+ * control that reads as useful and is not. A neighborhood is the defining fact
+ * about an apartment and an incidental one about a chair.
+ *
+ * ONE PREDICATE, READ BY EVERYTHING: buildHref, resultLabel, isFiltered, the
+ * browse page's row filter and FilterRail. Scattering `type === "apartment"`
+ * across five files is how they drift apart.
+ *
+ * buildHref reading it is what makes a stale `?hood=` LEAVE the URL when you
+ * switch category, rather than sitting there filtering invisibly. That is the
+ * reason the predicate lives here and not in the rail.
+ */
+export function hoodApplies(q: Pick<ClQuery, "type">): boolean {
+  return q.type === "apartment";
+}
 
 /**
  * The href for the current filter state with one facet changed. Every other
@@ -110,9 +136,10 @@ export const SEARCH_PATH = "/search";
  * the category you already picked, and narrowing a search must not throw away
  * the words you typed.
  *
- * `base` is which screen the link lands on: the rail and sort on Browse keep
- * you on Browse, the chips on Search keep you on Search. Passing a facet as
- * null in the patch is how a chip's "×" removes it.
+ * `base` is which screen the link lands on. Everything lands on Browse now
+ * that /search has retired into it, so it is left as a defaulted parameter
+ * rather than removed. Passing a facet as null in the patch is how a chip's
+ * "×" removes it.
  */
 export function buildHref(
   q: ClQuery,
@@ -123,7 +150,9 @@ export function buildHref(
   const params = new URLSearchParams();
   if (next.text) params.set("q", next.text);
   if (next.type) params.set("type", next.type);
-  if (next.hood) params.set("hood", next.hood);
+  // Not written when the resulting category cannot be filtered by
+  // neighborhood — see hoodApplies. This is the drop, not FilterRail's.
+  if (next.hood && hoodApplies(next)) params.set("hood", next.hood);
   if (next.min !== null) params.set("min", String(next.min));
   if (next.max !== null) params.set("max", String(next.max));
   if (next.sort !== "newest") params.set("sort", next.sort);
@@ -131,10 +160,28 @@ export function buildHref(
   return qs ? `${base}?${qs}` : base;
 }
 
+/**
+ * The "Price" sort's comparator, and the one place that decides where an
+ * unpriced listing sits.
+ *
+ * A listing with no price is not free and is not expensive — it is unordered,
+ * so it goes to the END of the list rather than to the top, which is where
+ * treating null as 0 would have put it. Cheapest-first still means cheapest
+ * first; the things without a number follow behind.
+ */
+export function byPrice(
+  a: { price_cents: number | null },
+  b: { price_cents: number | null }
+): number {
+  if (a.price_cents === null) return b.price_cents === null ? 0 : 1;
+  if (b.price_cents === null) return -1;
+  return a.price_cents - b.price_cents;
+}
+
 export function isFiltered(q: ClQuery): boolean {
   return (
     q.type !== null ||
-    q.hood !== null ||
+    (q.hood !== null && hoodApplies(q)) ||
     q.min !== null ||
     q.max !== null ||
     q.text !== null
@@ -144,7 +191,8 @@ export function isFiltered(q: ClQuery): boolean {
 /**
  * Does this listing answer the typed term?
  *
- * Every word must appear somewhere in the title, the description or the place —
+ * Every word must appear somewhere in the title, the description or the
+ * neighborhood —
  * so "two bedroom west village" narrows as you add words, which is what a
  * person typing that sentence expects. Substring, not word-boundary: "bed"
  * should find "bedroom", because the alternative on a network this size is a
@@ -177,8 +225,60 @@ export function resultLabel(q: ClQuery, count: number): string {
   const category = CATEGORIES.find((c) => c.value === q.type);
   const inCategory =
     q.type && category ? ` in ${category.label.toLowerCase()}` : "";
-  const inHood = q.hood ? ` · ${q.hood}` : "";
+  const inHood = q.hood && hoodApplies(q) ? ` · ${q.hood}` : "";
   return `${count} ${noun}${inCategory}${inHood}`;
+}
+
+export type ClChip = { key: string; label: string; clear: Partial<ClQuery> };
+
+function money(dollars: number): string {
+  return `$${dollars.toLocaleString("en-US")}`;
+}
+
+/**
+ * One chip per facet in play, each carrying the patch that removes it.
+ *
+ * Lives here rather than on the page because it is query logic, not markup —
+ * it returns labels and patches, and the page decides what a chip looks like.
+ * It came across from /search when search moved onto Browse.
+ */
+export function activeChips(q: ClQuery): ClChip[] {
+  const chips: ClChip[] = [];
+
+  if (q.text) {
+    chips.push({ key: "text", label: `“${q.text}”`, clear: { text: null } });
+  }
+
+  if (q.type) {
+    const category = CATEGORIES.find((c) => c.value === q.type);
+    chips.push({
+      key: "type",
+      label: category?.label ?? q.type,
+      clear: { type: null },
+    });
+  }
+
+  // Same predicate as everything else: with a non-apartment category selected
+  // the neighborhood is not filtering anything, so offering a chip to remove
+  // it would name a filter that is not running.
+  if (q.hood && hoodApplies(q)) {
+    chips.push({ key: "hood", label: q.hood, clear: { hood: null } });
+  }
+
+  // One chip for the range, not two — "From $2,000" and "Under $7,000" side by
+  // side reads as two filters when it is one, and removing half of a range
+  // someone set on purpose is rarely what they meant.
+  if (q.min !== null || q.max !== null) {
+    const label =
+      q.min !== null && q.max !== null
+        ? `${money(q.min)}–${money(q.max)}`
+        : q.max !== null
+          ? `Under ${money(q.max)}`
+          : `From ${money(q.min as number)}`;
+    chips.push({ key: "price", label, clear: { min: null, max: null } });
+  }
+
+  return chips;
 }
 
 // "today" / "yesterday" / "4 days ago" / "a week ago" / "2 weeks ago".

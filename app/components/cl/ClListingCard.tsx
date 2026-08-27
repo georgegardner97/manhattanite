@@ -25,10 +25,10 @@ import SaveButton from "@/app/components/cl/SaveButton";
 export type ClCard = {
   id: string;
   title: string;
-  /** Neighborhood if the listing has one, otherwise the category. */
+  /** The kicker: an apartment's neighborhood, or the category. See placeOf. */
   place: string;
-  /** Preformatted, e.g. "$6,800/mo". */
-  price: string;
+  /** Preformatted, e.g. "$6,800/mo" — null when the listing has no price. */
+  price: string | null;
   /** Byline plus relative date — "Listed by Claire · sponsored by Dan · 4 days ago". */
   meta: string;
   coverUrl: string | null;

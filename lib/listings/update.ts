@@ -101,18 +101,20 @@ export async function updateListing(
     };
   }
 
-  const priceDollars = Number(priceRaw);
-  if (!priceRaw || Number.isNaN(priceDollars) || priceDollars < 0) {
-    return {
-      error:
-        type === "apartment"
-          ? "Add a monthly rent, in dollars."
-          : type === "service"
-            ? "Add a rate or price, in dollars."
-            : "Add an asking price, in dollars.",
-    };
+  // Blank clears the price to NULL, the same way it sets it on create — see
+  // the note in create.ts. Clearing has to work, or a price typed once could
+  // never be taken back off a listing.
+  let price_cents: number | null = null;
+  if (priceRaw) {
+    const priceDollars = Number(priceRaw);
+    if (Number.isNaN(priceDollars) || priceDollars < 0) {
+      return {
+        error:
+          "That price doesn't look right — give a number in dollars, or leave it blank.",
+      };
+    }
+    price_cents = Math.round(priceDollars * 100);
   }
-  const price_cents = Math.round(priceDollars * 100);
 
   // ---- Build the type-specific details (JSONB) ----
   // Replaces the stored details wholesale, from the submitted type's fields —

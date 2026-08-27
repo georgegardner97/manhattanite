@@ -22,7 +22,10 @@ export default async function ClassifiedsSavedPage() {
 
   return (
     <>
-      <AppHeader active="saved" />
+      {/* Saved left the nav on 2026-08-27 and is reached from /profile now, so
+          Profile is the item that lights up here — the trail that got you to
+          this screen is the one the header should show. */}
+      <AppHeader active="profile" />
 
       <main className="mx-auto w-full max-w-[1100px] px-[clamp(16px,2.4vw,28px)] pt-[26px] pb-[clamp(32px,4vw,56px)]">
         <h1 className="text-[clamp(22px,2.4vw,28px)] font-medium tracking-[-0.02em]">

@@ -216,3 +216,23 @@ Big strategy session (full detail: `Growth/.../outputs/Manhattanite_Strategy-Ses
 **Two things George should know:**
 1. **The privacy policy overclaimed and has been corrected.** It said the site keeps "privacy-respecting analytics"; the site runs none. Softened to match reality, with a line saying the tool will be named when analytics actually ship. The stale "not making listings public to non-account-holders" bullet in `legal-and-policy.md` is fixed too.
 2. **"I have an invite →" stays a sentence, not a button.** `/invite` is for a member SENDING an invitation, so pointing the contact gate's second CTA there would bounce a Tier-1 account to their profile. Making it a real link needs a tokenless "I have an invitation" lookup screen — a small build, and a decision for George.
+
+---
+
+## 2026-08-27 — George's walkthrough fixes: browse stops reading like a rental site
+
+**Five notes from George's own pass over the live site, done as one batch on `classifieds-walkthrough-fixes` so it reverts as a unit if he dislikes any of it on the real thing.**
+
+**A listing may now have no price.** Blank means blank — no dash, no placeholder — on browse cards, the listing page, saved and "what you've posted". Two screens say "No price" out loud on purpose: the moderation queue, so George can tell a deliberate blank from a broken row, and the post form's own review step, where a member is confirming what they are about to publish. The rule underneath it, which matters more than the feature: **no price and free are different things.** A listing priced at zero still says $0, because free is a real offer on a classifieds board. **This one needs George: the database change (`0027`) has to be run in the Supabase SQL editor before anyone can actually post a blank price.** Everything above it is built and waiting.
+
+**The neighborhood list only appears on Apartments now.** It was offering to filter a coffee table by Tribeca. Switching category also strips a leftover neighborhood out of the web address, rather than leaving it filtering invisibly.
+
+**Cards lead with what a thing IS, unless it is an apartment.** A $220 coffee table used to be headlined "LOWER EAST SIDE" in capitals, which is how a rental portal talks. It now reads "FURNITURE"; apartments still lead with their neighborhood. Searching still finds that coffee table by typing "Tribeca" — the words on the card and the words the search reads were deliberately separated so a look-and-feel change can never quietly break finding things.
+
+**Saved left the main menu**, exactly as George asked, and is reached from his profile instead. The save buttons on cards are untouched.
+
+**Search now sits on the Browse page.** There was a whole search screen already built that nothing in the site linked to — the only way to reach it was to type the address. It was also the same page as browse with a text box on it, so the box moved onto browse and the old address forwards to it.
+
+**The button that "looked like it was in a random place" was measurably in a random place.** The header was 1240 pixels wide sitting over a page 1400 wide, so on a large screen the whole bar sat 80 pixels inside the page beneath it. Fixed. **Flagged for George, not fixed:** the site has *five* different content widths, which nobody chose — they accumulated. Tidying that is its own job.
+
+**Parked deliberately:** "looking for" / wanted ads, price modes (free / make an offer / rate on request), and new categories. Also parked, and worth George knowing it is the biggest remaining lever: **12 of the 20 listings are apartments.** No amount of design stops a site reading as a rental site while 60% of it is apartments. That one is content, and it is George's to write.

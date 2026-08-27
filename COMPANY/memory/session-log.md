@@ -6,6 +6,69 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-27 · The walkthrough batch built, verified and branched (Claude Code)
+
+**Ran the handoff prompt from the Cowork session below.** Branch `classifieds-walkthrough-fixes` off `main`, one `--no-ff` merge intended, so the whole batch reverts as a unit the way the migration does.
+
+**Task 0 — the blank-price work Cowork left in the tree — reviewed rather than trusted, and it was sound.** 13 files, no changes needed. The one thing that could not be done here: **`0027` still needs running in the Supabase SQL editor.** Until it does, `price_cents` is NOT NULL and posting a blank price fails at the database, which is why the end-to-end walk (post → moderate → publish → edit → clear an existing price) is **not done and is George's next step**. The pure logic underneath it WAS proved: `formatPrice(null)` renders nothing while `formatPrice(0)` still renders `$0`, and the Price sort puts unpriced listings last — the free-vs-blank distinction the migration comment exists to protect.
+
+**Tasks 1–5 built.** The neighborhood filter is apartments-only, held by one predicate (`hoodApplies`) read by six call sites, so switching category strips a stale `?hood=` out of the URL rather than filtering invisibly. Card kickers lead with the category for non-apartments. Saved left the header nav and the phone tab bar for a row on `/profile`. Search moved onto Browse and `/search` is a 308 that carries its query string. `AppHeader` takes a `width` prop.
+
+**The trap the prompt warned about was real, and the fix is verified rather than assumed.** `placeOf()` was display AND data. Split into `neighborhoodOf()` / `placeOf()`; proof that it worked is that `/listings?q=tribeca` still returns "Swivel lounge chair, oak base" — a furniture listing whose card now reads "FURNITURE", not "TRIBECA".
+
+**One regression caught that the prompt did not anticipate.** The listing detail page rendered "Selling in {placeOf}", which the kicker change would have turned into **"Selling in Furniture"**. Repointed at `neighborhoodOf` and the clause is now dropped entirely when there is no neighborhood — it had been quietly rendering "Selling in Other" before this batch, so that is a pre-existing wart fixed on the way past.
+
+**Verification.** `npm run build` clean; the eight prerendered-static routes are still static, so the header's `width` prop did not cost what an async lookup would have. `tsc` clean; eslint unchanged from baseline (5 pre-existing errors, one fewer than baseline — the new `/profile` link consumed an import that had been sitting unused). **`audit:rls` 59/59. `audit:gates` 30/30 locally AND against `APP_ORIGIN=https://manhattanite.com`.** By eye at 1600px: header box and `<main>` both measure 100 → 1500, and "Post a listing" shares the card grid's gutter.
+
+**A footgun worth carrying: `audit:gates` reports false failures against a COLD dev server.** The first run gave 8 failures, all on `/listings/[id]/edit` and `/contact`, all reading as 404s. Baseline on stashed changes gave 0; re-running warm gave 0. Next had not compiled those routes yet. This is the second time this audit has cried wolf (the production-build string on 27 Aug being the first) and the file's own header is right that a trust check which cries wolf trains you to ignore it. **Warm the server first.**
+
+**Housekeeping, and it was worse than the prompt said.** `CLAUDE.md` claimed migrations applied through `0017` when 26 were on disk — corrected to `0026` applied, `0027` pending, with a note to re-check rather than trust the line. **It also claimed `0013` was written-but-not-applied; probing the live schema says `column listings.sponsor_name does not exist`, so `0013` IS applied and the dual-write is long gone.** Both were stale in the direction that would have caused someone to redo finished work.
+
+**Flagged for George, not actioned:** the site has **five** content widths (1400 / 1240 / 1100 / 1000 / 900 — `/profile` is the fifth the prompt missed). Also: on a phone the search box now sits *below* the category chips and the price disclosure, because the filter rail is the first thing in the layout. It reads coherently but a search box usually goes on top; re-ordering it is a layout change the prompt did not ask for.
+
+**Next:** George runs `0027`, then walks one blank-price listing end to end. Then this branch merges. Slice 3b (`/admin` ×4) is still untouched.
+
+---
+
+## 2026-08-27 · George's live-site walkthrough — five notes, one build, one Claude Code prompt (Cowork)
+
+**George walked manhattanite.com the day after the Classifieds merge and gave five notes.** All captured in `WORK AREAS/Product/design-foundation-project/outputs/Classifieds_Website-Notes_v1.md`, turned into a handoff at `Classifieds_Claude-Code-Prompt_v1.md` in the same folder.
+
+**Three decisions made (27 Aug):**
+1. **Browse cards lead with the CATEGORY, not the neighborhood**, for everything that is not an apartment. Leading a $220 coffee table with "LOWER EAST SIDE" is rental-portal grammar and was the second-biggest reason the site reads as a rental site (the biggest is the seed mix — 12 apartments of 20, which is content, not code).
+2. **Search moves onto Browse and `/search` retires.** It was fully built and linked from nowhere in the product; it is also the same read as browse with a text term. `/search` becomes a redirect, not a 404.
+3. **"Looking for" / wanted listings are PARKED.** Discussed at length — classifieds have two directions and Manhattanite only has one — but the blank-price change already unblocks the cases George was actually hitting.
+
+**Built this session (uncommitted, in the working tree): a listing may have no price.** 13 files + `supabase/migrations/0027_listing_price_optional.sql`. **The migration is NOT applied — posting a blank price fails at the database until it is.** The rule to carry forward: **NULL is "no price", 0 is not**, because free is a real asking price; nothing may branch on falsiness. Renders as nothing everywhere a member or visitor looks; says "No price" out loud in exactly two places, `/admin/moderation` and the post form's Review step, where silence would read as a broken row. `tsc --noEmit` clean and eslint clean; **never built and never opened in a browser** — Cowork avoided writing `.next` with the dev server possibly up.
+
+**A real defect George's eye caught that measurement confirmed.** "Post a listing" looked randomly placed because `AppHeader` is `max-w-[1240px]` over a browse `<main>` of `max-w-[1400px]` — the whole header is inset 80px each side from the page beneath it. Underneath: **the site has four content widths** (1400 / 1240 / 1100 / 1000) that nobody chose; they accumulated. Fix specced as a `width` prop on `AppHeader`; collapsing four widths to two is flagged for George, not actioned.
+
+**One trap found while specifying, worth remembering:** `placeOf()` is doing two jobs — the display string on the card AND the data value that the neighborhood filter and the search haystack compare against. Changing it for the card would silently break searching "Tribeca" for a Tribeca coffee table. The prompt splits it into `neighborhoodOf()` (data) and `placeOf()` (display) before touching either.
+
+**Also corrected:** `CLAUDE.md` claims migrations are applied through `0017`; there are 26 on disk. Instructed as housekeeping in the prompt.
+
+**Next:** Claude Code runs the prompt. Slice 3b (`/admin` ×4) is untouched and still outstanding.
+
+---
+
+## 2026-08-27 · Pricing — when to charge, what to charge for, and what it earns (Cowork)
+
+**Strategy session, no decision taken yet.** George asked three questions: when to start charging to post, whether to charge for everything, and what the margins and profits look like. New work area project created: `WORK AREAS/Product/monetization-project/` (brief, memory, outputs). Full analysis in `outputs/Manhattanite_Pricing-Model_v1.md`.
+
+**When.** Recommended switching the trigger from a member count to an observation: charge once posting reliably produces a result. Three signals together — members posting a second time unprompted, most apartment listings drawing a genuine reply within a week, and real listings outnumbering the seed ones without George chasing. That lands near the end of Cohort 2 anyway, which is what `gtm-playbook.md` already says, but it is now something to watch rather than a number to hit.
+
+**What.** Apartments $99 for 30 days and free until rented (the Gens de Confiance guarantee). Furniture free forever, on the argument that furniture is the browse habit and the habit is what makes apartment listings worth paying for. Jobs $75 when v1.5 lands, and flagged as a possible bigger earner than apartments: Craigslist charges $5 for an NYC apartment and $45 for an NYC job, and jobs carry no fair-housing exposure. Featured slots later, once position on the page matters. This also argues against the playbook's "one free listing a month, then $25", which charges the most active members the most.
+
+**The July rationale is stale; the conclusion isn't.** The 2026-07-14 note priced apartments high because broker-fee pain makes $149 look cheap. NYC's FARE Act took effect 2026-06-11 and moved broker fees off tenants onto landlords, so that argument is gone. The right anchor is what a lister pays: StreetEasy for-rent-by-owner is $249 per two weeks, agent listings $7–22 a day, Listings Project $47 a week in NY. $99 still reads cheap.
+
+**Margins.** 96.8% gross per listing ($3.17 of card fees on $99); running costs ~$10/month now, ~$70–100 later, so one paid listing a month covers every bill. The binding constraint is George's review time, not money: at 5,000 members the listing queue alone is ~67 hours a month before applications, which forces a hire-or-loosen decision. A salary-sized income needs roughly 2,500 members, so realistically 2028. Below 500 members charging is a signal, not income.
+
+**Two operational points that change the build.** Payment must be authorised on submit and captured on approval, never charged up front, because every listing is manually reviewed and up-front charging means refunding every rejection. And the standards page should be published before the first dollar, so a declined paying poster meets a written rule rather than a personal judgement.
+
+**Open with George:** the apartment price ($99 or test $75) and whether furniture stays free permanently or only through v1. Nothing is confirmed until he answers.
+
+---
+
 ## 2026-08-27 · The Classifieds migration merged to `main` — first code deploy since 22 July (Claude Code)
 
 **What shipped.** Slices 1, 2 and 3a merged to `main` as a single `--no-ff` commit (`4759502`), 202 files, +12,158 / −3,354, carrying five weeks of accumulated change in one deploy. Every screen a normal person can reach is now the Classifieds system, live on manhattanite.com. Vercel build green in 43s: `manhattanite-gzljlxoxj-georgegardner97s-projects.vercel.app`. The undo is one `git revert -m 1 4759502`, which is what `--no-ff` bought.

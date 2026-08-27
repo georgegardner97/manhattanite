@@ -29,6 +29,7 @@ import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
 import {
   formatPrice,
+  neighborhoodOf,
   placeOf,
   type ListingRow,
   type ListingType,
@@ -215,14 +216,20 @@ export function countByType(
   );
 }
 
-/** The neighborhoods actually present, so a rail can never offer a dead filter. */
+/**
+ * The neighborhoods actually present, so a rail can never offer a dead filter.
+ *
+ * The CALLER decides which rows to pass. Browse passes apartments only, because
+ * the neighborhood filter applies to apartments only (see hoodApplies in
+ * filters.ts) — a list derived from every row would offer neighborhoods that
+ * only a chair is in.
+ */
 export function neighborhoodsIn(rows: BrowseRow[]): string[] {
   return [
     ...new Set(
       rows
-        .map((row) => row.details?.neighborhood)
-        .filter((v): v is string => typeof v === "string" && v.trim() !== "")
-        .map((v) => v.trim())
+        .map(neighborhoodOf)
+        .filter((v): v is string => v !== null)
     ),
   ].sort((a, b) => a.localeCompare(b));
 }

@@ -248,9 +248,12 @@ async function main() {
   await checkNoNames("browse filtered", "/listings?type=apartment", names);
   await checkNoNames("saved", "/saved", names);
   if (reachable.searchTerm) {
+    // /search retired into Browse on 2026-08-27 — the box is on /listings now
+    // and the route is a 308 to here. The assertion is unchanged in substance:
+    // a guest's SEARCH results must name nobody, exactly like a guest's browse.
     await checkNoNames(
-      "search",
-      `/search?q=${encodeURIComponent(reachable.searchTerm)}`,
+      "browse searched",
+      `/listings?q=${encodeURIComponent(reachable.searchTerm)}`,
       names
     );
   }
