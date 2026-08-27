@@ -72,7 +72,7 @@ export default async function ClassifiedsSettingsPage() {
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("name, neighborhood, bio, avatar_path, linkedin_url, is_member")
+    .select("name, neighborhood, bio, avatar_path, linkedin_url, is_member, role")
     .eq("id", user.id)
     .maybeSingle<{
       name: string | null;
@@ -81,6 +81,7 @@ export default async function ClassifiedsSettingsPage() {
       avatar_path: string | null;
       linkedin_url: string | null;
       is_member: boolean;
+      role: string | null;
     }>();
 
   // Public bucket → a plain URL, no signing.
@@ -101,7 +102,11 @@ export default async function ClassifiedsSettingsPage() {
 
   return (
     <>
-      <AppHeader active="profile" />
+      {/* This screen is the way into /admin. AppHeader carries the link and
+          only this page passes the flag, because only this page already reads
+          the account row — see the note in AppHeader.tsx. The /admin routes
+          gate themselves and RLS gates the tables underneath; this is nav. */}
+      <AppHeader active="profile" admin={account?.role === "admin"} />
 
       <main className="mx-auto grid w-full max-w-[900px] grid-cols-[180px_1fr] items-start gap-[clamp(24px,3vw,48px)] px-[clamp(16px,2.4vw,28px)] pt-[clamp(26px,3vw,44px)] pb-[clamp(32px,4vw,56px)] max-[720px]:grid-cols-1 max-[720px]:gap-6">
         {/* The design's rail. Every entry is an anchor to a section that exists

@@ -32,6 +32,22 @@
 //      Classifieds screens now, as are /login, /signup, /apply, /listings/mine
 //      and the edit and contact routes. Every destination this header offers
 //      stays inside the system it is drawn in.
+//
+// THE ADMIN LINK IS A PROP, NOT A LOOKUP, AND THAT IS DELIBERATE. /admin was
+// reachable from exactly one place — AccountMenu, inside SiteNav, mounted only
+// in app/(ed)/layout.tsx. Once the migration merges, the only (ed) routes left
+// ARE the admin pages, so the single link into the console would have rendered
+// only on pages you cannot reach without already being there. This header is
+// the replacement way in.
+//
+// It takes `admin` as a prop rather than reading the session itself because
+// AppHeader is synchronous and eight routes that render it are prerendered
+// static — /terms, /privacy, /thank-you, /reset-request, /reset-password,
+// /profile/edit and the two /design pages. Making it async to fetch a role
+// would flip all eight to server-rendered-on-demand, and make every visitor
+// pay an auth round trip for a link one person sees. So the one screen that
+// already reads the account row passes the flag, and /profile — a permanent
+// item in this header's own nav — is the door. Slice 3b can widen it.
 
 import Link from "next/link";
 import Wordmark from "@/app/components/Wordmark";
@@ -46,7 +62,14 @@ const LINKS: { key: ClNavKey; label: string; href: string }[] = [
   { key: "profile", label: "Profile", href: "/profile" },
 ];
 
-export default function AppHeader({ active = "none" }: { active?: ClNavKey }) {
+export default function AppHeader({
+  active = "none",
+  /** Renders the quiet Admin link. Only ever true for role='admin'. */
+  admin = false,
+}: {
+  active?: ClNavKey;
+  admin?: boolean;
+}) {
   return (
     <header
       className="border-b"
@@ -94,9 +117,24 @@ export default function AppHeader({ active = "none" }: { active?: ClNavKey }) {
           </nav>
         </div>
 
-        <Link href="/listings/new" className="cl-pill cl-pill-sm">
-          Post a listing
-        </Link>
+        <div className="flex items-center gap-[clamp(10px,1.4vw,18px)]">
+          {/* A tool, not a nav item: no pill, no active state, faint. It sits
+              outside LINKS on purpose — those three are the product, this is
+              the back office, and only one account ever sees it. */}
+          {admin && (
+            <Link
+              href="/admin"
+              className="text-[13px] max-[440px]:hidden"
+              style={{ color: "var(--cl-faint)" }}
+            >
+              Admin
+            </Link>
+          )}
+
+          <Link href="/listings/new" className="cl-pill cl-pill-sm">
+            Post a listing
+          </Link>
+        </div>
       </div>
     </header>
   );
