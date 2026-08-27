@@ -5,7 +5,9 @@
 // A restyle, not a reimplementation: it calls the same uploadListingImage the
 // live form calls, so files land in the same private bucket under the same
 // owner-scoped RLS, and it writes the same hidden `images` JSON field that
-// createListing reads. Only the chrome is new — the live ImageUpload is dressed
+// createListing reads — in the same SHAPE, which is the part the restyle got
+// wrong for a fortnight (see the hidden input below). Only the chrome is new
+// — the live ImageUpload is dressed
 // in the editorial system (bone, hairline borders, square corners) and would
 // have been the one obviously foreign object on the screen.
 //
@@ -76,11 +78,21 @@ export default function ClImageUpload({
   return (
     <div>
       {/* What createListing and updateListing actually read. The previews are
-          for the person. */}
+          for the person.
+
+          A JSON ARRAY OF STRINGS, NOT OF OBJECTS. Both server actions check
+          `typeof item !== "string"` and reject anything else — so shipping
+          `{ path }` objects here (as this did from the Classifieds merge,
+          4759502, until 2026-08-27) made every save of a listing carrying at
+          least one photo fail with "Photos didn't upload cleanly. Try again."
+          The photo had uploaded fine; the wire format was wrong, and the
+          message sent people looking in the wrong place. The row shape is the
+          actions' to define — `images` is stored as `{ path }[]`, but that
+          conversion happens server-side, after the ownership check. */}
       <input
         type="hidden"
         name="images"
-        value={JSON.stringify(items.map((i) => ({ path: i.path })))}
+        value={JSON.stringify(items.map((i) => i.path))}
       />
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">

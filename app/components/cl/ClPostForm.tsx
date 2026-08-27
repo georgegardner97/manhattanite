@@ -72,8 +72,9 @@ const STEPS = [
 const STEP_OF_FIELD: Record<string, number> = {
   type: 0,
   title: 0,
-  price: 0,
   description: 0,
+  // `price` is deliberately absent: it is no longer required, so it can never
+  // be the field that blocks a submit.
 };
 
 export default function ClPostForm({
@@ -218,17 +219,22 @@ export default function ClPostForm({
         <div className="grid grid-cols-2 gap-3.5 max-[520px]:grid-cols-1">
           <div>
             <label htmlFor="cl-price" className="cl-fieldlabel">
-              Price {isApartment && <span style={{ color: "var(--cl-faint)" }}>per month</span>}
+              Price{" "}
+              <span style={{ color: "var(--cl-faint)" }}>
+                {isApartment ? "per month · optional" : "optional"}
+              </span>
             </label>
+            {/* NOT required. Some listings have no price — a members' rate, a
+                service quoted on request, a perk. Blank stores NULL and the
+                listing renders with no price line at all. */}
             <input
               id="cl-price"
               name="price"
-              required
               inputMode="numeric"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               className="cl-input"
-              placeholder="$"
+              placeholder="$ — or leave blank"
             />
           </div>
           <div>
@@ -382,7 +388,13 @@ export default function ClPostForm({
             )}
           </div>
           <div className="mt-2 text-[14px] tabular-nums">
-            {price.trim() ? `$${price.trim()}${isApartment ? "/mo" : ""}` : "—"}
+            {price.trim() ? (
+              `$${price.trim()}${isApartment ? "/mo" : ""}`
+            ) : (
+              // Says it out loud here, where the member is confirming what they
+              // are about to post. On the live listing it renders as nothing.
+              <span style={{ color: "var(--cl-disabled)" }}>No price</span>
+            )}
           </div>
 
           <p className="cl-inset mt-5">

@@ -114,6 +114,9 @@ export default async function ClassifiedsSettingsPage() {
             Privacy, which have nothing to show. */}
         <nav className="flex flex-col gap-1 text-[13.5px] max-[720px]:flex-row max-[720px]:flex-wrap">
           <span className="cl-rail-row cl-rail-row-on">Account</span>
+          <a href="#saved" className="cl-rail-row">
+            Saved
+          </a>
           <a href="#vouching" className="cl-rail-row">
             Vouching
           </a>
@@ -138,8 +141,34 @@ export default async function ClassifiedsSettingsPage() {
             avatarUrl={avatarUrl}
           />
 
+          {/* ---------- Saved ----------
+              THE ONLY WAY INTO /saved (George, 2026-08-27): "'Saved' should not
+              be a main menu option. You should be able to see your saved posts
+              but only in your profile." So it left AppHeader's nav and the
+              phone's tab bar, and lands here.
+
+              No count. The save set lives in the browser, not in a table — see
+              SavedGrid — so a server-rendered number here would either be wrong
+              or force this page to become a client component to find out. The
+              screen it links to already knows. */}
+          <div id="saved" className="cl-grouplabel mt-8 mb-3.5">
+            Saved
+          </div>
+          <p
+            className="max-w-[52ch] text-[13.5px] leading-[1.6]"
+            style={{ color: "var(--cl-muted)" }}
+          >
+            The listings you&rsquo;ve saved while browsing. They&rsquo;re kept
+            in this browser, so they won&rsquo;t follow you to another device.
+          </p>
+          <div className="mt-4">
+            <Link href="/saved" className="cl-ghost">
+              View saved listings
+            </Link>
+          </div>
+
           {/* ---------- Vouching ---------- */}
-          <div id="vouching" className="cl-grouplabel mt-8 mb-3.5">
+          <div id="vouching" className="cl-grouplabel mt-9 mb-3.5">
             Who you&rsquo;ve vouched for
           </div>
           {vouchedFor.length === 0 ? (

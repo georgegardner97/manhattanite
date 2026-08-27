@@ -29,10 +29,10 @@ export type ListingCardData = {
   id: string;
   title: string;
   description: string | null;
-  /** Neighborhood when the listing has one, otherwise the category label. */
+  /** The kicker: an apartment's neighborhood, or the category. See placeOf. */
   place: string;
-  /** Formatted price, e.g. "$3,400/mo". */
-  price: string;
+  /** Formatted price, e.g. "$3,400/mo" — null when the listing has no price. */
+  price: string | null;
   /** Formatted posted date, e.g. "July 14". */
   postedAt: string;
   /** Signed cover-image URL, or null when the listing has no images. */

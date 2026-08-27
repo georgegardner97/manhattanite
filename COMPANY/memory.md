@@ -11,6 +11,21 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-08-27 (blank-price verified; two live bugs found)
+
+**`0027` is applied to production and the blank-price feature is verified end to end.** A listing may have no price: it stores NULL, renders as no price line anywhere a member or visitor looks, says "No price" out loud on `/admin/moderation` and the post form's Review step, sorts LAST under the Price sort, and is EXCLUDED by a price filter. NULL is "no price"; 0 is still free and still renders `$0`. Verified against the production database with the database left byte-identical to how it started. `build` clean, `audit:rls` 59/59, `audit:gates` 0 failures locally and against prod.
+
+**Branch `classifieds-walkthrough-fixes` is verified but NOT merged** — deliberately held for George's call, because of the first bug below.
+
+**TWO PRE-EXISTING BUGS ARE LIVE ON `main`**, both shipped with the Classifieds merge (`4759502`) and neither introduced by the walkthrough branch:
+
+1. **No listing with a photo can be posted or edited.** `ClImageUpload` writes the hidden `images` field as objects (`[{"path":…}]`); `create.ts` and `update.ts` both require strings. Every such save fails with the misleading "Photos didn't upload cleanly. Try again." — the photo uploaded fine; the form's wire format is wrong. This blocks the product's core action. One-line fix in `ClImageUpload.tsx`, or widen both parsers to accept either shape. Seed rows have photos only because the seed script bypasses the form via the service role, which is why nobody hit it.
+2. **Editing a furniture listing deletes its neighborhood.** The Neighborhood field renders for every category, but the actions read it only for apartment/other/service. `update.ts` rebuilds `details` wholesale, so furniture loses `details.neighborhood` — the data search matches on, which would break "searching 'tribeca' finds a Tribeca coffee table". Seed furniture also carries `tags`/`category`, dropped the same way.
+
+**Rule worth carrying:** a form field that renders but is never read by the action is worse than a missing field — it invites a member to type something the product then throws away. Both bugs are that shape.
+
+---
+
 ## Quick state — as of 2026-06-09 (Slice C + Navigation slice shipped)
 
 > Reconciled snapshot. On 2026-06-08 the `/apply` flow was built across two slices; on 2026-06-09 Slice C (the membership emails) shipped and the full apply→approve→welcome loop was verified end-to-end on the deployed site. Verified against git (working tree clean, in sync with `origin/main`) and the production database. Naming note: the membership flow is **"Phase 2"** per the build plan even though it shipped *after* the Phase 4 byline/profile work — the phase numbers reflect the original plan order, not chronology.
@@ -216,3 +231,23 @@ Big strategy session (full detail: `Growth/.../outputs/Manhattanite_Strategy-Ses
 **Two things George should know:**
 1. **The privacy policy overclaimed and has been corrected.** It said the site keeps "privacy-respecting analytics"; the site runs none. Softened to match reality, with a line saying the tool will be named when analytics actually ship. The stale "not making listings public to non-account-holders" bullet in `legal-and-policy.md` is fixed too.
 2. **"I have an invite →" stays a sentence, not a button.** `/invite` is for a member SENDING an invitation, so pointing the contact gate's second CTA there would bounce a Tier-1 account to their profile. Making it a real link needs a tokenless "I have an invitation" lookup screen — a small build, and a decision for George.
+
+---
+
+## 2026-08-27 — George's walkthrough fixes: browse stops reading like a rental site
+
+**Five notes from George's own pass over the live site, done as one batch on `classifieds-walkthrough-fixes` so it reverts as a unit if he dislikes any of it on the real thing.**
+
+**A listing may now have no price.** Blank means blank — no dash, no placeholder — on browse cards, the listing page, saved and "what you've posted". Two screens say "No price" out loud on purpose: the moderation queue, so George can tell a deliberate blank from a broken row, and the post form's own review step, where a member is confirming what they are about to publish. The rule underneath it, which matters more than the feature: **no price and free are different things.** A listing priced at zero still says $0, because free is a real offer on a classifieds board. **This one needs George: the database change (`0027`) has to be run in the Supabase SQL editor before anyone can actually post a blank price.** Everything above it is built and waiting.
+
+**The neighborhood list only appears on Apartments now.** It was offering to filter a coffee table by Tribeca. Switching category also strips a leftover neighborhood out of the web address, rather than leaving it filtering invisibly.
+
+**Cards lead with what a thing IS, unless it is an apartment.** A $220 coffee table used to be headlined "LOWER EAST SIDE" in capitals, which is how a rental portal talks. It now reads "FURNITURE"; apartments still lead with their neighborhood. Searching still finds that coffee table by typing "Tribeca" — the words on the card and the words the search reads were deliberately separated so a look-and-feel change can never quietly break finding things.
+
+**Saved left the main menu**, exactly as George asked, and is reached from his profile instead. The save buttons on cards are untouched.
+
+**Search now sits on the Browse page.** There was a whole search screen already built that nothing in the site linked to — the only way to reach it was to type the address. It was also the same page as browse with a text box on it, so the box moved onto browse and the old address forwards to it.
+
+**The button that "looked like it was in a random place" was measurably in a random place.** The header was 1240 pixels wide sitting over a page 1400 wide, so on a large screen the whole bar sat 80 pixels inside the page beneath it. Fixed. **Flagged for George, not fixed:** the site has *five* different content widths, which nobody chose — they accumulated. Tidying that is its own job.
+
+**Parked deliberately:** "looking for" / wanted ads, price modes (free / make an offer / rate on request), and new categories. Also parked, and worth George knowing it is the biggest remaining lever: **12 of the 20 listings are apartments.** No amount of design stops a site reading as a rental site while 60% of it is apartments. That one is content, and it is George's to write.

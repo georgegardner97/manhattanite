@@ -7,16 +7,18 @@
 // Saved, Post, Inbox. AppHeader hides its nav below 600px; this is the other
 // half of that arrangement.
 //
-// TWO CHANGES FROM THE DESIGN'S FOUR TABS:
+// THREE TABS, NOT THE DESIGN'S FOUR:
 //
 //   Inbox is not here. In-app messaging is not built — the design file labels
 //   its own Messages screen "not built yet, kept for reference" — and a tab
 //   leading nowhere is worse on a phone than on a desktop, where at least the
-//   rest of the nav is visible beside it.
+//   rest of the nav is visible beside it. Profile took that slot.
 //
-//   Profile takes the fourth slot instead, matching the desktop nav and the
-//   design's own first phone frame, which lists Browse / Saved / Post /
-//   Profile.
+//   Saved left on 2026-08-27, with the desktop nav and for the same reason
+//   (George: saved posts belong in your profile, not the main menu). This bar
+//   mirrors the header, so it could not keep a tab the header had dropped.
+//   Browse · Post · Profile is the whole product on a phone, and search is on
+//   Browse itself as of the same day.
 //
 // Why sticky rather than fixed: a fixed bar overlays the last line of every
 // page and needs a matching bottom padding on every screen to compensate — one
@@ -38,7 +40,6 @@ const TABS: { label: string; href: string; match: (p: string) => boolean }[] = [
     // never mount this bar, so they cannot be caught by it.
     match: (p) => p.startsWith("/listings"),
   },
-  { label: "Saved", href: "/saved", match: (p) => p === "/saved" },
   { label: "Post", href: "/listings/new", match: (p) => p === "/listings/new" },
   {
     label: "Profile",

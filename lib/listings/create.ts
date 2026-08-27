@@ -71,18 +71,24 @@ export async function createListing(
     };
   }
 
-  const priceDollars = Number(priceRaw);
-  if (!priceRaw || Number.isNaN(priceDollars) || priceDollars < 0) {
-    return {
-      error:
-        type === "apartment"
-          ? "Add a monthly rent, in dollars."
-          : type === "service"
-            ? "Add a rate or price, in dollars."
-            : "Add an asking price, in dollars.",
-    };
+  // A BLANK PRICE IS LEGITIMATE (George, 2026-08-27). Not everything on a
+  // classifieds board has a number: a members' rate, a service quoted on
+  // request, a perk extended through a member. Requiring one made those
+  // unpostable honestly, so blank is now allowed and stores NULL.
+  //
+  // NULL, not 0 — free is a real asking price and has to stay sayable. A price
+  // that is PRESENT but nonsense is still rejected; only absence is permitted.
+  let price_cents: number | null = null;
+  if (priceRaw) {
+    const priceDollars = Number(priceRaw);
+    if (Number.isNaN(priceDollars) || priceDollars < 0) {
+      return {
+        error:
+          "That price doesn't look right — give a number in dollars, or leave it blank.",
+      };
+    }
+    price_cents = Math.round(priceDollars * 100);
   }
-  const price_cents = Math.round(priceDollars * 100);
 
   // ---- Build the type-specific details (JSONB) ----
   // Only non-empty values go in, so the detail page doesn't render blank rows.
@@ -106,10 +112,18 @@ export async function createListing(
     const condition = String(formData.get("condition") ?? "").trim();
     const dimensions = String(formData.get("dimensions") ?? "").trim();
     const brand = String(formData.get("brand") ?? "").trim();
+    // Furniture HAS a neighborhood, it just doesn't lead with one. The post
+    // form renders the field for every category, and every other category
+    // read it — so furniture was the one type where a member could type a
+    // neighborhood and have it thrown away on submit. It is also the value
+    // search matches on (neighborhoodOf), which is what makes "tribeca" find
+    // a Tribeca coffee table; dropping it here broke that quietly.
+    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
 
     if (condition) details.condition = condition;
     if (dimensions) details.dimensions = dimensions;
     if (brand) details.brand = brand;
+    if (neighborhood) details.neighborhood = neighborhood;
   } else if (type === "other") {
     const condition = String(formData.get("condition") ?? "").trim();
     const neighborhood = String(formData.get("neighborhood") ?? "").trim();

@@ -47,7 +47,7 @@ type EditableListing = {
   type: string;
   title: string;
   description: string;
-  price_cents: number;
+  price_cents: number | null;
   details: Record<string, unknown>;
   images: { path: string }[];
   status: ListingStatus;
@@ -56,7 +56,10 @@ type EditableListing = {
 };
 
 // cents → the string the price input should show (whole dollars stay whole).
-function formatPriceInput(cents: number): string {
+// No price comes back as an empty box, so a blank round-trips as a blank rather
+// than reappearing as a zero the member never typed.
+function formatPriceInput(cents: number | null): string {
+  if (cents === null) return "";
   return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
 }
 
