@@ -1266,3 +1266,31 @@ Both channels were negative-controlled (rule broken, failures observed, rule res
 **Caught only by looking:** a missing space after `<strong>` in the terms page (JSX ate it — the rendered HTML said "Membershipis"), and the footer wordmark underlined because `.cl-doc a` was underlining every link in the document rather than the links in the prose.
 
 **Next:** Slice 3b — `/admin` ×4 — then `app/design/` and the `(ed)` group retire together, along with the editorial components nothing else uses (`AuthShell`, `BoxButton`, `ArrowLink`, `InviteForm`, `JoinForm`, `AcceptInvitePanel`, `SponsorRequestActions`, `ContactForm` and the rest — audit before deleting). **Slices 1, 2 and 3a merge to `main` together.**
+
+---
+
+## 2026-08-27 — Merged: slices 1, 2 and 3a to `main`, deployed
+
+`git merge --no-ff design/classifieds-live` → **`4759502`**, 202 files, +12,158 / −3,354. First code deploy since 22 July. Vercel production green in 43s (`manhattanite-gzljlxoxj-georgegardner97s-projects.vercel.app`). `design/classifieds-live` kept, not deleted, until 3b has settled. Rollback is `git revert -m 1 4759502`.
+
+**Pre-flight, all green before the merge:** tree clean, branch and `main` both matching `origin`, `npm run build` clean, `audit:rls` 59/59 with zero unexpected ALLOWs, `audit:gates` 30/30, prod state confirmed untouched (4 seed members, 20 published listings, founder row byte-identical). `npm run build` re-run on `main` after the merge and before the push — clean there too.
+
+**Commit `037d7ed` — the admin entry point, added to the branch before merging.** `/admin` was linked only from `AccountMenu` → `SiteNav` → `app/(ed)/layout.tsx`. Post-merge the only `(ed)` routes are the four admin pages, so that link would have rendered only where you already are. `AppHeader` gained an optional `admin?: boolean`; `/profile` passes `account?.role === "admin"` (one extra column on a select it already runs, on a page already `force-dynamic`).
+
+> **Why a prop and not a session read inside `AppHeader`.** `AppHeader` is synchronous and eight routes that render it are prerendered static: `/terms`, `/privacy`, `/thank-you`, `/reset-request`, `/reset-password`, `/profile/edit`, `/design`, `/design/kit`. Making it async flips all eight to `ƒ` and buys every visitor an auth round trip for a link one account sees. The build's route table is identical before and after the change — that was the acceptance test. Slice 3b can do this properly once it owns the console.
+
+**Commit `4b1023b` — `audit:gates` was reading for a dev-only string.** Its first production run reported two failures that were not failures: `[m] /listings/<other's unpublished>/edit` and `[m] /listings/<nonexistent>/edit`, both `want 404, got 200`. Production is correct — 24,225-byte shell, no `<form>`, no "Edit your listing", byte-identical to the nonexistent case, against 34,324 bytes for a listing the member owns. The `notFound` detector required the literal `not-found` next to `NEXT_HTTP_ERROR_FALLBACK`; `npm run dev` carries that hyphenated module path in its bundle and a production build hashes it away, spelling the slot `notFound`. Now matches `NEXT_HTTP_ERROR_FALLBACK;404` — with the status code, since a fallback also carries other HTTP errors. 30/30 both against `https://manhattanite.com` and against localhost after the change.
+
+**Production verification (step 5), all against manhattanite.com:**
+- Guest `/listings`: exactly six listing ids; every byline "Listed by a member" / "Vouched by a member" in the rendered HTML **and** the RSC payload.
+- Guest, seventh published listing: members-only wall, and no title, description or price of the row behind it anywhere in the response.
+- Guest `/members/<id>`: the wall.
+- `/terms` + `/privacy`: 200, `.cl-doc`, and the page now reads "We don't run analytics."
+- `/reset-request`: 200, inside the Classifieds system.
+- Founder session on prod: `/listings/new` (200, "Category"), `/profile` (200, and carrying the Admin link), `/listings/mine` (200, "What you"), `/admin`, `/admin/applications`, `/admin/members`, `/admin/moderation` (200 each).
+- Favicon: `/icon/16|32|64` all 200 image/png and linked from `<head>`. OG card: 1200×630 PNG, 40KB, with the full og:/twitter: set. `/favicon.ico` 404s — that is Next's file convention, unchanged by this merge, not a regression.
+- `audit:rls` 59/59 and `audit:gates` 30/30 re-run after the deploy, against the code now in production.
+
+**A note on the two false alarms in the first pass.** A throwaway name-leak checker written for this session reported "Max" leaking on `/listings` and an analytics claim surviving on `/privacy`. Both were faults in the throwaway: "Max" is the price filter's `placeholder` and also a real seed member's name, and `/privacy` says it does *not* run analytics. `screen-fixtures.ts` had already solved the first — its doc comment names Max — which is the argument for running the repo's own audit rather than writing a second one beside it.
+
+**Next:** Slice 3b — `/admin` ×4 — then `app/design/` and the `(ed)` group retire together, along with `globals.css`, `SiteNav`, `NavGate`, `AuthShell`, `PageShell`, `BoxButton`, `ArrowLink` and the editorial `ListingCard`.

@@ -191,6 +191,20 @@ Big strategy session (full detail: `Growth/.../outputs/Manhattanite_Strategy-Ses
 
 ---
 
+## 2026-08-27 — The Classifieds system is live on manhattanite.com
+
+**The redesign shipped.** Slices 1, 2 and 3a merged to `main` as one `--no-ff` commit (`4759502`) and deployed: 202 files, +12,158 / −3,354, and **the first code deploy since 22 July**. Every screen a person who is not George can reach is now the Classifieds system. Deploy green in 43s. If it ever needs undoing, that is one command — `git revert -m 1 4759502` — which is the only reason the merge was done the long way instead of squashed.
+
+**One thing was fixed before the merge rather than after it.** `/admin` had exactly one link into it, and that link lived in the design system this merge was retiring — so after the merge it would have rendered only on the admin pages themselves. **`/admin` is now reached from `/profile`**, as a quiet "Admin" link in the header that only George's account sees. It is deliberately understated; the console gets its proper treatment in Slice 3b.
+
+**The production checks found one thing, and it was the checker.** Two of the 30 route-gate assertions failed against the live site while passing locally. Production is correct — it refuses both cases, serving no listing content at all — but the audit had been written against the development server and was looking for a piece of text that only a development build contains. Fixed, and now green both ways. Worth remembering as a general rule: **a test that has only ever run locally has not been verified.**
+
+**Verified against the live site, not a local copy.** Both audits re-run clean (59/59 and 30/30) with the production database untouched either side — 4 seed members, 20 published listings, George's own row byte-identical. Logged out: six listings, nobody named, in the page source as well as on screen; a seventh listing and a member page both answer with the members-only wall and give away nothing behind it. Terms and privacy load and no longer claim analytics. Favicon and the link-preview card both survive. Signed in as George on the live site: posting, profile, my listings, and all four admin screens through the new link.
+
+**Left to do:** Slice 3b — the four `/admin` screens — after which the old design system retires completely.
+
+---
+
 ## 2026-08-26 — Classifieds Slice 3a: names are for members, and eight more screens moved
 
 **The rule to remember, because it changes what a stranger sees:** a logged-out visitor gets listings, prices, photographs and neighborhoods — and **no member name and no sponsor name, anywhere**. Signed in, nothing changed: the full "Listed by X · sponsored by Y" byline is exactly as it was. George settled this on 26 Aug, reversing the question held open on the 18th; browse changed to match the landing rather than the reverse. `/members/[id]` is now the members-only wall for a guest (so member profiles are no longer indexable), and Terms and Privacy both say the new line out loud: **listings are public, member names are not**.
