@@ -11,18 +11,20 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
-## Quick state addendum — 2026-08-27 (blank-price verified; two live bugs found)
+## Quick state addendum — 2026-08-27 (blank-price verified; two bugs found AND fixed; batch merged)
 
 **`0027` is applied to production and the blank-price feature is verified end to end.** A listing may have no price: it stores NULL, renders as no price line anywhere a member or visitor looks, says "No price" out loud on `/admin/moderation` and the post form's Review step, sorts LAST under the Price sort, and is EXCLUDED by a price filter. NULL is "no price"; 0 is still free and still renders `$0`. Verified against the production database with the database left byte-identical to how it started. `build` clean, `audit:rls` 59/59, `audit:gates` 0 failures locally and against prod.
 
-**Branch `classifieds-walkthrough-fixes` is verified but NOT merged** — deliberately held for George's call, because of the first bug below.
+**MERGED AND DEPLOYED** as `2e80c65` (`--no-ff`, so it reverts as a unit with `git revert -m 1 2e80c65`). George's call after the bugs were reported: fix them and merge.
 
-**TWO PRE-EXISTING BUGS ARE LIVE ON `main`**, both shipped with the Classifieds merge (`4759502`) and neither introduced by the walkthrough branch:
+**TWO PRE-EXISTING BUGS WERE FOUND AND FIXED**, both shipped with the Classifieds merge (`4759502`), both live for a fortnight, neither introduced by the walkthrough branch:
 
-1. **No listing with a photo can be posted or edited.** `ClImageUpload` writes the hidden `images` field as objects (`[{"path":…}]`); `create.ts` and `update.ts` both require strings. Every such save fails with the misleading "Photos didn't upload cleanly. Try again." — the photo uploaded fine; the form's wire format is wrong. This blocks the product's core action. One-line fix in `ClImageUpload.tsx`, or widen both parsers to accept either shape. Seed rows have photos only because the seed script bypasses the form via the service role, which is why nobody hit it.
-2. **Editing a furniture listing deletes its neighborhood.** The Neighborhood field renders for every category, but the actions read it only for apartment/other/service. `update.ts` rebuilds `details` wholesale, so furniture loses `details.neighborhood` — the data search matches on, which would break "searching 'tribeca' finds a Tribeca coffee table". Seed furniture also carries `tags`/`category`, dropped the same way.
+1. **No listing with a photo can be posted or edited.** `ClImageUpload` writes the hidden `images` field as objects (`[{"path":…}]`); `create.ts` and `update.ts` both require strings. Every such save fails with the misleading "Photos didn't upload cleanly. Try again." — the photo uploaded fine; the form's wire format is wrong. This blocked the product's core action. **Fixed**: the component now sends the array of paths the actions always documented. Verified on the deployed bundle, which now reads `JSON.stringify(r.map(e=>e.path))`. Seed rows have photos only because the seed script bypasses the form via the service role, which is why nobody hit it.
+2. **Editing a furniture listing deletes its neighborhood.** The Neighborhood field renders for every category, but the actions read it only for apartment/other/service. `update.ts` rebuilds `details` wholesale, so furniture loses `details.neighborhood` — the data search matches on, which would break "searching 'tribeca' finds a Tribeca coffee table". **Fixed**: both actions now read `neighborhood` for furniture too. Seed furniture also carries `tags`/`category`, still dropped on edit — nothing reads them, and rebuilding `details` wholesale is deliberate so a category switch leaves no stale keys.
 
-**Rule worth carrying:** a form field that renders but is never read by the action is worse than a missing field — it invites a member to type something the product then throws away. Both bugs are that shape.
+**Rule worth carrying:** a form field that renders but is never read by the action is worse than a missing field — it invites a member to type something the product then throws away. Both bugs are that shape, so a sweep of every control against what its action actually reads is worth doing before Slice 3b.
+
+**Second rule:** seed data is not evidence that a write path works. The seed script writes rows directly through the service role, so a site full of photographed listings coexisted with a posting form that could not attach a photo. Verify a write path by driving the real form.
 
 ---
 

@@ -6,6 +6,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-27 · Both bugs fixed, batch merged and deployed (Claude Code)
+
+**George's call on the two bugs reported above: fix them and merge. Done, verified against production, and live.**
+
+**Fix 1 — listings with photos can be posted and edited again.** `ClImageUpload` now sends `JSON.stringify(items.map(i => i.path))` — the array of strings both server actions have always documented and checked for. The `{ path }` row shape is still built server-side, after the ownership check, so the actions keep owning the stored shape. Confirmed live by pulling the deployed chunk off manhattanite.com and reading it: `name:"images",value:JSON.stringify(r.map(e=>e.path))`.
+
+**Fix 2 — furniture keeps its neighborhood.** `create.ts` and `update.ts` now read `neighborhood` in the furniture branch too. `details` is still rebuilt wholesale on update, which is deliberate — a category switch must not leave stale keys — so the seed-only `tags` and `category` are still dropped on edit. Nothing reads them; checked before deciding to leave it.
+
+**Verified by driving the real form against the production database, not by inspection.** The coffee table that had silently refused to save now saves and keeps "Lower East Side". A brand-new furniture listing posted **with a photo, a blank price and a Tribeca neighborhood** landed as `price_cents` NULL, `details.neighborhood` "Tribeca", `images` in the stored `{ path }` shape, `status` pending — and `/admin/moderation` rendered both "No price" and the neighborhood row. That single post is the whole batch proved at once. Test row deleted, both orphaned Storage objects removed by exact path (never by prefix — the founder's folder holds the real seed photos), and the database diffed byte-identical to where the session started.
+
+**Merged `2e80c65` (`--no-ff`) and pushed.** `git revert -m 1 2e80c65` backs the whole batch out on its own. Build clean, tsc clean, lint unchanged from the 5-error baseline, static route count unchanged at 10, `audit:rls` 59/59, `audit:gates` 0 failures locally and against production.
+
+**Post-deploy checks on the live site, all five of George's notes confirmed.** Header inner box and `<main>` both measure 100 → 1500 at a 1600px viewport, so the 80px inset is gone and "Post a listing" sits inside the grid. Search box is on Browse. Furniture cards read "FURNITURE", apartments still read their neighborhood. The neighborhood filter group appears under Apartments and not under Furniture, and a stale `?hood=Tribeca` leaves the URL when you switch category (the furniture link renders as a bare `/listings?type=furniture`). `/search?q=lamp` → 308 → `/listings?q=lamp`, carrying the query — which doubled as the deploy marker, since it is behaviour that only existed after this merge. Guest name rule still holding on `/listings?q=coffee`: "Vouched by a member", no real names.
+
+**The lesson worth keeping, and it is not about prices.** Both bugs were the same shape: **a form control that renders but the server action never reads.** One let a member type a neighborhood that was thrown away; the other let them attach a photo the save then rejected. Neither is visible in a passing build, a passing `audit:rls` or a passing `audit:gates` — the first two never touch the form and the third fetches routes without submitting them. And **seed data actively hid it**: `seed-example-listings.ts` writes rows through the service role, so a site full of photographed listings sat on top of a form that could not attach a photo. A sweep of every form control against what its action actually reads is worth doing before Slice 3b.
+
+**Next:** Slice 3b (`/admin` ×4) is still untouched and is now genuinely all that is left of the Classifieds migration.
+
+---
+
 ## 2026-08-27 · Blank-price walkthrough: the feature passes, two pre-existing bugs found (Claude Code)
 
 **Walked the blank-price feature end to end against the production database with `0027` applied. Every assertion in the plan passed. The branch is NOT merged — stopped at that step deliberately, see below.**
