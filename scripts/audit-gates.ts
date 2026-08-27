@@ -64,9 +64,16 @@ async function hit(url: string, cookie: string | null) {
   const payload = body.match(/NEXT_REDIRECT;[a-z]+;([^;\\"]+);/);
   const location = httpLocation ?? (payload ? payload[1] : null);
 
+  // The marker is the status code Next encodes beside the fallback, not the
+  // words "not-found". THIS COST TWO FALSE FAILURES ON THE FIRST PRODUCTION
+  // RUN, 2026-08-27: the audit was written against `npm run dev`, whose bundle
+  // happens to carry the hyphenated module path, and a production build hashes
+  // it away — the payload there spells the slot `notFound` and the outcome
+  // `NEXT_HTTP_ERROR_FALLBACK;404`. Both builds emit the latter, so match that
+  // and nothing else. The `;404` matters: a fallback is also how other HTTP
+  // errors travel, and "some error happened" is not the assertion.
   const notFound =
-    res.status === 404 ||
-    (body.includes("NEXT_HTTP_ERROR_FALLBACK") && body.includes("not-found"));
+    res.status === 404 || /NEXT_HTTP_ERROR_FALLBACK;404\b/.test(body);
 
   return { status: res.status, location, notFound, body };
 }
