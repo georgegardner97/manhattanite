@@ -6,6 +6,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-27 · Blank-price walkthrough: the feature passes, two pre-existing bugs found (Claude Code)
+
+**Walked the blank-price feature end to end against the production database with `0027` applied. Every assertion in the plan passed. The branch is NOT merged — stopped at that step deliberately, see below.**
+
+**Part A, the create path.** Posted a service listing with the price field left empty. The Review step reads **"No price"** in muted text; the submit was accepted with no validation error, which is itself the proof `0027` took on prod. `/admin/moderation` says **"No price"** out loud, as the second of the two deliberate exceptions. `/listings/mine` rendered it with no price line while pending. Rejected it from the moderation queue (never published), and it then sat in the archived list still showing no price — so `ClArchivedRow` handles NULL correctly too. The row was hard-deleted afterwards.
+
+**Part B, the edit path — the half most likely to be broken, and it is sound.** Cleared the price on an existing listing through the real edit form. It stored **NULL, not 0**. Browse card, listing detail page and `/listings/mine` all render nothing where the price was — no dash, no `$0`, no `$NaN`; the rendered HTML was grepped for both rather than eyeballed, and the detail page's contact card omits the line entirely with no gap above the byline. **Price sort puts the unpriced listing LAST** (position 8 of 8), not first. **Both a min+max and a min-only price filter EXCLUDE it.** A blank round-trips back into the edit form as a blank. Original price restored through the same form.
+
+**The database is byte-identical to how it started** — snapshot diffed before and after: 21 rows, 20 published, 1 archived, 0 NULL prices, 0 zero prices. `npm run build` clean, **`audit:rls` 59/59**, **`audit:gates` 0 failures locally AND against `APP_ORIGIN=https://manhattanite.com`.**
+
+**BUG 1 — nobody can post or edit a listing with a photo. This is live on `main` right now.** `ClImageUpload` writes the hidden `images` field as an array of OBJECTS — `[{"path":"..."}]` — while `create.ts` and `update.ts` both require an array of STRINGS (`typeof item !== "string"` → reject). Every save of a listing carrying at least one photo dies with **"Photos didn't upload cleanly. Try again."**, which is misleading: the photo uploaded fine, it is the form's own wire format that is wrong. Caught empirically — the first Part B attempt, on a listing with one photo, returned 200 twice and changed nothing. The retiring editorial `ImageUpload.tsx` writes `items.map(i => i.path)`, the correct shape; the Classifieds restyle changed the wire format while its own comment claims it "writes the same hidden `images` JSON field that createListing reads". It does not. Shipped with the Classifieds merge (`4759502`, 27 Aug). The error IS rendered (`ClPostForm` line 408) but sits below the fold. **Not introduced by this branch** — the branch's edits to `create.ts`/`update.ts` are price-only, and the mismatch is identical on `main`. Every seed listing has photos because the seed script writes rows directly through the service role, bypassing the form — which is why this was never hit.
+
+**BUG 2 — editing a furniture listing silently deletes its neighborhood.** The Neighborhood field renders for EVERY category, but `create.ts`/`update.ts` read `neighborhood` only for apartment, other and service — never furniture. `update.ts` rebuilds `details` wholesale, so a furniture listing edited through the form comes back with `details.neighborhood` gone. That is the data `neighborhoodOf()` feeds to search, so it would quietly break the "searching 'tribeca' finds a Tribeca coffee table" behaviour locked in on 26 Aug. Seed furniture rows also carry `tags` and `category`, which the form cannot express and would drop the same way. Pre-existing, same merge.
+
+**Why the merge did not happen.** The standing instruction is to stop and report rather than work around a failure. Bug 1 blocks the product's core action and lives in the same form this batch touches, so whether to merge the walkthrough batch as-is or fold an image fix into it is George's call, not one to make silently. The batch itself is verified and ready; nothing about it makes either bug worse, and both are already live.
+
+**Next:** George's call on merge order. Bug 1 is a one-line fix in `ClImageUpload.tsx` (`({ path: i.path })` → `i.path`) or, better, widen both server parsers to accept either shape. Slice 3b (`/admin` ×4) still untouched.
+
+---
+
 ## 2026-08-27 · The walkthrough batch built, verified and branched (Claude Code)
 
 **Ran the handoff prompt from the Cowork session below.** Branch `classifieds-walkthrough-fixes` off `main`, one `--no-ff` merge intended, so the whole batch reverts as a unit the way the migration does.
@@ -31,6 +51,13 @@ Newest entries at the top.
 ---
 
 ## 2026-08-27 · George's live-site walkthrough — five notes, one build, one Claude Code prompt (Cowork)
+
+**UPDATE, same day — `0027` IS APPLIED TO PRODUCTION.** Run by Cowork through George's browser (Claude in Chrome) in the Supabase SQL editor after he signed in; Cowork itself has no network from the device bridge, and signing in is not something it does. Verified from the catalog rather than the success banner: `select attname, attnotnull from pg_attribute where attrelid = 'public.listings'::regclass and attname = 'price_cents'` returns **false**. The column is nullable on prod.
+
+**Safe to have applied ahead of the merge:** `drop not null` only widens what is allowed, and the code currently live always sends a price. The branch `classifieds-walkthrough-fixes` is still unmerged and unpushed.
+
+**One thing worth knowing for any future hand-run migration:** the Supabase SQL editor auto-pairs a typed apostrophe and silently doubles it, so the original `'...a members'' rate...'` comment string was a hazard. The comment now uses dollar quoting and contains no apostrophe at all, and the migration FILE was updated to match what actually ran, so the repo and the database agree. Rule to carry: **write hand-run migrations apostrophe-free and dollar-quoted.**
+
 
 **George walked manhattanite.com the day after the Classifieds merge and gave five notes.** All captured in `WORK AREAS/Product/design-foundation-project/outputs/Classifieds_Website-Notes_v1.md`, turned into a handoff at `Classifieds_Claude-Code-Prompt_v1.md` in the same folder.
 

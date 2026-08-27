@@ -23,5 +23,7 @@
 alter table public.listings
   alter column price_cents drop not null;
 
-comment on column public.listings.price_cents is
-  'Asking price in cents. NULL means the listing has no price at all (a members'' rate, a quote-on-request service, a perk); 0 means free. Renders as no price line anywhere a member or visitor looks.';
+-- Dollar-quoted, and deliberately free of apostrophes: this migration is run by
+-- hand in the Supabase SQL editor, whose editor auto-pairs a typed quote and
+-- silently doubles it. APPLIED TO PROD 2026-08-27 exactly as written here.
+comment on column public.listings.price_cents is $c$Asking price in cents. NULL means the listing has no price at all (a members-only rate, a quote-on-request service, a perk); 0 means free. Renders as no price line anywhere a member or visitor looks.$c$;

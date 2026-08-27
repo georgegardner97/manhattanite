@@ -11,6 +11,21 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-08-27 (blank-price verified; two live bugs found)
+
+**`0027` is applied to production and the blank-price feature is verified end to end.** A listing may have no price: it stores NULL, renders as no price line anywhere a member or visitor looks, says "No price" out loud on `/admin/moderation` and the post form's Review step, sorts LAST under the Price sort, and is EXCLUDED by a price filter. NULL is "no price"; 0 is still free and still renders `$0`. Verified against the production database with the database left byte-identical to how it started. `build` clean, `audit:rls` 59/59, `audit:gates` 0 failures locally and against prod.
+
+**Branch `classifieds-walkthrough-fixes` is verified but NOT merged** — deliberately held for George's call, because of the first bug below.
+
+**TWO PRE-EXISTING BUGS ARE LIVE ON `main`**, both shipped with the Classifieds merge (`4759502`) and neither introduced by the walkthrough branch:
+
+1. **No listing with a photo can be posted or edited.** `ClImageUpload` writes the hidden `images` field as objects (`[{"path":…}]`); `create.ts` and `update.ts` both require strings. Every such save fails with the misleading "Photos didn't upload cleanly. Try again." — the photo uploaded fine; the form's wire format is wrong. This blocks the product's core action. One-line fix in `ClImageUpload.tsx`, or widen both parsers to accept either shape. Seed rows have photos only because the seed script bypasses the form via the service role, which is why nobody hit it.
+2. **Editing a furniture listing deletes its neighborhood.** The Neighborhood field renders for every category, but the actions read it only for apartment/other/service. `update.ts` rebuilds `details` wholesale, so furniture loses `details.neighborhood` — the data search matches on, which would break "searching 'tribeca' finds a Tribeca coffee table". Seed furniture also carries `tags`/`category`, dropped the same way.
+
+**Rule worth carrying:** a form field that renders but is never read by the action is worse than a missing field — it invites a member to type something the product then throws away. Both bugs are that shape.
+
+---
+
 ## Quick state — as of 2026-06-09 (Slice C + Navigation slice shipped)
 
 > Reconciled snapshot. On 2026-06-08 the `/apply` flow was built across two slices; on 2026-06-09 Slice C (the membership emails) shipped and the full apply→approve→welcome loop was verified end-to-end on the deployed site. Verified against git (working tree clean, in sync with `origin/main`) and the production database. Naming note: the membership flow is **"Phase 2"** per the build plan even though it shipped *after* the Phase 4 byline/profile work — the phase numbers reflect the original plan order, not chronology.
