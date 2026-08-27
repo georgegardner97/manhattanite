@@ -68,6 +68,12 @@ The growth loop. Migrating `/invite` also unblocks something specific: the **"I 
 
 `/join/[token]` and `/sponsor-request/[token]` are reached by token from an email, so they are the two screens most likely to be someone's first-ever sight of Manhattanite. Treat them that way.
 
+### 2e. One small thing, or admin becomes unreachable
+
+`/admin` is linked from exactly one place in the app: `AccountMenu.tsx`, which renders inside `SiteNav`, which is mounted only in `app/(ed)/layout.tsx`. After this slice the only `(ed)` routes left are the four admin pages — so the sole link into the admin console will render only on pages you cannot reach without already being there.
+
+Add an admin entry point to `AppHeader`, shown only when the viewer's `role` is `admin`. Small, and it has to exist before `(ed)` retires anyway. Everything else about the admin screens waits for 3b.
+
 ---
 
 ## When to merge
