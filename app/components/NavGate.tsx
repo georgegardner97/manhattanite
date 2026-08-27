@@ -2,12 +2,17 @@
 
 // NavGate — decides whether the global nav is on screen, on the client.
 //
-// SiteNav stands down on the pages that carry their own chrome:
-//   - "/"        the landing, whose nav is overlaid on the hero photograph.
-//   - the five THRESHOLD routes (Slice 2), which sit on the landing's dark side
-//     and carry only the centered wordmark AuthShell renders. The light,
-//     tier-aware product nav on a park-ground page was both a visual seam and a
-//     contradiction: these screens exist because you are not inside yet.
+// SiteNav stands down on the five THRESHOLD routes, which sit on the landing's
+// dark side and carry only the centered wordmark AuthShell renders. The light,
+// tier-aware product nav on a park-ground page was both a visual seam and a
+// contradiction: these screens exist because you are not inside yet.
+//
+// TWO ENTRIES LEFT THIS SET IN THE 2026-08-18 MIGRATION, and neither was
+// deleted for tidiness — both stopped being reachable. SiteNav is now rendered
+// by app/(ed)/layout.tsx rather than the root layout, so it only ever mounts on
+// editorial routes. "/" is the Classifieds landing and "/design" is the preview
+// area; neither is in the (ed) group, so neither can render this gate at all.
+// What remains is the one job it still has to do on the client.
 //
 
 // This has to be a CLIENT decision. The first implementation read the pathname
@@ -29,7 +34,6 @@ import type { ReactNode } from "react";
 // though "/login" is in the set, and a prefix rule invites exactly that class
 // of accident as routes are added.
 const NAVLESS = new Set([
-  "/",
   "/login",
   "/signup",
   "/reset-request",

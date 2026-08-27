@@ -4,6 +4,26 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-08-18 · Classifieds migration Slice 1 — the public face, on a branch
+
+Branch `design/classifieds-live` (one commit, 85 files), pushed. `main` pushed too — it had been two commits ahead locally while production ran 22 July code.
+
+**What changed for a visitor:** `/` is now the Classifieds landing (was the park-green editorial hero, retired to git history), `/listings` and `/listings/[id]` are the Classifieds browse and detail, and `/members/[id]`, `/search`, `/saved` are new public routes. The member area, admin console, threshold screens, terms and privacy are untouched and still editorial — that is Slices 2 and 3.
+
+**How, without moving a URL:** route groups `app/(cl)` and `app/(ed)`, both nested under one root layout so crossing between systems stays a client navigation rather than a full reload. Components to `app/components/cl/`, logic to `lib/cl/`, stylesheet to `app/styles/classifieds.css`; the surviving preview screens (kit, post, settings, access) now run on that same shared code, so they cannot drift from what shipped.
+
+**Fonts:** new `app/fonts.ts`. The root `<body>` used to carry the next/font variables that `globals.css` and `Wordmark` both depend on, so editorial typography moved into a `.ed-root` scope mirroring `.cl-root`. Instrument Serif is imported by both group layouts on purpose — the wordmark stays Instrument Serif while Classifieds body type is Newsreader.
+
+**Trust regression found and fixed before merge.** `/members/[id]` ran its own listings query and never applied the six-row teaser cap. That cap is application-level, not RLS — 0010 permits anonymous reads of published rows — so guests were being shown listings whose detail page refuses them. Routed through a new `readMemberListings()`. **The 59-cell RLS audit passed before and after; it cannot see this class of bug.** New rule: any screen listing listings goes through `lib/cl/listings-read.ts`.
+
+**Verified:** build clean, `npm run audit:rls` (new script) 59/59 with zero unexpected ALLOWs against prod, seed members and all 20 published listings intact, founder row byte-identical; guest walk shows six listings and the wall on a seventh; desktop + 390px screenshots for every migrated screen.
+
+**Blocked:** signed-in UI states. Cloudflare rejects `localhost` for the Turnstile widget (**error 110200**), so local sign-in cannot complete — George must allowlist `localhost` on that widget. **Slice 2 migrates member-only screens and should not start until that is done.**
+
+**Waiting on George:** apply `supabase/migrations/0026_member_profile.sql` in the SQL editor (his decision; nothing calls it yet, so it is inert until wired).
+
+---
+
 ## 2026-08-13 (Week 12 hardening) · RLS audit v2 — trust gate proven, 59/59 green
 
 The Week-12 must-hit. New behavioral harness `scripts/audit-rls.ts` attacks the API (PostgREST + Storage) directly with the anon key and synthetic user JWTs — 3 principals (anon / Tier-1 / member) + a 2nd member + a synthetic admin, 59 cells. **Every cell matched expectation; zero unexpected ALLOWs.** Doc: `outputs/Manhattanite_RLS-Audit_v2.md`.
@@ -1163,6 +1183,86 @@ Estimated effort: ~2 focused hours. Best done fresh.
 **Next:**
 - Walk through Step 1 (export waitlist emails) with George.
 
+## 2026-08-18 · Classifieds design preview built at /design (branch, not live)
+
+**Worked on:**
+- Imported the Claude Design "Classifieds" system + "Landing v3" as working screens at `/design/*`, against the real listings table. 11 of 12 screens plus the landing. Branch `design/classifieds-preview`, ~5k lines, all under `app/design/` + `app/design/classifieds.css`.
+- Scoped so it cannot leak: own CSS scope (`.cl-root`), own fonts loaded in the `/design` layout only, `noindex`, `NavGate` stands the editorial nav down across the subtree. **Reverts with `rm -rf app/design` + two lines in `NavGate.tsx`.**
+- The trust gate is written **once** (`app/design/listings-read.ts`) and shared by Browse, Search and Saved — published rows only, 6 for a guest, 50 signed in, all filtering in memory over that one gated read so nothing can widen it.
+- Real write paths reused, not reimplemented: `createListing` (posts as `pending`, 0017 trigger pins it), `submitApplication`, `sendContact`, `signInWithPassword` behind Turnstile, `uploadListingImage`, `get_my_connections`.
+- Only shared file touched: `Wordmark.tsx` gained an optional `periodClassName` (period now always wrapped in a classless span — inert, every existing caller renders identically; verified on live `/`).
+- Fixed a genuine bug in the post wizard: `required` inputs inside a CSS-hidden step meant the browser blocked submit *and* couldn't focus the control to say why — Submit did nothing, silently. `onInvalid` now jumps to the offending step. **General trap in any hide-don't-unmount wizard.**
+
+**Decided:** see `COMPANY/memory/decisions.md` (2026-08-18 block) — preview not live edit; Classifieds better inside than outside; Landing v3 not promoted to `/`; no dead controls; member data stays behind RLS pending a decision.
+
+**Blockers:**
+- **Local sign-in is captcha-blocked** — `.env.local` holds Cloudflare's always-passes TEST Turnstile key, which the real Supabase secret rejects. So `/design/post`, `/design/settings` and the forgot-password reveal have **never been rendered**; gates verified, appearance not. Claude cannot close this (previews are behind Vercel SSO; those screens need a member password). **Same root cause as the Slice-3 prompt's still-open "Stage 0 localhost Turnstile key fix".**
+- `supabase/migrations/0026_member_profile.sql` written, **not applied**, nothing calls it. George runs migrations.
+- Local `main` has 2 unpushed commits (`dbfeaf7`, `06d7b60`) — docs and scripts only, so prod is functionally current, but the Week 12 audit exists only on the laptop.
+
+**Next:** George eyeballs the preview signed in; decide 0026; settle the landing-vs-browse naming inconsistency; decide on merging to `main` and pushing `main`.
+
 ---
 
 *Entry format: date · short title, then sections for Worked on / Decided / Blockers / Next.*
+
+## 2026-08-26 — Slice 2: the member-only screens, migrated and actually looked at
+
+**The blocker cleared first.** Cloudflare Turnstile now allows `localhost` — the widget renders, challenges and verifies. Slice 1 died at error 110200 with no challenge at all, which is why its signed-in states shipped unverified. This slice's did not.
+
+**What moved.** `/login`, `/signup`, `/apply` (screen 09 → `ClAccess`, one state-aware component across four cases); `/listings/new` (screen 05); `/profile` (screen 10). `/profile/edit` collapsed into `/profile` and left behind as a redirect.
+
+**What was designed rather than ported**, because no screen existed: `/listings/mine`, `/listings/[id]/edit`, `/listings/[id]/contact`.
+
+**Judgement calls worth keeping.**
+- **The profile photo stays.** Screen 10 doesn't draw one. Shipping it as drawn would have deleted `AvatarUpload` and reversed the 2026-06-08 identity decision by omission. A mockup that predates a decision does not get to overturn it.
+- **`/signup` needed a real form.** The design's guest card links to `/signup`; rendering the same screen there would have pointed that link at itself.
+- **Edit drops the three-step pills.** The steps stop a blank form feeling like a wall; an edit form is not blank. Presentation flag only — the form already mounts every field.
+- **My listings keeps the July audit's structure.** Cards for active, compact rows for archived. `ClListingRow` was not reused (built for search, leads with a thumbnail, links unconditionally); `ClArchivedRow` is a sibling with neither.
+- **Contact is one body in two frames** (page + modal), so they cannot disagree. The Tier-1 gate copy is verbatim from `voice-and-copy.md` again — the modal had been paraphrasing it.
+
+**Two real bugs caught in passing.** The post form allowed 140-char titles and 4000-char descriptions against server caps of 80 and 2000. And — worse — `updateListing` rebuilds `details` wholesale, while the form rendered only two of the six detail fields the action reads: editing a furniture listing would have silently deleted its condition, dimensions and brand. Both fixed.
+
+**New in the toolkit: `npm run audit:gates`.** 21 route gates asserted over HTTP as guest / Tier 1 / member, self-fixturing and self-cleaning. It exists because the RLS audit passed 59/59 on both sides of Slice 1's trust hole — that class of bug lives above the database. Note for next time: Next 16 encodes `redirect()`/`notFound()` in the RSC payload with a 200 document when streaming has begun, so asserting on HTTP status alone produces confident false failures.
+
+**Verified:** build clean; `audit:rls` 59/59 with prod state identical before and after; `audit:gates` 21/21; every screen rendered signed in as a member with listings in all four statuses; all four Tier-1 walls; the guest walk in-system; 390px and desktop; 34 screenshots (08–24).
+
+**Caught only by looking:** duplicate primary CTA, a Save pill on your own listing, and a redundant "Archived" label on every archived row. None visible in a diff.
+
+**Next:** Slice 3 — `/admin` ×4, `/invite`, `/join/[token]`, `/sponsor-request/[token]`, `/reset-request`, `/reset-password`, `/thank-you`, `/terms`, `/privacy`. Then `app/design/` and the `(ed)` group retire together. Slices 1 and 2 merge to `main` together, not separately.
+
+## 2026-08-26 — Slice 3a: the byline decision, then the screens people still see
+
+**Step 1 — nobody is named to a logged-out visitor.** George's call, settling the question `app/(cl)/page.tsx` had carried in a comment since 18 August: the landing anonymised while browse, search, saved, detail and the member profile named the same guest one click away. Browse changed to match the landing.
+
+**The implementation is a deletion, not an addition.** The landing's page-local `anonymousMeta()` is gone; it is the guest branch of `cardMeta()` in `lib/cl/listings-read.ts` now, which every card-rendering screen already goes through. `toClCards(rows, viewer)` takes a **required** viewer in place of the old optional `renderMeta` override — that is the load-bearing part: a screen used to get named bylines by saying nothing, and now it will not compile until it states who is looking. `GatedListings` satisfies the shape, so the call reads `toClCards(visible, gated)`.
+
+Two screens needed more than a different string:
+- **`/listings/[id]`** — a guest sees "A member" with no link through to the profile, and the sponsor inset reads "Vouched for by a member." The contact affordances were already tier-gated and did not change.
+- **`/members/[id]`** — the whole page IS a named member, so anonymised it says nothing. A guest gets `ClGate`, and the refusal happens BEFORE the listings are read, so no name is ever loaded into a page a guest is looking at. The `isGuest` branch inside `readMemberListings()` stays anyway: it is the module's guarantee, not this page's.
+
+**Deliberately NOT an RLS change.** 0006 denormalised the names onto every listing and 0010 lets an anonymous reader select a published row; the database is entitled to return them. Same shape as the teaser cap, and the same blind spot: `audit:rls` passes 59/59 whether the rule holds or not.
+
+**So the assertions are the deliverable.** `audit:gates` now fetches every guest-reachable route (`/`, `/listings`, filtered browse, `/saved`, `/search`, a teaser listing, a member id) and searches the response for the real names in the database, taken live from `accounts` and from the denormalised bylines. Two things to keep:
+1. **The first run failed and was right to.** It found "Max" on `/listings` — the price filter's placeholder, and also a real seed member. Chrome and people share short words. The check is now two-channel: **every name against the visible text** (tags stripped, so a placeholder or an aria-label cannot trip it) and **full names only against the whole response**, RSC payload included, where no interface label will collide.
+2. **The payload channel earns its place.** Breaking the rule as a negative control leaked names on `/saved` in the payload ONLY — cards serialised into `SavedGrid`'s props and never rendered until localStorage matches. Invisible on screen, one View Source away.
+Both channels were negative-controlled (rule broken, failures observed, rule restored) — a green check nobody has watched fail is not evidence. 30 assertions now, including a positive control: a signed-in member must still see "Lila" on her profile, so hiding names from guests cannot quietly become hiding them from everyone.
+
+**Step 2 — eight routes migrated.** `/reset-request` + `/reset-password` (the priority: reset was the only editorial screen a normal user could still reach from inside the new system — from `ClSignIn`'s earned "Forgot your password?" and the Password row on `/profile`), `/thank-you`, `/terms`, `/privacy`, `/invite`, `/join/[token]`, `/sponsor-request/[token]`. New shared pieces: **`ClAuthCard`** (screen 09's grammar with the second panel taken away — one card, one field, one action) and **`ClDocument`** + `.cl-doc` (a long-form treatment the kit did not have: 66-character measure, body up at 15px because a legal page is read in paragraphs not glances, no serif — Newsreader stays the wordmark).
+
+**Judgement calls worth keeping.**
+- **`/thank-you` is unreachable from the product** (`submitApplication` redirects to `/apply`, which answers its own pending state). Kept and migrated anyway for old links, and its copy is about waiting rather than about having just submitted, because it cannot know. Timeline says "usually within a week" — matching `ClApplyForm` and `ClAccess`, and deliberately slower than the 48h/72h internal target in `trust-and-moderation.md`. Two screens in one flow must not promise different things, and you never promise faster than the SLA you keep.
+- **`/invite` gets the product-screen grammar** (header, heading, form — like `/listings/new`); `/join` and `/sponsor-request` get the centred card, because they are read by strangers arriving from an email.
+- **The token screens still name people** — the inviter on `/join`, the applicant on `/sponsor-request`. That is not a breach of Step 1's rule: the name IS the content of the message, and a one-time secret link is not a public page.
+
+**A real bug caught on the way across: `JoinForm` had no Turnstile.** Sign-up is captcha-gated at the Supabase project level, so `signUp` without a token is rejected before an account exists — every invitee reaching that screen would have been told it failed with no way to pass. Nobody has hit it because `/join` has no in-product entry point. `ClJoinForm` renders the widget, resets it after every failure, and still sends people on to `/apply` if the invite claim fails after the account is created.
+
+**Two content corrections.** `/privacy` claimed "basic, privacy-respecting analytics" and "lightweight analytics" — the site runs none (no Plausible, no Google, no Vercel Analytics; one grep confirms it). Removed, with a line promising to name the tool when analytics land. And the stale posture bullet in `COMPANY/legal-and-policy.md` ("not making listings public to non-account-holders", untrue since the 9 June D1 decision) now reads: listings are public, member names are not — which is what Terms and Privacy say on the page.
+
+**"I have an invite →" did not come back as a button, and the reason changed.** Slice 2 commented it out under the dead-link rule because `/invite` was editorial. `/invite` is migrated now and it still does not return: `/invite` is where a member SENDS an invitation, so a Tier-1 account pressing that CTA at the contact gate would be redirected to `/profile`. The real destination is `/join/[token]` and the token lives only in the email. The gate carries the instruction instead. A tokenless "I have an invitation" lookup screen would make it a link again — flagged for George, not built.
+
+**Verified:** `npm run build` clean; `audit:rls` 59/59 with prod state identical before and after; `audit:gates` 30/30; guest walk checked in the rendered HTML (landing, browse, search, a listing, a member id) not just on screen; the same walk signed in as a member with bylines back and unchanged; 390px and desktop; screenshots 25–40.
+
+**Caught only by looking:** a missing space after `<strong>` in the terms page (JSX ate it — the rendered HTML said "Membershipis"), and the footer wordmark underlined because `.cl-doc a` was underlining every link in the document rather than the links in the prose.
+
+**Next:** Slice 3b — `/admin` ×4 — then `app/design/` and the `(ed)` group retire together, along with the editorial components nothing else uses (`AuthShell`, `BoxButton`, `ArrowLink`, `InviteForm`, `JoinForm`, `AcceptInvitePanel`, `SponsorRequestActions`, `ContactForm` and the rest — audit before deleting). **Slices 1, 2 and 3a merge to `main` together.**

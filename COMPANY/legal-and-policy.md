@@ -12,7 +12,7 @@ At the seed-phase MVP, Manhattanite is:
 
 - Not advertised publicly
 - Not transacting through the platform (no payments processed)
-- Not making listings public to non-account-holders
+- Making listings public, but not the people behind them — anyone can read the most recent few listings without an account; member names and sponsor names are shown only to signed-in readers *(corrected 2026-08-26; the old line here said listings were not public to non-account-holders, which stopped being true with the D1 decision of 9 June 2026)*
 - Not accepting paid promotion or ads
 
 This posture significantly reduces (but does not eliminate) legal exposure during the seed phase. It does not eliminate the obligations described below.

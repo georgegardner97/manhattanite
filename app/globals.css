@@ -251,14 +251,28 @@ html {
   }
 }
 
+/* The page ground stays on <body>: it must paint the whole viewport, including
+   any area a short page does not cover. `body:has(.cl-root)` further down
+   repaints it for the Classifieds system, which sits on a different surface. */
 body {
   background-color: var(--color-bone);
   color: var(--color-ink);
+}
 
-  /* Reference the next/font variable directly (not --font-sans). next/font sets
-     --font-inter on this <body> element, so var() resolves here. --font-sans is
-     an @theme-inline token that only exists inlined into utility classes, not as
-     a :root custom property, so a raw var(--font-sans) here would resolve empty. */
+/* .ed-root — the editorial system's scope, and the mirror of .cl-root.
+   ----------------------------------------------------------------------------
+   These declarations used to sit on <body>, because the root layout put
+   next/font's --font-inter there and var() resolved against it. Since the
+   route-group split the root layout carries no fonts at all: app/(ed)/layout.tsx
+   applies `inter.variable` to a wrapper element and adds this class to it, so
+   --font-inter now resolves HERE. Moving the rules without moving the variable
+   would have collapsed Inter to system-ui on every editorial page.
+
+   Referencing --font-inter directly (not --font-sans) still matters for the
+   original reason: --font-sans is an `@theme inline` token that exists only
+   inlined into utility classes, never as a custom property, so a raw
+   var(--font-sans) here would resolve empty. */
+.ed-root {
   font-family: var(--font-inter), system-ui, sans-serif;
 
   /* Tighten Inter very slightly so it stops reading as the Vercel default.

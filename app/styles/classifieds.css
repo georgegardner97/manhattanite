@@ -1,0 +1,1037 @@
+/* ============================================================================
+   CLASSIFIEDS — scoped design system (preview slice, 2026-08-17)
+   ----------------------------------------------------------------------------
+   Ported from the Claude Design project "Manhattanite Classifieds.dc.html",
+   screen 01 (Components) and screen 02 (Browse).
+
+   DELIBERATELY SCOPED. Every token and class below is namespaced `cl-` and
+   lives under `.cl-root`, which only the /design routes mount. It does not
+   touch — and cannot leak into — the live editorial system in globals.css
+   (bone / ink / park, Instrument Serif + Inter, hairlines, square corners).
+   The two systems are alternatives, not layers: this file exists so the new
+   direction can be seen on a real screen with real listings before anything
+   commits to it, and so it can be deleted in one `rm` if it doesn't survive.
+
+   The design's own colors are reproduced exactly (hex from the .dc.html), on
+   the principle that a proving slice that quietly "improves" the design proves
+   nothing about the design.
+   ========================================================================== */
+
+.cl-root {
+  /* ---- Ground and surfaces ----
+     A correction worth recording, because reading it off the design file the
+     wrong way round is easy: #E9E5DE occurs exactly ONCE in the source, as the
+     <body> of the canvas the twelve screens are laid out on. Every screen
+     itself — all nineteen panels, the phone frames included — sits on #FBFAF9.
+     So the product's page surface is #FBFAF9, and #E9E5DE is the artboard
+     behind the artwork, not a color the app ever paints. It is kept as a token
+     only because the kit page reproduces the artboard framing. */
+  --cl-ground: #e9e5de; /* the design canvas, NOT an app surface */
+  --cl-surface: #fbfaf9; /* the page — every screen sits on this */
+  --cl-white: #ffffff; /* form controls, popovers */
+
+  /* ---- Type colors, darkest to lightest ---- */
+  --cl-black: #0f0f0f; /* filled buttons and chips */
+  --cl-black-hover: #2b2b2b;
+  --cl-ink: #141414; /* body default */
+  --cl-body: #3d3a36; /* long-form copy, unselected chips */
+  --cl-muted: #6e6a65; /* secondary and meta */
+  --cl-label: #7c766d; /* screen eyebrows */
+  --cl-faint: #9a948b; /* kickers, field labels */
+  --cl-disabled: #a8a29a; /* placeholders, disabled */
+
+  /* ---- Lines ---- */
+  --cl-border-panel: #dfd9d0; /* screen frame */
+  --cl-border-control: #e7e2da; /* inputs, outlined chips */
+  --cl-border-ghost: #e2dcd3; /* secondary buttons */
+  --cl-hairline: #ede8e1; /* dividers inside a panel */
+
+  /* ---- Fills ---- */
+  --cl-fill-active: #f1ece5; /* active rail row, disabled pill */
+  --cl-fill-skeleton: #efeae3;
+  --cl-fill-avatar: #e5dfd6;
+  --cl-fill-note: #f4f0ea; /* the quiet inset note */
+
+  /* ---- Accents ---- */
+  --cl-red: #8c2d2d; /* link hover, destructive */
+  --cl-error-text: #b4592f;
+  --cl-error-border: #c4726a;
+  --cl-error-panel-border: #e3cfcb;
+  --cl-error-panel-bg: #fbf3f1;
+  --cl-tag-vouch-bg: #ede4d4;
+  --cl-tag-vouch-fg: #7a4a18;
+  --cl-tag-new-bg: #e4e9e1;
+  --cl-tag-new-fg: #3c5238;
+
+  /* ---- Radii ---- */
+  --cl-r-sm: 8px;
+  --cl-r-control: 9px;
+  --cl-r-media: 10px;
+  --cl-r-card: 12px;
+  --cl-r-panel: 14px;
+
+  background-color: var(--cl-surface);
+  color: var(--cl-ink);
+  font-family: var(--font-instrument-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* globals.css tightens body tracking for Inter. Instrument Sans is already
+     set tighter by its own designer; inheriting the negative tracking on top
+     visibly crushes it at 13px. */
+  letter-spacing: normal;
+}
+
+/* The live body is bone (#F5F0E8). Without this, overscroll and any area the
+   layout wrapper doesn't cover flashes the other system's ground. Literal hex
+   rather than var(): --cl-surface is declared ON .cl-root, so it does not
+   resolve on <body>, which is .cl-root's parent. */
+body:has(.cl-root) {
+  background-color: #fbfaf9;
+}
+
+.cl-root ::selection {
+  background: var(--cl-fill-skeleton);
+}
+
+/* ----------------------------------------------------------------------------
+   TYPE
+   -------------------------------------------------------------------------- */
+
+/* Newsreader is reserved for the wordmark and display numerals. Everything
+   else — including the 34px listing titles — is Instrument Sans at 500. In
+   this system the serif is a signature, not a heading face. */
+.cl-display {
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-weight: 400;
+}
+
+/* Screen eyebrow: "02 · BROWSE". */
+.cl-eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cl-label);
+}
+
+/* Group label inside a panel: "CATEGORY", "BUTTONS". */
+.cl-grouplabel {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cl-faint);
+}
+
+/* Card kicker: the neighborhood above a listing title. */
+.cl-kicker {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cl-faint);
+}
+
+/* ----------------------------------------------------------------------------
+   SURFACES
+   -------------------------------------------------------------------------- */
+
+/* The screen frame — every full screen in the design sits in one of these. */
+.cl-panel {
+  background: var(--cl-surface);
+  border: 1px solid var(--cl-border-panel);
+  border-radius: var(--cl-r-panel);
+}
+
+.cl-hr {
+  border-top: 1px solid var(--cl-hairline);
+}
+
+/* ----------------------------------------------------------------------------
+   ACTIONS
+   ----------------------------------------------------------------------------
+   Three weights, exactly as the kit sets them out: a filled pill for the one
+   real action, an outlined pill for the alternative, and naked text for
+   anything that only navigates.
+   -------------------------------------------------------------------------- */
+
+.cl-pill {
+  display: inline-block;
+  background: var(--cl-black);
+  color: var(--cl-surface);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cl-ghost {
+  display: inline-block;
+  border: 1px solid var(--cl-border-ghost);
+  padding: 11px 21px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cl-quiet {
+  font-size: 13.5px;
+  color: var(--cl-muted);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cl-pill-disabled {
+  display: inline-block;
+  background: var(--cl-fill-active);
+  color: var(--cl-disabled);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  line-height: 1;
+  cursor: not-allowed;
+}
+
+/* The header's action pill sits in a 64px bar and takes the tighter setting the
+   design gives it there. */
+.cl-pill-sm {
+  padding: 9px 18px;
+  font-size: 13px;
+}
+
+/* Hover is gated on hover-capable pointers throughout: iOS applies :hover on
+   the first tap and leaves it stuck until the next tap lands elsewhere. Same
+   rule the live system uses (globals.css, .mh-checkbox / .mh-link).
+   ----------------------------------------------------------------------------
+   The design file sets one blanket rule — `a:hover{color:#8C2D2D}` — which is
+   safe on a canvas where the buttons, chips and rail rows are all <div>s with
+   onClick. In a real app they are anchors, so the blanket rule swallows every
+   component's own hover: a filled black pill goes brick-red, and so does the
+   active rail row. Each component that owns a hover therefore restates its
+   colors below at a specificity that beats `.cl-root a:hover`. */
+@media (hover: hover) {
+  .cl-root a:hover {
+    color: var(--cl-red);
+  }
+
+  .cl-pill:hover,
+  .cl-root a.cl-pill:hover {
+    background: var(--cl-black-hover);
+    color: var(--cl-surface);
+  }
+
+  .cl-ghost:hover,
+  .cl-quiet:hover,
+  .cl-root a.cl-ghost:hover,
+  .cl-root a.cl-quiet:hover {
+    opacity: 0.72;
+    color: inherit;
+  }
+
+  .cl-root a.cl-chip:hover {
+    color: var(--cl-body);
+  }
+
+  .cl-root a.cl-chip.cl-chip-on:hover {
+    color: var(--cl-surface);
+  }
+
+  .cl-root a.cl-rail-row:hover {
+    background: var(--cl-fill-active);
+    color: var(--cl-ink);
+  }
+
+  /* A card is a large block of type. Turning ALL of it red on hover — kicker,
+     price, title and byline together — reads as an error state rather than an
+     affordance, so only the title answers, which is the line a pointer is on
+     its way to anyway. */
+  .cl-root a.cl-cardlink:hover {
+    color: inherit;
+  }
+
+  .cl-root a.cl-cardlink:hover .cl-card-title {
+    color: var(--cl-red);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   FORM CONTROLS
+   -------------------------------------------------------------------------- */
+
+.cl-input {
+  width: 100%;
+  background: var(--cl-white);
+  border: 1px solid var(--cl-border-control);
+  border-radius: var(--cl-r-control);
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--cl-ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cl-input::placeholder {
+  color: var(--cl-disabled);
+}
+
+.cl-input:focus {
+  border-color: var(--cl-black);
+}
+
+.cl-input-error {
+  border-color: var(--cl-error-border);
+}
+
+.cl-fieldlabel {
+  display: block;
+  font-size: 12.5px;
+  color: var(--cl-muted);
+  margin-bottom: 8px;
+}
+
+.cl-fielderror {
+  font-size: 12px;
+  color: var(--cl-error-text);
+}
+
+/* ----------------------------------------------------------------------------
+   CHIPS AND TAGS
+   -------------------------------------------------------------------------- */
+
+.cl-chip {
+  display: inline-block;
+  border: 1px solid var(--cl-border-control);
+  color: var(--cl-body);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cl-chip-on {
+  background: var(--cl-black);
+  color: var(--cl-surface);
+  border-color: var(--cl-black);
+}
+
+/* The in-line variant, for a tag that sits inside a line of meta text rather
+   than in a row of its own. */
+.cl-chip-xs {
+  padding: 3px 9px;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.cl-tag-vouched {
+  background: var(--cl-tag-vouch-bg);
+  color: var(--cl-tag-vouch-fg);
+  border-color: transparent;
+}
+
+.cl-tag-new {
+  background: var(--cl-tag-new-bg);
+  color: var(--cl-tag-new-fg);
+  border-color: transparent;
+}
+
+/* ----------------------------------------------------------------------------
+   THE FILTER RAIL
+   ----------------------------------------------------------------------------
+   Rows are full-width targets with the count floated right, so the whole row
+   is clickable and the numbers form their own column against the panel edge.
+   -------------------------------------------------------------------------- */
+
+.cl-rail-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 11px;
+  border-radius: var(--cl-r-sm);
+  font-size: 13.5px;
+  color: var(--cl-body);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cl-rail-row-on {
+  background: var(--cl-fill-active);
+  color: var(--cl-ink);
+  font-weight: 500;
+}
+
+.cl-rail-count {
+  color: var(--cl-disabled);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  .cl-rail-row:hover {
+    background: var(--cl-fill-active);
+    color: var(--cl-ink);
+  }
+}
+
+/* The mobile filter disclosure. `list-style: none` alone leaves Safari's own
+   triangle in place, which needs the vendor pseudo-element to remove. */
+.cl-summary::-webkit-details-marker {
+  display: none;
+}
+
+.cl-caret {
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+details[open] > .cl-summary .cl-caret {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cl-caret {
+    transition: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   LISTING MEDIA
+   -------------------------------------------------------------------------- */
+
+/* The design's <image-slot> is a canvas-authoring scaffold (drag-and-drop,
+   sidecar persistence) with no place in the app. What survives is its
+   geometry: a rounded, cropped frame with a warm fill behind it, so a listing
+   with no photo still reads as a card rather than a hole. */
+.cl-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--cl-r-media);
+  background: var(--cl-fill-skeleton);
+}
+
+.cl-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The save pill, floated over the top-right of a card's photograph. Translucent
+   surface rather than solid so it reads as sitting ON the image; it inverts to
+   solid black once saved, which is the whole state change. */
+.cl-save {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 11.5px;
+  line-height: 1;
+  background: rgba(251, 250, 249, 0.92);
+  color: var(--cl-ink);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cl-save-on {
+  background: var(--cl-black);
+  color: var(--cl-surface);
+}
+
+.cl-save:focus-visible {
+  outline: 2px solid var(--cl-black);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------------------
+   FEEDBACK
+   -------------------------------------------------------------------------- */
+
+.cl-toast {
+  background: var(--cl-black);
+  color: var(--cl-surface);
+  border-radius: var(--cl-r-media);
+  padding: 13px 16px;
+  font-size: 13.5px;
+}
+
+.cl-note {
+  border: 1px solid var(--cl-border-control);
+  background: var(--cl-white);
+  border-radius: var(--cl-r-media);
+  padding: 13px 16px;
+  font-size: 13.5px;
+  color: var(--cl-body);
+}
+
+.cl-alert {
+  border: 1px solid var(--cl-error-panel-border);
+  background: var(--cl-error-panel-bg);
+  border-radius: var(--cl-r-media);
+  padding: 13px 16px;
+  font-size: 13.5px;
+  color: var(--cl-red);
+}
+
+/* The quiet inset — sponsor line on detail, "posted as" on review. */
+.cl-inset {
+  background: var(--cl-fill-note);
+  border-radius: var(--cl-r-control);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--cl-body);
+}
+
+/* ----------------------------------------------------------------------------
+   PAGINATION
+   -------------------------------------------------------------------------- */
+
+.cl-page {
+  display: inline-block;
+  border: 1px solid var(--cl-border-control);
+  border-radius: var(--cl-r-sm);
+  padding: 7px 12px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.cl-page-on {
+  background: var(--cl-black);
+  color: var(--cl-surface);
+  border-color: var(--cl-black);
+}
+
+.cl-page-off {
+  color: var(--cl-disabled);
+}
+
+/* ----------------------------------------------------------------------------
+   SKELETON
+   -------------------------------------------------------------------------- */
+
+.cl-sk {
+  background: var(--cl-fill-skeleton);
+  border-radius: 6px;
+  animation: cl-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes cl-shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cl-sk {
+    animation: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   THE MEMBER ROW
+   ----------------------------------------------------------------------------
+   The design draws a photographed avatar beside every name. This renders the
+   empty circle instead, everywhere, and it is not a shortcut: `author_name` is
+   denormalized onto the listing row, but an avatar is a column on `accounts`,
+   and accounts is read-own under RLS — a viewer cannot select another member's
+   row. Showing someone else's face here would take a new policy or a new
+   denormalized column, which is a data decision and not a design port. The
+   circle is the design's own placeholder, held until that decision is made.
+   -------------------------------------------------------------------------- */
+
+.cl-avatar {
+  flex: none;
+  border-radius: 999px;
+  background: var(--cl-fill-avatar);
+}
+
+/* ----------------------------------------------------------------------------
+   THE DETAIL GALLERY
+   ----------------------------------------------------------------------------
+   Screen 03 sets a lead photograph beside a stacked pair. Real listings carry
+   one to eight photos, so the grid below adapts and the page component picks
+   the arrangement; see the note there.
+   -------------------------------------------------------------------------- */
+
+.cl-gallery {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 12px;
+}
+
+.cl-gallery-side {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  /* Without this the two stacked frames take their content height and the
+     column stops matching the lead photo beside it. */
+  min-height: 0;
+}
+
+/* A phone gets the lead photo and nothing else stacked under it — three
+   photographs down a 375px screen is a scroll before the price. */
+@media (max-width: 700px) {
+  .cl-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .cl-gallery-side {
+    grid-template-rows: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+}
+
+/* "+3" over the last thumbnail when there are more photos than frames. */
+.cl-media-more {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 18, 16, 0.44);
+  color: var(--cl-surface);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------------------
+   THE SAVE CONTROL, BLOCK VARIANT
+   ----------------------------------------------------------------------------
+   Same state and same store as the pill floated over a card; on the detail
+   page's action stack it takes the full-width outlined form the design gives
+   "Save listing" there.
+   -------------------------------------------------------------------------- */
+
+.cl-save-block {
+  position: static;
+  display: block;
+  width: 100%;
+  background: var(--cl-white);
+  border: 1px solid var(--cl-border-ghost);
+  border-radius: 999px;
+  padding: 11px 18px;
+  font-size: 13.5px;
+  color: var(--cl-ink);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.cl-save-block.cl-save-on {
+  background: var(--cl-fill-active);
+  border-color: transparent;
+  color: var(--cl-ink);
+}
+
+/* ----------------------------------------------------------------------------
+   THE MODAL
+   -------------------------------------------------------------------------- */
+
+.cl-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 18, 16, 0.32);
+}
+
+.cl-modal-card {
+  position: relative;
+  width: 380px;
+  max-width: 100%;
+  /* svh, not vh: iOS excludes its toolbar from vh, so a tall card runs under
+     it and the send button becomes unreachable. */
+  max-height: 90svh;
+  overflow-y: auto;
+  background: var(--cl-white);
+  border: 1px solid var(--cl-border-panel);
+  border-radius: var(--cl-r-card);
+  box-shadow: 0 24px 60px rgba(20, 18, 16, 0.22);
+  padding: 24px;
+}
+
+.cl-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: none;
+  background: var(--cl-white);
+  border: 1px solid var(--cl-border-control);
+  border-radius: var(--cl-r-control);
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cl-ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cl-textarea::placeholder {
+  color: var(--cl-disabled);
+}
+
+.cl-textarea:focus {
+  border-color: var(--cl-black);
+}
+
+/* ----------------------------------------------------------------------------
+   THE SEARCH RESULT ROW
+   ----------------------------------------------------------------------------
+   Screen 04 answers a typed query in rows rather than cards: a 150px
+   thumbnail, the listing, the price hard right. Rows beat a grid for a result
+   set you are scanning against a query you just typed.
+   -------------------------------------------------------------------------- */
+
+.cl-row {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: 26px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--cl-hairline);
+}
+
+@media (max-width: 600px) {
+  .cl-row {
+    grid-template-columns: 92px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  /* The price leaves the third column and tucks under the title, rather than
+     squeezing the title into ~120px of the row. */
+  .cl-row-price {
+    grid-column: 2;
+    font-size: 15px;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   THE MOBILE TAB BAR (screen 12)
+   -------------------------------------------------------------------------- */
+
+/* No `display` here, deliberately. The component carries Tailwind's
+   `hidden max-[600px]:flex`, and both that and a `display:flex` in this file
+   are single-class selectors — so whichever stylesheet loses the source-order
+   race wins the property, and the bar renders on a 1400px desktop. Visibility
+   belongs to the one place that decides it. */
+.cl-tabbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 26px;
+  /* The iPhone home indicator sits over the last ~34px of the viewport. */
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--cl-hairline);
+  background: var(--cl-surface);
+  font-size: 12px;
+  color: var(--cl-muted);
+}
+
+.cl-tabbar-on {
+  color: var(--cl-ink);
+  font-weight: 500;
+}
+
+/* ----------------------------------------------------------------------------
+   THE LANDING HERO (Landing v3)
+   ----------------------------------------------------------------------------
+   The design gives the hero `min-height:100vh` — it is supposed to fill the
+   screen exactly and hand you the listings only once you scroll. Inside the
+   preview there is a strip above it saying this is not the live site, so a
+   literal 100vh overflows by exactly the height of that strip and the hero
+   stops being the whole screen, which is the one thing it has to be.
+
+   So the strip's height is a token and the hero subtracts it. The strip sets
+   its own height from the same variable, which is what keeps the two honest:
+   there is no measured constant to drift.
+
+   Promoting this page to the live "/" meant deleting the strip, which happened
+   on 2026-08-18. So --cl-strip-h is now 0 by default and the hero is the
+   design's plain 100dvh. The strip survives only in the /design preview area,
+   which still holds the screens Slices 2 and 3 have not migrated; that layout
+   adds `.cl-preview` to restore the height. The hero arithmetic below is
+   unchanged and still honest in both places — there is no measured constant to
+   drift.
+
+   dvh, not vh: mobile Safari's vh is the tallest the viewport ever gets, so a
+   100vh hero starts life with its call to action under the address bar.
+   -------------------------------------------------------------------------- */
+
+.cl-root {
+  --cl-strip-h: 0px;
+}
+
+/* The preview area only — app/design/layout.tsx, which still renders the strip
+   above the screens awaiting Slices 2 and 3. */
+.cl-root.cl-preview {
+  --cl-strip-h: 34px;
+}
+
+.cl-strip {
+  height: var(--cl-strip-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cl-hero {
+  min-height: calc(100dvh - var(--cl-strip-h));
+}
+
+/* ----------------------------------------------------------------------------
+   THE IN-PLACE REVEAL
+   ----------------------------------------------------------------------------
+   The landing's sign-in form opens where the button was, without a navigation.
+   Animating to `height: auto` is not possible, and a fixed max-height guess
+   either clips the form or coasts through empty space before it starts moving —
+   and this form CHANGES height, because the error line and the forgot-password
+   link appear inside it.
+
+   grid-template-rows 0fr → 1fr is the one technique that animates to the
+   content's real height, whatever that turns out to be. The child needs
+   min-height:0 and overflow:hidden or it refuses to be squashed to nothing.
+   -------------------------------------------------------------------------- */
+
+.cl-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease;
+  opacity: 0;
+}
+
+.cl-reveal-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.cl-reveal > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cl-reveal {
+    transition: none;
+  }
+}
+
+/* The hero is vertically centered, so a form opening inside it moves the
+   wordmark up as it grows. That is the intended effect — the page reflows
+   around the form rather than the form dropping out of it — but it wants the
+   same easing as the reveal or the two motions fight each other. */
+.cl-hero-settle {
+  transition: gap 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cl-hero-settle {
+    transition: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   THE HERO ENTRANCE
+   ----------------------------------------------------------------------------
+   The mark rises a few pixels and settles; the line and the button follow; the
+   period arrives last, on its own, a beat after the letters.
+
+   The period is the gesture. It is the locked part of the mark (Concept D,
+   2026-07-21 — "the period is PART of the mark: never dropped"), so it is the
+   part worth landing separately: the name assembles, then punctuates itself.
+   Everything else here is a plain staggered fade-up, which is the register this
+   brand can afford — Soho House and Le Labo do not animate their logos, they
+   just let them arrive. Anything with more personality than this (letters
+   typing on, a shimmer, a draw-on stroke) would read as an effect, and an
+   effect is exactly what a brand already accused of looking generated cannot
+   wear.
+
+   CSS ONLY, NO JAVASCRIPT, AND NO FONT GATE. The obvious failure of an animated
+   wordmark is that it fades in wearing the fallback serif and then snaps to the
+   real one halfway through. The usual fix is to hold the animation until
+   document.fonts.ready — but next/font self-hosts and PRELOADS both faces, so
+   the mark is drawn in Instrument Serif on first paint and the gate buys
+   nothing. It would also mean the hero starts invisible and depends on JS to
+   ever appear, which is a bad trade for a marketing page.
+
+   `animation-fill-mode: both` holds the from-state before the delay elapses,
+   so nothing flashes at full opacity first.
+   -------------------------------------------------------------------------- */
+
+@keyframes cl-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cl-settle {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 700ms, not the 900 this wants to be: the wordmark is the hero's largest text
+   and therefore the LCP element, and an element fading from zero does not count
+   as painted until it is legible. Past about three quarters of a second the
+   animation starts showing up in the metric rather than in the room. */
+.cl-enter {
+  animation: cl-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cl-enter-2 {
+  animation-delay: 130ms;
+}
+
+.cl-enter-3 {
+  animation-delay: 260ms;
+}
+
+/* inline-block so the span can be animated at all — transforms and opacity do
+   not apply to a purely inline box in the way this needs. */
+.cl-period {
+  display: inline-block;
+  animation: cl-settle 620ms ease 520ms both;
+}
+
+/* Reduced motion gets the composition, not the choreography. `animation: none`
+   with fill-mode `both` removed means every element sits at its natural
+   opacity — there is no state left holding anything at zero. */
+@media (prefers-reduced-motion: reduce) {
+  .cl-enter,
+  .cl-period {
+    animation: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   LONG-FORM DOCUMENTS
+   ----------------------------------------------------------------------------
+   Terms, privacy — and, next, the standards page. NOT PORTED FROM THE DESIGN
+   FILE, because the design file has no prose in it: twelve screens of listings,
+   cards, forms and rails, and nothing that sets a measure, a heading scale, or
+   the rhythm of a document somebody has to read a thousand words of. So the
+   treatment is built once, here, and the pages that need it share it rather
+   than each inventing a stack of Tailwind classes that drift apart.
+
+   Three decisions worth the words:
+
+   1. THE MEASURE IS THE POINT. 66 characters, which is the top of the range
+      that stays comfortable, and it is set on the paragraph rather than the
+      column so a heading can sit at the full width of the page's grid while the
+      reading line stays where the eye can carry it.
+
+   2. BODY GOES UP TO 15px, NOT DOWN TO 13.5px. Everywhere else in this system
+      13.5px is right, because everywhere else the text is a label, a byline or
+      a field — read in glances. A privacy policy is read in paragraphs, and at
+      13.5px over a 66-character line it becomes a wall to be skipped, which for
+      a legal document is a real failure and not a cosmetic one.
+
+   3. NO SERIF. Newsreader is reserved for the wordmark and display numerals in
+      this system (see TYPE, above), and a legal page is exactly the surface
+      that would tempt a house serif back in as "editorial". Instrument Sans at
+      a longer measure and a looser leading does the job without reopening a
+      settled type decision.
+   -------------------------------------------------------------------------- */
+
+.cl-doc {
+  max-width: 680px;
+}
+
+.cl-doc p,
+.cl-doc li {
+  max-width: 66ch;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--cl-body);
+}
+
+.cl-doc p {
+  margin-bottom: 15px;
+}
+
+/* Sentence case, medium weight, and only ONE level. A working draft with an
+   h3 under an h2 is a document pretending to a structure it has not earned. */
+.cl-doc h2 {
+  margin-top: 40px;
+  margin-bottom: 9px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--cl-ink);
+}
+
+/* The heading and its first line belong together. */
+.cl-doc h2 + p {
+  margin-top: 0;
+}
+
+/* Emphasis inside prose is a term being defined — "an account", "membership" —
+   so it darkens rather than fattens. */
+.cl-doc strong {
+  font-weight: 500;
+  color: var(--cl-ink);
+}
+
+/* Underline links IN THE PROSE only. The page's own chrome — the wordmark in
+   the footer, the sibling-document links beside it — are navigation, and
+   underlining them makes the foot of the document look like a list of
+   citations. */
+.cl-doc p a,
+.cl-doc li a {
+  color: var(--cl-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.cl-doc ul {
+  margin: 0 0 15px;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-doc li {
+  position: relative;
+  margin-bottom: 8px;
+  padding-left: 18px;
+}
+
+/* A hairline rather than a bullet — this system draws lines, not dots. */
+.cl-doc li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.85em;
+  width: 9px;
+  height: 1px;
+  background: var(--cl-faint);
+}
