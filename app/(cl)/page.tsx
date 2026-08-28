@@ -1,83 +1,110 @@
-// Landing v3, in the Classifieds system.
+// Landing v4 — the door, and nothing else.
 //
-// Ported from "Manhattanite Landing v3.dc.html": a hero that fills one screen,
-// then the listings, then the way in, then a hairline footer. No navigation, no
-// explanation, no section headings. The argument the page makes is that the
-// listings are good, and it makes it by showing six of them.
+// v3 (2026-08-18) argued the case by showing the product: a full-screen hero,
+// then the six listings a logged-out visitor is allowed to see, then the way
+// in, then a hairline footer. The argument was that the listings are good, and
+// it made it by showing six of them.
 //
-// THE ACTIONS ARE INVERTED FROM THE DESIGN FILE, at the founder's direction
-// (2026-08-17). The design puts "Request access" in the hero as a filled pill
-// with "Sign in" quiet beside it. Here the hero carries sign-in alone — and it
-// opens a real, working form in place rather than leaving for /login — while
-// requesting access moved to a closing band at the foot of the page. The
-// trade-off that makes is written up at the hero itself.
+// THE LISTINGS ARE GONE FROM "/" AS OF 2026-08-28, at the founder's direction.
+// The landing is now the wordmark, the line, and the sign-in — one screen, no
+// scroll, nothing to browse. The reading is that a private network should look
+// shut from the outside; the bet is that being told nothing is more intriguing
+// than being shown six things you cannot have.
 //
-// THIS IS "/" NOW (2026-08-18). It was written at /design/landing and held
-// there deliberately, because promoting it replaces the product's primary
-// marketing surface and reverses the "dark outside, light inside" palette split
-// decided 2026-07-17 — a call to make on purpose rather than as the side effect
-// of importing a file. It was then made on purpose. The previous landing (the
-// park-green photographic hero, and its redirect sending signed-in visitors
-// straight to /listings) is retired and lives in git history.
+//   THIS IS EXPLICITLY REVERSIBLE. George: "if that proves to be not the right
+//   method, then we can always change it back." v3 is one commit back in git
+//   history, and the pieces it used are all still here — readPermittedListings
+//   and toClCards in lib/cl/listings-read.ts, ClLandingCard in components. The
+//   teaser cap (D1, six rows to a guest) is enforced in the read layer, not
+//   here, so nothing about it decayed when this page stopped calling it.
 //
-// THE SIX CARDS ARE THE REAL TEASER. The design draws six invented listings;
-// six is also exactly what a logged-out visitor is allowed to see (the D1
-// teaser cap, enforced in listings-read.ts). So this renders the actual six,
-// and every card links to a detail page that same visitor can actually open —
-// the landing leads somewhere for a stranger, which is the whole job of it.
+//   WHAT IT COSTS. A stranger now meets a lock and no evidence. v3's whole
+//   structure existed to put proof before the ask; this removes the proof and
+//   keeps the ask. If applications fall off, that is the cause, and the fix is
+//   the revert rather than a redesign.
 //
-// NOBODY IS NAMED HERE, AND AS OF 2026-08-26 NOBODY IS NAMED TO A LOGGED-OUT
-// VISITOR ANYWHERE. This page had the instinct first — the design's card reads
-// "Vouched by a member", the trust signal without the person — and browse,
-// search, saved and the member profile named the same guest one click away. Put
-// to the founder on 18 August it was held open; asked again on the 26th the
-// answer was to hide names from guests everywhere and make browse match the
-// landing. So the page-local anonymousMeta() this file used to carry is gone:
-// it IS cardMeta()'s guest branch now, in lib/cl/listings-read.ts, and this
-// page gets it by doing nothing special.
+// THE WAY IN MOVED TO THE FOOTER. It cannot simply be deleted — a member has
+// to vouch for you, so /login is the only door a non-member has, and a page
+// with no door at all is a dead end rather than a mystery. It sits in the
+// footer's register now: a quiet link beside Privacy and Terms, not a band and
+// not a pill. The hero keeps exactly one control, which is the point of it.
 //
-//   The design's "member since 2023" loses its year: that needs a join date
-//   from `accounts`, which is read-own under RLS and so unavailable to a
-//   logged-out reader. The line keeps the shape rather than inventing a number.
+// NOBODY IS NAMED HERE, because nothing is shown here. The guest-anonymity rule
+// (2026-08-26, names hidden from logged-out visitors everywhere) lives in
+// cardMeta() in lib/cl/listings-read.ts and still governs browse and search.
+// This page no longer touches it either way.
 //
-//   A SIGNED-IN VISITOR TO "/" NOW SEES THE FULL BYLINE, which is the rule
-//   working, not an exception to it: nothing changes for anyone who is actually
-//   in the building.
+// ONE SCREEN, NO SCROLL. v3's hero carried `cl-hero` (min-height 100dvh) and
+// let the listings scroll under it. With nothing under it but a footer, that
+// same rule would push the footer just past the fold and buy a page a few
+// pixels of pointless scroll. So the page is a full-height column instead: the
+// hero grows, the footer sits on the bottom edge, and the landing is exactly
+// as tall as the window.
+
+// A SIGNED-IN VISITOR NEVER SEES THIS PAGE. It is the door, and someone already
+// inside the building does not need one — before this, a member who typed the
+// bare domain got a sign-in form while holding a valid session, which is the
+// product asking a question it already knows the answer to. So "/" redirects
+// them to /listings. That restores the pre-v3 behaviour (v3 showed them the six
+// cards with real bylines; that reading died with the cards) and it matches what
+// signing in from this very page already does — ClSignIn pushes to /listings on
+// success, so the redirect just makes the second visit agree with the first.
+//
+//   IT DOES NOT COST THE PAGE-SPEED WIN (356ms -> 107ms, 2026-08-28), and the
+//   reason is worth writing down before someone "optimises" it back out:
+//
+//   - THE PROXY ALREADY READS AUTH ON THIS REQUEST. proxy.ts matches every path
+//     but static assets and calls getUser() to refresh the session. The auth
+//     round trip on "/" is already being paid; this reads the result of it.
+//   - A GUEST PAYS NOTHING. supabase-js short-circuits getUser() when there is
+//     no auth cookie — measured at 0ms in the page-speed pass. Guests are who
+//     the 107ms describes, and they still make zero Supabase calls here.
+//   - THERE IS NO CACHE TO BREAK. The 107ms came from unstable_cache wrapping
+//     the guest teaser read in listings-read.ts. This page stopped calling that
+//     when the cards went, so there is no cached branch on "/" left to defeat.
+//   - THERE IS NO PRERENDER TO LOSE. The route was force-dynamic before and
+//     after; it has never been static.
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import Wordmark from "@/app/components/Wordmark";
-import ClLandingCard from "@/app/components/cl/ClLandingCard";
 import ClSignIn from "@/app/components/cl/ClSignIn";
-import { readPermittedListings, toClCards } from "@/lib/cl/listings-read";
+import { createClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic"; // session state varies per request.
-
-// The design's landing grid is six cards. A signed-in visitor's read returns up
-// to fifty, and the landing is not a browse page — it stays at six either way.
-const LANDING_COUNT = 6;
+// Per-request, for two reasons now: the signed-in redirect above has to see the
+// session, and the footer's copyright year is read at request time rather than
+// frozen at build — a static "/" would carry whichever year the last deploy
+// happened in.
+export const dynamic = "force-dynamic";
 
 export default async function ClassifiedsLandingPage() {
-  const gated = await readPermittedListings();
-  const cards = await toClCards(
-    gated.rows.slice(0, LANDING_COUNT),
-    gated,
-    gated.covers
-  );
+  // Read, don't trust: the proxy refreshed the token, getUser() validates it.
+  // Anyone holding a real session is sent to the product; everyone else — every
+  // logged-out visitor, which is nearly all of this page's traffic — falls
+  // straight through to the render below without touching Supabase.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) redirect("/listings");
 
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       {/* ---------- The hero ---------- */}
-      <section className="cl-hero cl-hero-settle flex flex-col items-center justify-center px-[clamp(20px,5vw,40px)] py-[clamp(48px,10vh,120px)] text-center">
-        {/* The design sets the mark without its period. The period is a locked
-            brand decision (Concept D, 2026-07-21 — "the period is PART of the
-            mark: never dropped"), so this renders the shared Wordmark, same as
-            AppHeader does. It is the one element the two design systems have in
-            common, which makes the landing the best place to judge it. */}
+      <section className="cl-hero-settle flex flex-1 flex-col items-center justify-center px-[clamp(20px,5vw,40px)] py-[clamp(48px,10vh,120px)] text-center">
+        {/* The period is a locked brand decision (Concept D, 2026-07-21 — "the
+            period is PART of the mark: never dropped"), so this renders the
+            shared Wordmark, same as AppHeader does. With the listings gone it
+            is now the largest thing on the site's front door by some distance,
+            which is the sharpest test the mark will get. */}
         <Wordmark
           className="cl-enter text-[clamp(30px,4.4vw,54px)] leading-none"
           periodClassName="cl-period"
         />
 
+        {/* The one line of copy that survives. It is doing the work the six
+            cards used to do — a stranger's only clue what this is — so it
+            stays, and it stays exactly this length. */}
         <p
           className="cl-enter cl-enter-2 mt-[clamp(20px,2.6vw,30px)] text-[clamp(16px,1.5vw,19px)] leading-[1.5]"
           style={{ color: "var(--cl-muted)" }}
@@ -85,68 +112,11 @@ export default async function ClassifiedsLandingPage() {
           A private marketplace for New York.
         </p>
 
-        {/* ONE control, and it is Sign in.
-            ----------------------------------------------------------------
-            The design file gives the hero two: "Request access" filled, "Sign
-            in" quiet beside it. That order is inverted here on purpose —
-            signing in is now the page's primary action and opens a real form
-            in place, and requesting access has moved to the foot of the page.
-
-            Worth knowing what that trades: most landing traffic is people who
-            have never been here, and above the fold they now see only a
-            members' door. The listings underneath still do the arguing, and
-            the way in is waiting at the end of them — but the first thing a
-            stranger meets is a lock. That is the intended reading of "members
-            only"; it is not the higher-converting one. */}
+        {/* ONE control, and it is Sign in. It opens a real, working form in
+            place — no navigation, no modal — so the page never has to become a
+            second page. */}
         <div className="cl-enter cl-enter-3 mt-[clamp(30px,4vw,44px)] w-full max-w-[340px]">
           <ClSignIn />
-        </div>
-      </section>
-
-      {/* ---------- The listings ---------- */}
-      {/* An empty network hides the section rather than showing a heading over
-          nothing — same rule the live landing already follows. The hero still
-          stands on its own, which is what it was drawn to do. */}
-      {cards.length > 0 && (
-        <section
-          id="listings"
-          className="border-t"
-          style={{ borderColor: "var(--cl-hairline)" }}
-        >
-          <div className="mx-auto grid w-full max-w-[1240px] grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[clamp(24px,3vw,44px)] px-[clamp(16px,3vw,32px)] pt-[clamp(32px,4vw,56px)] pb-[clamp(56px,7vw,96px)]">
-            {cards.map((card) => (
-              <ClLandingCard key={card.id} card={card} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ---------- Request access, at the foot of the page ----------
-          The last thing on the page rather than the first thing, so the
-          listings get to make the case before the ask. It is a section rather
-          than a link in the footer: a footer link reads as boilerplate, and
-          this is the only way into the network. */}
-      <section
-        className="border-t"
-        style={{ borderColor: "var(--cl-hairline)" }}
-      >
-        {/* Kept deliberately small. It is the last thing on the page and the
-            only way in, but it is not a second hero — at full size it competed
-            with the one at the top and made the listings look like the filling
-            between two pitches. Now it sits closer to the footer's register:
-            one line, one pill, roughly half the height it was. */}
-        <div className="mx-auto flex w-full max-w-[1240px] flex-wrap items-center justify-center gap-x-5 gap-y-3.5 px-[clamp(16px,3vw,32px)] py-[clamp(26px,3vw,40px)] text-center">
-          <p className="text-[15px] leading-[1.5]">
-            Not a member yet?{" "}
-            <span style={{ color: "var(--cl-muted)" }}>
-              A member has to vouch for you.
-            </span>
-          </p>
-          {/* Standard pill, not the hero's larger setting — the size difference
-              is what keeps the two asks in the right order. */}
-          <Link href="/login" className="cl-pill">
-            Request access
-          </Link>
         </div>
       </section>
 
@@ -161,15 +131,19 @@ export default async function ClassifiedsLandingPage() {
         >
           <span>New York City</span>
           <div className="flex gap-5">
+            {/* The only way into the network, kept deliberately quiet. It reads
+                as boilerplate here, which is the trade v3 refused to make and
+                this version accepts: the hero is worth more undivided than the
+                ask is worth prominent. */}
+            <Link href="/login">Request access</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
-            {/* Read at request time, not hardcoded to 2026 as the design file
-                has it — a copyright year that has to be remembered is one that
-                will be wrong every January. */}
+            {/* Read at request time, not hardcoded — a copyright year that has
+                to be remembered is one that will be wrong every January. */}
             <span>&copy; {new Date().getFullYear()}</span>
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

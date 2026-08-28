@@ -285,6 +285,19 @@ async function main() {
   await check("guest", "/profile", null, { redirect: "/login" });
   await check("guest", "/profile/edit", null, { redirect: "/profile" });
 
+  // THE LANDING IS THE DOOR (v4, 2026-08-28). "/" was stripped to the wordmark,
+  // the line and the sign-in; the only way into the network is now a quiet
+  // "Request access" link in the footer. That link is the single entry point a
+  // non-member has — lesson 8's shape exactly — so it is asserted, not trusted.
+  // The listings must NOT come back by accident either: the six cards were
+  // removed on purpose, and a stray re-render of them here would put a teaser
+  // (and, one regression later, a byline) back on the front door.
+  await check("guest", "/", null, {
+    status: 200,
+    contains: "A private marketplace for New York.",
+  });
+  await check("guest", "/", null, { status: 200, contains: 'href="/login"' });
+
   if (otherUnpublished) {
     // A guest on a listing outside the teaser gets the WALL, not a 404 — Slice
     // 1's deliberate change from the editorial redirect("/signup"). The
@@ -351,8 +364,16 @@ async function main() {
     notContains: "Introduce yourself",
   });
   await check("t1", "/apply", T, { status: 200, contains: "Request access" });
+  // Signed in, member or not, "/" is not your page — see the MEMBER block.
+  await check("t1", "/", T, { redirect: "/listings" });
 
   console.log("\n── MEMBER ──");
+  // A SIGNED-IN VISITOR NEVER SEES THE LANDING (2026-08-28). Landing v4 is a
+  // sign-in form, and serving one to somebody who already holds a valid session
+  // is the product asking a question it knows the answer to. This is asserted
+  // for BOTH signed-in principals because the gate is "has a session", not "is
+  // a member" — a Tier 1 account is equally not a stranger at the door.
+  await check("m", "/", M, { redirect: "/listings" });
   await check("m", "/listings/mine", M, { status: 200, contains: "What you" });
   await check("m", "/listings/new", M, { status: 200, contains: "Category" });
   await check("m", `/listings/${published}/edit`, M, {
