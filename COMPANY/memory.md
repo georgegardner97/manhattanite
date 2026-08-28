@@ -11,6 +11,36 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-08-28 (Slice 3b: the admin console; the Classifieds migration is code-complete)
+
+**Built, verified end to end against production, committed locally. NOT deployed. Migration `0029` is outstanding and `audit:rls` cannot finish its teardown until it is applied.**
+
+**THE SLICE CLOSED A HOLE, IT DID NOT REDESIGN FOUR SCREENS.** George could not take down a live listing at all — his own because the button was broken, anyone else's because it was never built. The 0017 verbs act only on the `pending` queue and RLS is owner-only for writes, so removing a phone number from a public listing needed a hand-written SQL statement.
+
+**`/admin/listings` is the new screen**: every listing at every status, filter by status and category, search by title and author, view / edit / take down per row, archived rows still listed and visibly archived. Needed no migration — `listings_admin_read_all` (0015) already covers the read.
+
+**AN ADMIN MAY CORRECT ANY LISTING, AND CORRECTIONS ARE NEVER SILENT.** Scope is correction, not rewriting (George, 28 Aug — see `decisions.md`). `corrected_by` / `corrected_at` are stamped and the OWNER sees "Corrected by Manhattanite" on their own listing; nobody else does. A correction never writes `status`, so a live listing stays live.
+
+**THE ADMIN EDIT REUSES `ClPostForm`, AND THAT IS LOAD-BEARING.** `details` is rebuilt WHOLESALE on save, so a trimmed admin editor would silently delete bedrooms, condition, dimensions and brand. Both write paths now read the form through ONE shared parser, `lib/listings/form.ts` — there is one place to forget a field instead of two.
+
+**THE POLICY IS THE WALL, THE FUNCTION IS THE DOOR.** `0028` adds two SECURITY DEFINER functions (`admin_update_listing`, `admin_archive_listing`) and does NOT loosen the owner-only RLS policy. Widening the policy was the tempting shortcut and would have opened the wall to every future code path at once.
+
+**A BUG IN 0028, FOUND BY RUNNING THE AUDIT RATHER THAN READING IT — AND THE REASON `0029` EXISTS.** `corrected_by` had no ON DELETE action, so **once an admin corrects any listing their account can never be deleted**. `audit:rls` died in its own teardown and stranded four synthetic users plus a synthetic listing in production (cleaned up by hand, scoped to the `+rlsaudit` prefix, never wider). `0029` sets it to ON DELETE SET NULL, which keeps `corrected_at` and loses only the pointer — safe precisely because the member-facing copy names nobody. **A trust check that becomes the problem it was meant to catch is worse than not having one.**
+
+**`app/(ed)` AND `app/design/` ARE DELETED** along with 26 orphaned editorial components — 34 files, ~4,400 lines. **Two corrections to the retirement list worth keeping:**
+- **`globals.css` STAYS.** It carries `@import "tailwindcss"` and the root layout imports it; deleting it takes the whole app down. Its editorial half is dead code now and is its own pass. `mh-gutter` and `mh-no-scrollbar` are still used by live screens.
+- **`ListingCardData` had to move before anything could be deleted.** `lib/listings/card.ts`, which the whole Classifieds system depends on, imported that type from the editorial `ListingCard`. It now lives with the data.
+
+**The console carries its own nav** (`ClAdminShell`), so no admin screen is a dead end — the fourth instance this week of a screen outliving its entry point. `AppHeader` stays SYNCHRONOUS and still takes `admin` as a prop.
+
+**THE ADMIN SURFACE HAD NO GATE ASSERTIONS AT ALL UNTIL NOW.** `audit:gates` attacks all six admin routes as guest, member and Tier 1 (13 new assertions), checking the body never carries the console's furniture, not just that the status is 404.
+
+**Two silent-failure fixes worth remembering:** `/admin/listings` rendered a clean, confident, EMPTY table when its read failed, because `data ?? []` turns any query error into "0 listings" — on the one screen you check to find out what is on the site. It now surfaces the error and names the migration. And the post form's own heading ("It goes back through review before it is live again") was contradicting the admin intro a hundred pixels above it. **That copy is still wrong on the MEMBER edit screen** — no edit path re-pends anything — and remains George's call.
+
+**Results:** build clean, `tsc` clean, lint unchanged at the 4-error baseline, `audit:gates` 0 failures locally and **2 against production, both correct** (the two new routes are not deployed, so a guest gets 404 rather than the /login redirect). All 8 new `audit:rls` cells pass; the run needs 0029 to complete.
+
+---
+
 ## Quick state addendum — 2026-08-27, later (profile fixes, sort removed, the takedown button fixed)
 
 **Not merged, not deployed. Built and audited, waiting on George's review.**

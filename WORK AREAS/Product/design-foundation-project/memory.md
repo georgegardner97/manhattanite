@@ -376,3 +376,25 @@ Branch `classifieds-walkthrough-fixes` off `main`, intended as one `--no-ff` mer
 - **The Newest · Price sort is gone entirely.** George's call: ranking the network cheapest-first is the Craigslist frame and the opposite of this product; the min/max boxes already answer "within what I can spend". With price gone, "Newest" was a control with one option, so the row went and the result count line stays on its own. `?sort=price` renders the default feed and errors on nothing. **This removed the unpriced-sorts-last rule added that morning — correctly, since it existed only to serve the price sort. It should not come back.**
 
 - **Copy/behaviour mismatch found in passing, flagged not fixed:** the edit screen says "It goes back through review before it's live again", but `updateListing` never writes `status`, so an edit to a published listing goes straight back live with no re-review. Whether the copy or the behaviour is wrong is a trust-layer decision.
+
+## 2026-08-28 — Slice 3b shipped to a commit: the admin console, and the end of the editorial system
+
+**The Classifieds migration is code-complete. `app/(ed)` and `app/design/` are deleted — 34 files, ~4,400 lines. Not deployed yet; one migration still outstanding.**
+
+- **This slice was not a redesign, and that matters for how it was scoped.** George could not take down a live listing at all — his own because the button was broken, anyone else's because it had never been built. The moderation verbs from 0017 act only on the `pending` queue. So a design slice turned out to be where a real trust-layer hole was closed, and the new screen (`/admin/listings`) came first with the four ports around it.
+
+- **`/admin/listings`** — every listing at every status, filter by status and category, search by title and author. View / edit / take down per row. **Archived rows stay listed and read "Taken down" where the verb was**, because a directory that hides what it removed cannot be audited. Nothing hard-deletes; soft-delete-only is still locked.
+
+- **Admin edit reuses `ClPostForm` rather than getting its own editor**, and this is a design decision as much as an engineering one. `details` is rebuilt wholesale on save, so a "simpler" admin form would have quietly deleted bedrooms, condition, dimensions and brand — the same shape as the furniture-neighborhood bug from 27 Aug. Both write paths now read the form through one shared parser. **The simplification that deletes user data is not a simplification.**
+
+- **Corrections are visible to the member.** Every admin edit stamps who and when, and the owner sees "Corrected by Manhattanite · 28 Aug" on their own listing — nobody else does. On a network whose product is that a name means something, an invisible rewrite of what somebody wrote under their own name is the wrong default even when the intent is a spelling fix. No email per typo; the point is legibility, not notification.
+
+- **The console has its own nav now** (`ClAdminShell`), so no admin screen is more than one click from any other. Five back-links to a dashboard is not navigation — it is four dead ends and a hub, and it was the fourth instance this week of a screen outliving its entry point.
+
+- **Two things in the retirement list could not be done as written, and both are worth remembering before the next cleanup:**
+  - **`globals.css` cannot be deleted.** It carries `@import "tailwindcss"` and the root layout imports it — removing it takes the whole app down, Classifieds included. Two of its utilities are still used by live screens. Its editorial half is dead code and is its own pass.
+  - **A type had to move before a component could be deleted.** `lib/listings/card.ts` — which browse, the listing page, member profiles and the filter rail all depend on — imported `ListingCardData` from the editorial `ListingCard`. **A data shape living inside a component is a dependency you only discover when you try to delete the component.**
+
+- **Two silent-failure fixes, both design problems as much as code ones.** `/admin/listings` rendered a clean, confident, EMPTY table when its read failed — on the one screen you look at to find out what is on the site. And the post form's own heading was contradicting the admin intro a hundred pixels above it ("goes back through review" vs "leaves it live"). **The member edit screen still carries that false promise**, because no edit path re-pends anything; the copy and the behaviour disagree and that is George's call.
+
+- **A bug in my own migration, found by running the audit rather than reading it.** `corrected_by` had no ON DELETE action, so an admin who corrects one listing can never be deleted. `audit:rls` died in its own teardown and left synthetic users in production. `0029` fixes it. The lesson is not about foreign keys: **a check that has only ever been reasoned about is not a check.**

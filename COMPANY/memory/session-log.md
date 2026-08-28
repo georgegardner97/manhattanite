@@ -6,6 +6,64 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-28 · Migration 0028 applied to production (Cowork)
+
+**Applied and verified.** `admin_update_listing`, `admin_archive_listing`, and the `corrected_by` / `corrected_at` columns all present — confirmed by catalog query returning 4 rows, not by the editor's status text. This unblocks Slice 3b's two admin write paths.
+
+**How it was applied, because the method matters for next time.** The file is 153 lines with twenty-odd quote marks, and the Supabase SQL editor auto-pairs a typed apostrophe — the hazard already logged from 0027. Typing it through browser automation would very likely have produced `))` on the multi-line function signatures. Instead Cowork base64-encoded the file, decoded it in the page, and set the Monaco model's value directly (`window.monaco.editor.getModels()[0].setValue(...)`), then asserted `value === source` before clicking Run. **That is the pattern for any future hand-run migration: inject via the editor model, assert an exact match, then run.**
+
+**The UI lied and the verification caught it.** After Run, the tab's renderer froze twice and the results panel showed `Running...` for several minutes. It had in fact already finished. Two independent checks settled it: an external fetch of manhattanite.com/listings (healthy — six listings, no lock contention, which was the real risk of a stuck `ALTER TABLE`), then the catalog query. **Never take a hand-run migration's status from the dashboard's own text; ask the catalog.**
+
+**Still outstanding after this:** Claude Code finishes the four verifications it was holding (admin edit stays published, the furniture `details` data-loss case, the correction record on the owner's view, `audit:rls` with the new cells), then merge and push. Slice 3b is committed locally only.
+
+**Open decision for George, unblocked by this slice but not part of it:** a member editing a published listing does NOT re-enter review — `updateListing` never writes `status` and the 0017 trigger waves an unchanged status through — while the post form's copy promises "It goes back through review before it's live again." Confirmed in code by Cowork. So an approved listing can be edited into anything and go live unreviewed. Three options put to George: re-pend on edit, fix the copy, or leave it live and flag it as edited-since-approval in the new console. **Cowork's recommendation is the third**, which only became possible because this slice exists.
+
+---
+
+## 2026-08-28 · Slice 3b: the admin console, all listings, and a foreign key that locked the door behind it (Claude Code)
+
+**The Classifieds migration is code-complete. `app/(ed)` and `app/design/` are deleted. Built, verified end to end against production, committed locally — NOT deployed, and one migration is still outstanding.**
+
+**THE POINT OF THE SLICE WAS NEVER THE REDESIGN.** George could not take down a live listing at all: his own because the button was broken (fixed yesterday), anyone else's because it had never been built. The three 0017 verbs act only on the review QUEUE, which is `status='pending'`, and RLS on listings is owner-only for writes. A phone number in public needed a hand-written SQL statement to remove. `reject_listing` could technically do it — its own comment says so — but no screen called it on a published row, which is the same shape as the orphaned routes: a capability that works with no way to reach it.
+
+**`/admin/listings` is new.** Every listing at every status, filterable by status and category, searchable by title and author, one row deep. View / Edit / Take down per row. Archived rows stay listed, show an Archived chip and read "Taken down" where the verb was. The list needed no migration — `listings_admin_read_all` (0015) already returns everything to an admin.
+
+**`/admin/listings/[id]/edit` is new, and it REUSES ClPostForm.** That is load-bearing, not convenience: `details` is rebuilt WHOLESALE from the posted fields, so a trimmed-down admin editor would silently delete bedrooms, condition, dimensions and brand from any listing an admin touched — the exact bug that wiped neighborhoods off furniture listings on 27 Aug. **I went further than the brief and extracted one shared parser** (`lib/listings/form.ts`) that the member and admin paths both read the form through, so they cannot drift apart and forget a field. There is now one place to forget it instead of two.
+
+**Migration 0028 adds two SECURITY DEFINER functions and does NOT loosen the RLS policy.** The policy is the wall, the functions are the door. `admin_update_listing` never writes `status`, `author_id` or the byline columns; `admin_archive_listing` takes anything down at any status and refuses a blank reason in the database, not just in the form.
+
+**A BUG IN MY OWN MIGRATION, FOUND BY RUNNING THE AUDIT RATHER THAN BY READING IT.** `corrected_by uuid references accounts(id)` with no ON DELETE action defaults to NO ACTION, so **once an admin corrects a single listing their account can never be deleted** — accounts cascades from auth.users, so the auth delete fails too, with the unhelpful "Database error deleting user". It surfaced within one run of `audit:rls`, because the new cells have a synthetic admin correct a listing and teardown then could not remove that admin. **The audit died in its own teardown and stranded four synthetic users and a synthetic listing in production** — the worst shape of failure for a trust check: it did not report a problem, it became one. Cleaned up by hand (cleared `corrected_by` on the synthetic row first, then deleted, scoped to the `+rlsaudit` prefix and never wider). **Migration `0029` fixes it with ON DELETE SET NULL** — CASCADE would delete a member's listing when an admin account went away, RESTRICT is what we already had; SET NULL keeps `corrected_at`, so the record that a correction HAPPENED survives and only the pointer to who made it is lost. That is the right trade precisely because the member-facing copy names nobody. **0029 is written and sent but NOT YET APPLIED**, and `audit:rls` cannot complete its teardown until it is.
+
+**Verified by driving the real forms against the production database, not by inspection.** A synthetic member with a published furniture listing carrying condition, dimensions, brand and neighborhood — the data-loss case. Corrected the TITLE ONLY through the real admin form:
+
+- title changed; **status stayed `published`** — a correction does not re-pend;
+- **all four furniture details survived** (condition, dimensions, brand, neighborhood);
+- `author_name` untouched, so the byline is still the member's;
+- `corrected_by` + `corrected_at` stamped;
+- **"Corrected by Manhattanite" shows to the OWNER and to nobody else** — checked as the owner, as another member and as a guest;
+- taken down through the real control with the reason "Phone number in the description": status `archived`, reason recorded in `moderation_note`, details intact (soft delete), gone from `/listings`, still listed on `/admin/listings` as Archived.
+
+**Production was left byte-identical to how it started**: 0 synthetic users, 0 correction stamps, 20 published, 22 total.
+
+**THE RETIREMENT, AND TWO THINGS THE BRIEF GOT WRONG ABOUT IT.** `app/(ed)`, `app/design/` and 26 orphaned editorial components are gone — 34 files, ~4,400 lines.
+
+- **`globals.css` STAYS.** It carries `@import "tailwindcss"` and the ROOT layout imports it, so deleting it would have taken the whole app down, Classifieds included. Two of its utilities (`mh-gutter`, `mh-no-scrollbar`) are still used by live screens. Its editorial half is now dead code and is its own pass.
+- **`ListingCardData` had to move first.** `lib/listings/card.ts` — which browse, the listing page, member profiles, the filter rail and the archived row all depend on — imported that TYPE from the editorial `ListingCard` component. Deleting the component would have broken the live system. The type now lives with the data, where it belonged: a component may render a shape, it does not get to own it.
+
+**The console carries its own nav now** (`ClAdminShell`), so no admin screen is more than one click from any other. Five back-links to a dashboard is not navigation, it is four dead ends and a hub — and it was the fourth instance this week of a screen outliving its entry point. `AppHeader` stays SYNCHRONOUS and still takes `admin` as a prop; the shell passes it unconditionally because `requireAdmin` has already run above it. Making it async would have flipped the prerendered-static routes to server-rendered for a link one account sees.
+
+**THE ADMIN SURFACE HAD NO GATE ASSERTIONS AT ALL BEFORE TODAY.** `audit:gates` now attacks all six admin routes as guest, member and Tier 1 — 13 new assertions — checking not just the 404 but that the console's own furniture ("All listings", "Take down", "The state of the network") never reaches the body. That matters more now than with three read-only screens: this console has two write paths and one page listing every pending and archived row.
+
+**Also fixed, caught by pointing the page at prod before 0028 was applied:** `/admin/listings` rendered a clean, confident, **empty** table when the read failed, because `data ?? []` turns any query error into "0 listings". On the one screen you check to find out what is on the site, that is the worst possible lie. It now surfaces the error and names the migration.
+
+**Also fixed:** the form's own heading ("Edit your listing · It goes back through review before it is live again") was rendering under the admin intro saying a correction leaves it live — two contradictory sentences a hundred pixels apart. Suppressed in admin mode. **The underlying copy is still wrong on the MEMBER edit screen**: `updateListing` never writes `status`, so no edit re-pends anything and the promise of re-review is not kept. Flagged again; still George's call.
+
+**Results.** `npm run build` clean, `tsc` clean, lint unchanged at the 4-error baseline. `audit:gates` **0 failures locally**; against production **2 failures, both correct** — `/admin/listings` and its edit route answer a guest with 404 instead of the /login redirect, because they are not deployed yet. `audit:rls`: **all 8 new cells pass**, including the positive control and the "a correction must not re-pend" check, but the run cannot complete its teardown until 0029 is applied.
+
+**Next:** apply 0029, re-run `audit:rls` for a clean full pass, then deploy. After that the Classifieds migration is finished and `design/classifieds-live` can be dropped.
+
+---
+
 ## 2026-08-27 · Profile fixes, the sort control removed, and a takedown button that never worked (Claude Code)
 
 **Four tasks plus a fifth George found mid-session. All done, built, audited, NOT merged or deployed — waiting on his review.**
