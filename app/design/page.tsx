@@ -43,7 +43,7 @@ const BUILT: Screen[] = [
     label: "Browse",
     href: "/listings",
     live: "/listings",
-    note: "Filter rail, sort, card grid. Real listings, real photographs, real bylines.",
+    note: "Filter rail, card grid. Real listings, real photographs, real bylines.",
   },
   {
     n: "03",

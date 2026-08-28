@@ -4,9 +4,9 @@
 // it retired into Browse: it was the same read (same parseQuery, same
 // buildHref, same gated rows, same filters) differing only in presentation,
 // and nothing in the product ever linked to it. One screen, one URL shape —
-// ?q=&type=&hood=&min=&max=&sort=.
+// ?q=&type=&hood=&min=&max=.
 //
-// The filters are URL-driven (?type=&hood=&min=&max=&sort=), the same way the
+// The filters are URL-driven (?type=&hood=&min=&max=), the same way the
 // live /listings page drives its category filter. The design's canvas prototype
 // held this in client state because a canvas has nowhere else to put it; a real
 // browse screen wants shareable, back-button-able URLs, and the rail then works
@@ -26,13 +26,28 @@
 //   the post form. The rail derives the list from the listings actually on
 //   screen, so it can never offer a filter that returns nothing.
 //
-//   Sort. The design offers Newest · Price · Closest. "Closest" needs a viewer
-//   location and listing coordinates; neither exists. Two sorts ship, and the
-//   third is left out rather than faked with a dead control.
+//   Sort. THERE IS NO SORT CONTROL, and this is a product decision, not a gap
+//   (George, 2026-08-27). The design offers Newest · Price · Closest.
+//   "Closest" never had a viewer location or listing coordinates to work from.
+//   "Price" was removed on purpose: ranking the network cheapest-first is the
+//   Craigslist frame, and the opposite of what this product is for. The min/max
+//   boxes in the rail already answer the real question — a filter says "within
+//   what I can spend", a sort says "rank these people by how cheap they are",
+//   and only the first of those is a budget tool. That left "Newest" alone, and
+//   a control with one option is dead UI, so the row went with it. The feed is
+//   newest-first as a property of the page.
+//
+//   A stale ?sort= in someone's open tab is IGNORED, not an error — parseQuery
+//   simply never reads it.
+//
+//   Removing the Price sort also removed the only reason unpriced listings
+//   needed a documented sort position (they used to be forced LAST, because a
+//   listing with no price is neither free nor expensive). That rule is gone
+//   because the thing it governed is gone — it was not lost by accident, and it
+//   should not come back on its own. Blank prices still render as no price line
+//   and are still EXCLUDED by a min/max filter; neither of those changed.
 
 import type { ListingType } from "@/lib/listings/card";
-
-export type ClSort = "newest" | "price";
 
 export type ClQuery = {
   type: ListingType | null;
@@ -40,7 +55,6 @@ export type ClQuery = {
   /** Dollars, not cents — this is what a person types into the box. */
   min: number | null;
   max: number | null;
-  sort: ClSort;
   /**
    * The typed search term. It lives in the same shape as every other facet
    * because search IS browse with a term added (2026-08-27) — same parse, same
@@ -57,11 +71,6 @@ export const CATEGORIES: { label: string; value: ListingType | null }[] = [
   { label: "Services", value: "service" },
   // Reads as a catch-all rather than a category, and keeps the enum value.
   { label: "Everything else", value: "other" },
-];
-
-export const SORTS: { label: string; value: ClSort }[] = [
-  { label: "Newest", value: "newest" },
-  { label: "Price", value: "price" },
 ];
 
 const VALID_TYPES = new Set<string>([
@@ -103,7 +112,6 @@ export function parseQuery(
     // nothing and leaving the visitor to work out which box was wrong.
     min: min !== null && max !== null ? Math.min(min, max) : min,
     max: min !== null && max !== null ? Math.max(min, max) : max,
-    sort: firstValue(sp.sort) === "price" ? "price" : "newest",
     text: rawText ? rawText : null,
   };
 }
@@ -155,27 +163,8 @@ export function buildHref(
   if (next.hood && hoodApplies(next)) params.set("hood", next.hood);
   if (next.min !== null) params.set("min", String(next.min));
   if (next.max !== null) params.set("max", String(next.max));
-  if (next.sort !== "newest") params.set("sort", next.sort);
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
-}
-
-/**
- * The "Price" sort's comparator, and the one place that decides where an
- * unpriced listing sits.
- *
- * A listing with no price is not free and is not expensive — it is unordered,
- * so it goes to the END of the list rather than to the top, which is where
- * treating null as 0 would have put it. Cheapest-first still means cheapest
- * first; the things without a number follow behind.
- */
-export function byPrice(
-  a: { price_cents: number | null },
-  b: { price_cents: number | null }
-): number {
-  if (a.price_cents === null) return b.price_cents === null ? 0 : 1;
-  if (b.price_cents === null) return -1;
-  return a.price_cents - b.price_cents;
 }
 
 export function isFiltered(q: ClQuery): boolean {

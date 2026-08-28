@@ -192,9 +192,6 @@ function PriceForm({ q }: { q: ClQuery }) {
       {q.hood && hoodApplies(q) && (
         <input type="hidden" name="hood" value={q.hood} />
       )}
-      {q.sort !== "newest" && (
-        <input type="hidden" name="sort" value={q.sort} />
-      )}
 
       <div className="flex gap-2">
         {/* inputMode=numeric brings up the number pad without rejecting the

@@ -11,8 +11,11 @@
 //   Who you've vouched for             → get_my_connections() (0024), which is
 //                                        keyed on auth.uid() and so answers only
 //                                        for the person reading it
-//   Leave the network                  → no self-serve delete exists; this says
-//                                        so and gives the human route
+//   Sign out                           → the only one in the product
+//   Closing your account               → no self-serve delete exists; this says
+//                                        so and gives the human route, which is
+//                                        what makes the /terms and /privacy
+//                                        promises true
 //
 // CUT, and this is the honest half:
 //   "Weekly digest of new listings"    → no notifications system, no column, no
@@ -44,6 +47,18 @@
 //    every field on one page with inline rows, so the rows now carry their own
 //    write paths (ClProfileForm) and /profile/edit is a redirect here rather
 //    than a deleted route — an old link in an email still lands somewhere.
+//
+// ---------------------------------------------------------------------------
+// 2026-08-27. The rail is Account · My listings · Saved · Vouching.
+//
+// "Leaving" stopped being a rail entry — a peer of the other three is a strange
+// fourth thing to offer someone — but its two contents survive at the foot of
+// Account: the product's ONLY sign-out, and the account-closure route that
+// /terms and /privacy both depend on. See the section itself.
+//
+// MY LISTINGS IS NEW HERE, AND IT IS A BUG FIX, NOT POLISH. /listings/mine had
+// no reachable entry point anywhere in the Classifieds system. Third time:
+// /admin, /search, this. The lesson is in the section comment.
 // ---------------------------------------------------------------------------
 
 import Link from "next/link";
@@ -114,14 +129,14 @@ export default async function ClassifiedsSettingsPage() {
             Privacy, which have nothing to show. */}
         <nav className="flex flex-col gap-1 text-[13.5px] max-[720px]:flex-row max-[720px]:flex-wrap">
           <span className="cl-rail-row cl-rail-row-on">Account</span>
+          <a href="#mine" className="cl-rail-row">
+            My listings
+          </a>
           <a href="#saved" className="cl-rail-row">
             Saved
           </a>
           <a href="#vouching" className="cl-rail-row">
             Vouching
-          </a>
-          <a href="#leaving" className="cl-rail-row">
-            Leaving
           </a>
         </nav>
 
@@ -141,6 +156,79 @@ export default async function ClassifiedsSettingsPage() {
             avatarUrl={avatarUrl}
           />
 
+          {/* ---------- Signing out, and the way out of the network ----------
+              There was a "Leaving" section here, in the rail as a peer of
+              Account, Saved and Vouching. George, 2026-08-27: leaving is not a
+              fourth thing to offer someone. The section went. The two things
+              inside it did not, and neither could.
+
+              THIS IS THE ONLY SIGN-OUT IN THE PRODUCT. Removing the section
+              would have removed the ability to sign out, so it lands here as a
+              quiet control at the foot of the Account rows. Still a POST: a
+              prefetched GET would sign people out on hover.
+
+              THE ACCOUNT-CLOSURE LINE IS LOAD-BEARING COPY, not filler. /terms
+              says "You can close your account at any time" and /privacy says
+              "When you ask us to delete your account, we delete…" — the email
+              route below is the thing that makes both sentences true. Deleting
+              it would leave the policy overclaiming, which is the same error
+              corrected on /privacy on 26 Aug. It keeps id="leaving" so an old
+              /profile#leaving link still lands on the text it described. */}
+          <div
+            className="mt-8 border-t pt-6"
+            style={{ borderColor: "var(--cl-hairline)" }}
+          >
+            <form action="/auth/sign-out" method="post">
+              <button type="submit" className="cl-ghost">
+                Sign out
+              </button>
+            </form>
+            <p
+              id="leaving"
+              className="mt-4 max-w-[52ch] text-[13px] leading-[1.6]"
+              style={{ color: "var(--cl-faint)" }}
+            >
+              Leaving for good? There&rsquo;s no self-serve delete yet.{" "}
+              <a
+                href="mailto:hello@manhattanite.com"
+                className="underline underline-offset-2"
+              >
+                Email us
+              </a>{" "}
+              and a person will remove your account and your listings &mdash;
+              usually the same day.
+            </p>
+          </div>
+
+          {/* ---------- My listings ----------
+              THE ONLY WAY INTO /listings/mine (George, 2026-08-27). The page
+              has worked since Slice 5; nothing in the Classifieds system linked
+              to it. Its only two doors were SiteFooter (via PageShell) and
+              AccountMenu (via SiteNav), both editorial — and after the
+              migration the only (ed) routes left are the four admin pages. So
+              the only way into a member's own listings rendered on screens only
+              the founder can reach, which is why only the founder found it.
+
+              Third instance of one failure: /admin, then /search, now this.
+              When a design system is retired, the surviving routes need their
+              entry points re-homed. "The route still works" is not the same
+              claim as "someone can get there." */}
+          <div id="mine" className="cl-grouplabel mt-9 mb-3.5">
+            My listings
+          </div>
+          <p
+            className="max-w-[52ch] text-[13.5px] leading-[1.6]"
+            style={{ color: "var(--cl-muted)" }}
+          >
+            Everything you&rsquo;ve posted &mdash; live, waiting on a moderator,
+            and archived. Edit one, or take it down, from there.
+          </p>
+          <div className="mt-4">
+            <Link href="/listings/mine" className="cl-ghost">
+              View my listings
+            </Link>
+          </div>
+
           {/* ---------- Saved ----------
               THE ONLY WAY INTO /saved (George, 2026-08-27): "'Saved' should not
               be a main menu option. You should be able to see your saved posts
@@ -151,7 +239,7 @@ export default async function ClassifiedsSettingsPage() {
               SavedGrid — so a server-rendered number here would either be wrong
               or force this page to become a client component to find out. The
               screen it links to already knows. */}
-          <div id="saved" className="cl-grouplabel mt-8 mb-3.5">
+          <div id="saved" className="cl-grouplabel mt-9 mb-3.5">
             Saved
           </div>
           <p
@@ -178,64 +266,73 @@ export default async function ClassifiedsSettingsPage() {
                 : "Members can vouch for people. You’ll be able to once you’re in."}
             </p>
           ) : (
-            <ul className="flex flex-col gap-3">
-              {vouchedFor.map((c) => (
-                <li key={c.account_id} className="flex items-center gap-3">
-                  <div className="cl-avatar h-[34px] w-[34px]" aria-hidden="true" />
-                  <span className="text-[14px]">{c.name}</span>
-                </li>
-              ))}
-            </ul>
+            <ConnectionList people={vouchedFor} />
           )}
 
           {vouchedBy.length > 0 && (
             <>
               <div className="cl-grouplabel mt-7 mb-3.5">Who vouched for you</div>
-              <ul className="flex flex-col gap-3">
-                {vouchedBy.map((c) => (
-                  <li key={c.account_id} className="flex items-center gap-3">
-                    <div className="cl-avatar h-[34px] w-[34px]" aria-hidden="true" />
-                    <span className="text-[14px]">
-                      {c.name}
-                      {c.is_primary && (
-                        <span
-                          className="ml-2 text-[12.5px]"
-                          style={{ color: "var(--cl-muted)" }}
-                        >
-                          brought you in
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <ConnectionList people={vouchedBy} primaryLabel="brought you in" />
             </>
           )}
-
-          {/* ---------- Leaving ---------- */}
-          <div id="leaving" className="cl-grouplabel mt-9 mb-3.5">
-            Leaving the network
-          </div>
-          <p
-            className="max-w-[52ch] text-[13.5px] leading-[1.6]"
-            style={{ color: "var(--cl-muted)" }}
-          >
-            There&rsquo;s no self-serve delete yet. Email us and a person will
-            remove your account and your listings — usually the same day.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            <a href="mailto:hello@manhattanite.com" className="cl-ghost">
-              Email us
-            </a>
-            {/* POST, not a link — a prefetched GET would sign people out. */}
-            <form action="/auth/sign-out" method="post">
-              <button type="submit" className="cl-quiet px-2 py-[11px]">
-                Sign out
-              </button>
-            </form>
-          </div>
         </div>
       </main>
     </>
+  );
+}
+
+/**
+ * One vouching list.
+ *
+ * BOTH directions render through this. They were duplicated markup until
+ * 2026-08-27, which is exactly how one of them could have got linked names and
+ * the other kept plain text forty pixels below it. There is now one row to fix.
+ *
+ * THE WHOLE ROW IS THE TARGET, avatar included, rather than the 14px name. The
+ * avatar placeholder stays aria-hidden, so a screen reader announces the person
+ * once and not twice.
+ *
+ * THIS EXPOSES NOTHING NEW. The names already rendered on this page as text;
+ * the link only makes them behave the way the same name already behaves in a
+ * listing byline ("Listed by Anna" goes to her profile). /profile is
+ * member-only and /members/[id] answers a guest with the members-only wall, so
+ * every viewer of this list could already reach the destination. One of the two
+ * treatments was wrong, and it was this one.
+ *
+ * `primaryLabel` is passed only for the sponsor direction: "brought you in"
+ * is true of the person who vouched for you and backwards on someone you
+ * brought in yourself.
+ */
+function ConnectionList({
+  people,
+  primaryLabel,
+}: {
+  people: Connection[];
+  primaryLabel?: string;
+}) {
+  return (
+    <ul className="flex flex-col gap-3">
+      {people.map((c) => (
+        <li key={c.account_id}>
+          <Link
+            href={`/members/${c.account_id}`}
+            className="flex items-center gap-3 py-1"
+          >
+            <div className="cl-avatar h-[34px] w-[34px]" aria-hidden="true" />
+            <span className="text-[14px]">
+              {c.name}
+              {primaryLabel && c.is_primary && (
+                <span
+                  className="ml-2 text-[12.5px]"
+                  style={{ color: "var(--cl-muted)" }}
+                >
+                  {primaryLabel}
+                </span>
+              )}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

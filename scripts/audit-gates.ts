@@ -197,6 +197,73 @@ async function checkNoNames(
   );
 }
 
+/**
+ * IS THIS CONTROL NESTED INSIDE A <form>?
+ *
+ * Added 2026-08-27, for a bug that had been live since the Classifieds merge:
+ * "Take this listing down" → "Yes, take it down" saved the edit and never
+ * archived anything. ClRemoveListing brings its own <form> and was rendered as
+ * the last CHILD of the post form's <form>. A <form> inside a <form> is invalid
+ * HTML, the browser drops the inner one, and the submit button re-associates
+ * with the outer form — so the button posted updateListing.
+ *
+ * WHY THE ASSERTION IS HERE AND NOT IN test-edit-archive.ts. That harness drives
+ * archiveListing straight against the database and passed the whole time the
+ * button was dead: it tested the action beneath the control, which was never the
+ * broken half. This bug only exists in RENDERED MARKUP, so it can only be caught
+ * by fetching the real page as the real principal — which is what this file
+ * already does.
+ *
+ * BOTH FILES CARRIED A COMMENT SAYING THE COMPONENT MUST BE A SIBLING. Both
+ * comments were right and the code did the opposite for a fortnight. A comment
+ * is documentation, not enforcement. This is the enforcement.
+ *
+ * The check is structural, not cosmetic: count unclosed <form> tags between the
+ * top of the document and the control. Zero means the control is a sibling; one
+ * or more means it is nested and the button is wired to the wrong action. Script
+ * blocks are stripped first so the RSC flight payload — which carries the same
+ * strings as JSON — cannot answer for the markup.
+ */
+async function checkNotInForm(
+  label: string,
+  url: string,
+  cookie: string,
+  marker: string
+): Promise<void> {
+  const res = await fetch(`${BASE}${url}`, {
+    redirect: "manual",
+    headers: { cookie },
+  });
+  const markup = (await res.text()).replace(
+    /<script\b[^>]*>[\s\S]*?<\/script>/gi,
+    ""
+  );
+
+  const at = markup.indexOf(marker);
+  if (at === -1) {
+    fails++;
+    console.log(
+      `  ✗ NESTED FORM [${label}] ${url} — "${marker}" is not on the page at all`
+    );
+    return;
+  }
+
+  const before = markup.slice(0, at);
+  const depth =
+    (before.match(/<form\b/gi) ?? []).length -
+    (before.match(/<\/form>/gi) ?? []).length;
+
+  const ok = depth === 0;
+  if (!ok) fails++;
+  console.log(
+    `  ${ok ? "✓" : "✗ NESTED FORM"} [${label}] ${url} — "${marker}" ${
+      ok
+        ? "is outside every <form> (its own form survives)"
+        : `is ${depth} <form> deep, so its submit posts the OUTER form`
+    }`
+  );
+}
+
 async function main() {
   console.log("\n── FIXTURES ──");
   await up();
@@ -309,6 +376,12 @@ async function main() {
       contains: reachable.namedMemberName,
     });
   }
+
+  console.log("\n── MEMBER: THE TAKEDOWN BUTTON IS ITS OWN FORM ──");
+  // Published and pending both, because the two render different copy from the
+  // same component and only one of them was ever looked at.
+  await checkNotInForm("m", `/listings/${published}/edit`, M, "Take this listing down");
+  await checkNotInForm("m", `/listings/${pending}/edit`, M, "Take this listing down");
 
   console.log("\n── MEMBER, SOMEONE ELSE'S LISTING ──");
   if (otherPublished) {

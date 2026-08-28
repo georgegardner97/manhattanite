@@ -1,8 +1,8 @@
 // Screen 02 — Browse, in the Classifieds system.
 //
 // The live /listings page rendered in the design imported from the Claude
-// Design project: filter rail left, result count and sort across the top, a
-// responsive card grid under it. Real rows, real photographs, real bylines —
+// Design project: filter rail left, result count across the top, a responsive
+// card grid under it. Real rows, real photographs, real bylines —
 // the point of the slice is to judge the system on the network as it actually
 // is, not on twelve invented listings.
 //
@@ -32,10 +32,8 @@ import {
 import { neighborhoodOf } from "@/lib/listings/card";
 import {
   BROWSE_PATH,
-  SORTS,
   activeChips,
   buildHref,
-  byPrice,
   hoodApplies,
   isFiltered,
   matchesText,
@@ -81,15 +79,9 @@ export default async function ClassifiedsBrowsePage({
     return true;
   });
 
-  // The query already returned newest-first, so "newest" is the identity and
-  // only "price" does work. Sorting a copy leaves `all` — which the counts
-  // still read — untouched.
-  const visible =
-    q.sort === "price"
-      ? [...matched].sort(byPrice)
-      : matched;
-
-  const cards = await toClCards(visible, gated);
+  // Newest-first, always: the query already returned the rows that way and
+  // there is no control to reorder them. See the Sort note in filters.ts.
+  const cards = await toClCards(matched, gated);
   const chips = activeChips(q);
 
   return (
@@ -123,9 +115,6 @@ export default async function ClassifiedsBrowsePage({
             )}
             {q.min !== null && <input type="hidden" name="min" value={q.min} />}
             {q.max !== null && <input type="hidden" name="max" value={q.max} />}
-            {q.sort !== "newest" && (
-              <input type="hidden" name="sort" value={q.sort} />
-            )}
 
             <label htmlFor="cl-search" className="sr-only">
               Search listings
@@ -175,32 +164,19 @@ export default async function ClassifiedsBrowsePage({
             </div>
           )}
 
+          {/* The result count, alone. There was a Newest · Price control on the
+              right of this line until 2026-08-27; sorting by price ranks the
+              network cheapest-first, which is the frame this product exists to
+              get away from, and with price gone "Newest" was a control with one
+              option. The count stays because it answers a real question. */}
           <div
-            className="flex flex-wrap items-baseline justify-between gap-5 border-b pb-4 text-[13px]"
+            className="border-b pb-4 text-[13px]"
             style={{
               borderColor: "var(--cl-hairline)",
               color: "var(--cl-muted)",
             }}
           >
-            <div>{resultLabel(q, cards.length)}</div>
-
-            {/* Sort. The design's third option, "Closest", is not here — see
-                the note in filters.ts. */}
-            <div className="flex gap-4">
-              {SORTS.map((s) => {
-                const on = s.value === q.sort;
-                return (
-                  <Link
-                    key={s.value}
-                    href={buildHref(q, { sort: s.value })}
-                    aria-current={on ? "page" : undefined}
-                    style={{ color: on ? "var(--cl-ink)" : "inherit" }}
-                  >
-                    {s.label}
-                  </Link>
-                );
-              })}
-            </div>
+            {resultLabel(q, cards.length)}
           </div>
 
           {cards.length === 0 ? (
