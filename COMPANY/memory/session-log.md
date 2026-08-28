@@ -6,6 +6,53 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-28 · Landing v4 verified, the signed-in door closed, shipped (Claude Code)
+
+**Landing v4 is built, verified and pushed.** Picking up Cowork's uncommitted rewrite of `app/(cl)/page.tsx`: the one thing it could not do — `next build` — passes clean, and the one decision it left open is closed.
+
+**THE BUILD PASSES.** `next build` exit 0, `tsc --noEmit` clean, lint unchanged at the **4-error project baseline**. (Lint prints five; the fifth is in `.claude/worktrees/inspiring-ardinghelli-988672/`, a registered git worktree from 20 July that eslint walks into. It is gitignored so it never reaches a commit, but it inflates every lint run. **Left alone deliberately** — it dates from the 2026-07-20 revert incident and removing a worktree is not a thing to do unasked. Worth George's call whether to prune it.)
+
+**A SIGNED-IN VISITOR IS NOW REDIRECTED TO `/listings`, AND IT COSTS NOTHING.** The brief asked whether this would undo the 356ms→107ms win on `/`. It does not, and the reasons are in the page header so nobody optimises it back out:
+
+- **`proxy.ts` already calls `getUser()` on this exact request.** Its matcher covers every path but static assets. The auth round trip on `/` was already being paid to refresh the session; the page now reads the result rather than adding a trip.
+- **A guest pays zero.** supabase-js short-circuits `getUser()` with no auth cookie — the 0ms measured in the page-speed pass. Guests are who the 107ms describes, and they still make no Supabase call here.
+- **There is no cache left to defeat.** The 107ms came from `unstable_cache` around the guest teaser read. **v4 deleted the call to it**, so `/` has no cached branch to lose. Warm dev render measured **31ms**.
+- **No prerender to lose** — `/` was `force-dynamic` before and after, and the build still lists it `ƒ`.
+
+It also agrees with what the page already did: `ClSignIn` pushes to `/listings` on success, so the second visit now behaves like the first. This restores the pre-v3 behaviour; v3's "show them the six with real bylines" died with the cards.
+
+**THE RULE GOT AN ASSERTION, NOT A COMMENT** — lessons 8 and 9, applied rather than quoted. Three new checks in `audit:gates`: `/` redirects to `/listings` for a **member AND a Tier 1 account** (the gate is "has a session", not "is a member"), and a guest still gets 200 with the copy line **and** a live `href="/login"` — that footer link is the only door a non-member has, which is precisely the shape that has stranded a route three times this month. **`audit:gates` 0 failures**, teardown clean, seed members untouched.
+
+**Verified in a real browser, not only over curl.** Guest at desktop, 375×812 and 375×667: **no vertical or horizontal scroll, footer flush to the bottom edge (gap 0px)**, `MobileTabBar` correctly absent. All four entrance animations bound and staggered as drawn — 0ms wordmark, 130ms line, 260ms sign-in, **520ms period** — and the period lands. The redirect proved itself by accident first: the browser was holding a real session and `/` bounced to `/listings` before I had touched a cookie.
+
+**One thing to know, not a defect.** On a **short** phone (375×667) with the sign-in form **open**, the page gains **34px of scroll**. Closed it is exactly one screen at every size tested; the form genuinely grows the page and everything stays reachable. At 375×812 it does not scroll even open.
+
+**Nothing else moved.** `ClLandingCard` is now referenced only from a comment — **left in place on purpose, the revert needs it**. `readPermittedListings` / `toClCards` are untouched and still serve `/listings`, `/saved` and `/listings/mine`. `.cl-hero` (min-height 100dvh) is now dead CSS, referenced only in a header comment; left for the same reason.
+
+**The revert trigger is unchanged and worth restating:** a stranger now meets a lock with no evidence. If applications fall off, that is the cause, and the fix is the revert rather than a redesign.
+
+---
+
+## 2026-08-28 · Landing stripped to the door (Cowork)
+
+**`/` is now the wordmark, the line and the sign-in, plus a hairline footer. The six listing cards are gone.** George's call, and framed as reversible from the outset: "if that proves to be not the right method, then we can always change it back." Landing v3 is one commit back in git history.
+
+**What changed in `app/(cl)/page.tsx`:** the listings section deleted (with it the `readPermittedListings` / `toClCards` / `ClLandingCard` imports and the `LANDING_COUNT = 6` cap), and the "Not a member yet? — Request access" band deleted. The hero is untouched: wordmark, "A private marketplace for New York.", `ClSignIn`. The page is now a `min-h-dvh` flex column so the footer sits on the bottom edge instead of a hero of `100dvh` pushing it a few pixels past the fold — one screen, no scroll.
+
+**Request access survives as a quiet footer link, on purpose.** A member has to vouch for you, so `/login` is the only door a non-member has and deleting it outright would have made the page a dead end rather than a mystery. It now reads as boilerplate beside Privacy and Terms — the exact trade v3's closing band was written to refuse, accepted here so the hero keeps one control.
+
+**What it costs, stated plainly so the revert has a trigger.** v3's structure existed to put proof before the ask. A stranger now meets a lock and no evidence. If applications fall off, that is the cause and the revert is the fix.
+
+**Nothing decayed underneath it.** The D1 guest teaser cap (six rows) and guest anonymity both live in `lib/cl/listings-read.ts`, not in this page, so browse and search are unaffected and v3 can be restored without touching the read layer.
+
+**Open, and worth deciding before this ships:** a signed-in member visiting `/` now sees a sign-in screen. v3 showed them the full six with real bylines; the pre-v3 landing redirected them to `/listings`. Neither behaviour exists now. Recommendation is to redirect a signed-in visitor to `/listings`.
+
+**Verification, and its limit.** `tsc --noEmit` and `eslint` both clean. **`next build` cannot be run from Cowork on this repo** — `node_modules` is installed for darwin-arm64 and the device shell is linux/arm64 with no npm registry access, so SWC fails to load. Typecheck and lint are the ceiling here; a real build has to happen in Claude Code or on Vercel.
+
+**Uncommitted.** Cowork cannot push. `app/(cl)/page.tsx` is changed on disk only.
+
+---
+
 ## 2026-08-28 · Migration 0028 applied to production (Cowork)
 
 **Applied and verified.** `admin_update_listing`, `admin_archive_listing`, and the `corrected_by` / `corrected_at` columns all present — confirmed by catalog query returning 4 rows, not by the editor's status text. This unblocks Slice 3b's two admin write paths.

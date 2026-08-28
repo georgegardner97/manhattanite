@@ -111,6 +111,102 @@ Doubling the price to $199 doubles the revenue and risks the supply you don't ye
 
 ---
 
+## 6. What 20,000 members looks like
+
+Asked separately by George on 2026-08-27. Short version: revenue of roughly **$600k to $1.2m a year, and a profit somewhere between nothing and $650k**, because at that size the 97% listing margin gets eaten by salaries. The product at 20,000 members is human judgement, and human judgement has a payroll.
+
+### Revenue
+
+Everything turns on how often a member posts. That single assumption swings the answer by a factor of two, so both ends are shown.
+
+| | Cautious (2% of members post a place per month) | Current assumption (4%) |
+|---|---|---|
+| Apartment listings / month | 400 | 800 |
+| At $99 | $475k / year | $950k / year |
+| At $149 (defensible at that size) | $715k / year | $1.43m / year |
+
+Add roughly $135k a year if jobs are live at $75 and 150 get posted a month, plus a modest amount from featured slots. Call the realistic band **$600k to $1.2m**.
+
+The price rise is honest at that scale, by the way. A listing seen by 20,000 vouched New Yorkers is worth more than the same listing seen by 500, and you'd still be under StreetEasy.
+
+### Costs
+
+| | Per year |
+|---|---|
+| 3 ops people reviewing listings, applications and disputes | $195k |
+| One engineer (contract at the low end) | $80–150k |
+| Your own salary | $120k |
+| Infrastructure at 20,000 members with images | ~$15k |
+| Legal, insurance, accounting | ~$50k |
+| Tools | ~$10k |
+| **Total** | **~$470–540k** |
+
+Three-quarters of that is people. The work is 3,200 listings a month to read at five minutes each (267 hours), plus around 600 applications and 400 support tickets. That's about 2.7 full-time people on judgement alone, before anyone builds anything.
+
+**Break-even sits at roughly 470 paid listings a month**, which is 2.4% of members posting. The cautious column above is 2%. So the difference between a comfortable business and a treadmill is one percentage point of how often members post — which is the same lever as at 200 members, just louder.
+
+### What actually changes at that size
+
+**The vouch stops being personal.** 20,000 members is one in every eighty people living in Manhattan, and the median member is four or five introductions away from you. Gens de Confiance's answer at two million members was to keep the vouch and bolt on reporting and insurance (they cover up to €100,000 of damage). Trust becomes a system with a claims process rather than your judgement. That is a real change to what Manhattanite is, and it should be a decision rather than a drift.
+
+**Fair-housing exposure scales with volume.** 800 apartment listings a month is enough to attract organised testing. Section 230 still shields you for what members write, but only if the moderation stays approve-or-decline and the listing form never asks about who the tenant is. At that volume this needs a written standard and a lawyer on retainer, not a checklist in your head. Related and concrete: the FARE Act requires every rental listing to disclose the fees a tenant would pay, so the posting form needs fee fields before you're big enough to be noticed.
+
+**The temptation arrives.** At 20,000 verified, well-off Manhattan residents, the valuable asset isn't the listing fee — it's the audience. That's precisely when advertising, data deals and broker packages start to look sensible, and all three are currently ruled out by decisions you've already taken. Holding that line is defensible. Just know it costs perhaps a third of the achievable revenue, and decide with the number in front of you rather than on instinct.
+
+### How far away is it
+
+From 100 members at the end of this year, 20,000 needs about seven and a half doublings. At 5% growth a month that's nine years. At 10% it's four and a half. At 15% it's three. So 20,000 is a 2030-and-later question on Manhattan alone, and it probably implies opening up beyond Manhattan, since one in eighty residents is a very high share for an invite-only network.
+
+---
+
+## 7. What it would be worth at 20,000 members
+
+Asked by George on 2026-08-27. Not financial advice, and a broker or banker would price the real thing against real books. But three methods converge, which is usually a sign the range is about right.
+
+**Roughly $2m to $6m, most likely low single-digit millions.**
+
+### Method one: a multiple of earnings
+
+Under $5m of revenue, buyers price on owner's earnings rather than EBITDA. Strip out your salary and the business throws off $210k at the cautious end and around $750k at the top.
+
+FE International puts two-sided marketplaces with real liquidity and 20%+ growth at 4.5 to 8 times adjusted earnings, and everything else lower. Manhattanite would sit at the bottom of that band on the numbers as modelled, for reasons worth naming: the revenue is one-off rather than contracted, it's one city, and every listing passes through you.
+
+| | Owner earnings | Multiple | Value |
+|---|---|---|---|
+| Cautious | $210k | 3x | ~$630k |
+| Middle | $430k | 4.5x | ~$1.9m |
+| Strong | $750k | 6.5x | ~$4.9m |
+
+### Method two: a multiple of revenue
+
+Nextdoor is the cautionary comparison. As of August 2026 it's worth $890m on $260m of revenue, so 3.4 times — and it's down 71% from its 2021 peak, with over a hundred million users. Neighbourhood networks are not automatically valuable. Profitable classifieds businesses trade at 3 to 6 times revenue, which on $600k–$1.2m gives **$2m to $7m**.
+
+### Method three: what the members are worth per head
+
+Zillow paid $50m for StreetEasy in 2013, when it had 1.2 million monthly visitors in New York. That's about $42 a visitor for anonymous traffic. Twenty thousand named, vouched, well-off Manhattan residents are worth considerably more each — plausibly $100 to $300 — which lands at **$2m to $6m** again.
+
+### The four things that actually move the number
+
+**Recurring revenue is the big one.** Pay-per-post is transactional and stops the day people stop posting. Buyers pay roughly double for revenue that renews on its own. Gens de Confiance's rental subscription (€119 for six months) is about 60% of their revenue and it renews. Every version of "make this worth more" runs through some form of subscription, which collides directly with the confirmed decision that membership is free forever. That decision is defensible. It probably also halves the exit, and it should be made with that in front of you.
+
+**Owner dependency is the largest single discount buyers apply.** Today every listing is approved by you personally. If the answer to "what happens when George leaves" is "nothing works", the multiple falls to two or three. Written standards, a trained reviewer and a documented moderation policy are not admin. They are the thing that converts a job into an asset.
+
+**Growth at the moment of sale.** A network at 20,000 that has stopped growing is worth less than one at 12,000 growing 40% a year. Buyers pay for the curve, not the count.
+
+**One city is a single-market asset.** Proving the model travels — Brooklyn first, another city after — is what changes the buyer set from "someone buying cash flow" to "someone buying a platform".
+
+### Who the buyers actually are
+
+Zillow, who already bought the New York incumbent once; a brokerage such as Compass, chasing supply that never reaches the open market; a members' club or a New York media brand buying the audience rather than the software; or a private buyer or search fund buying the cash flow at three or four times earnings. The last of those is the most likely and the least glamorous.
+
+### The honest summary
+
+At 20,000 members this is an excellent small business worth a few million pounds that pays you well while you own it. It is not a venture outcome. The moves that would make it one — advertising, selling data, broker packages, loosening the gate — are the four you have already ruled out. That's a coherent position. Just hold it deliberately rather than by default.
+
+One prerequisite worth starting early: nobody buys a business without two years of clean, verified accounts, and there is currently no entity. Whenever the company gets formed, the bookkeeping from day one is part of the eventual sale price.
+
+---
+
 ## Next step
 
 Confirm two things and the rest follows: the apartment price ($99 unless you want to test $75), and whether furniture stays free permanently or only through v1. Once those are settled the Stripe slice can be specced.

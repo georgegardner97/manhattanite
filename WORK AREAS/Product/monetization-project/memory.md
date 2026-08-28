@@ -31,3 +31,15 @@ The 2026-07-14 note priced apartments high because "broker-fee pain makes it che
 Category: Decision
 
 Payment must be taken on approval, not on submission. Every listing is manually reviewed, so charging up front means refunding every declined listing and arguing about it. Authorize on submit, capture on approval.
+
+### 2026-08-27 — 20,000-member scenario added to the model
+
+Category: Progress
+
+George asked what 20,000 members looks like. Section 6 added to `outputs/Manhattanite_Pricing-Model_v1.md`: revenue $600k–$1.2m, costs ~$470–540k (three-quarters payroll), break-even at ~470 paid listings a month. Headline: the 97% listing margin does not survive contact with a moderation team, and 20,000 Manhattan-only members is one in eighty residents, so it implies both expanding past Manhattan and replacing personal judgement with a reporting-and-insurance system, as Gens de Confiance did.
+
+### 2026-08-27 — Exit valuation at 20,000 members added (section 7)
+
+Category: Progress
+
+Three methods converge on $2m–$6m: owner-earnings multiples (3–6.5x, FE International's marketplace band), revenue multiples (Nextdoor trades at 3.4x on $260m revenue, down 71% from 2021), and per-member value (Zillow paid $50m for StreetEasy's 1.2m monthly visitors in 2013, ~$42 a head for anonymous traffic). Two flags for George: pay-per-post is transactional, and recurring revenue roughly doubles a multiple — so "membership free forever" plausibly halves the exit; and owner dependency is the single largest discount buyers apply, which makes documented moderation standards and a trained reviewer value creation rather than admin.
