@@ -398,22 +398,27 @@ export default function ClPostForm({
             <label htmlFor="cl-desc" className="cl-fieldlabel">
               Details
             </label>
-            {/* ASK FOR MORE, AND SAY WHY (George, 2026-08-28). The placeholder
-                already lists what to include; this is the nudge to keep going.
-                It gives the reason rather than the instruction — "as much
-                detail as possible" is an order, and a member deciding how much
-                to write responds better to what it buys them.
+            {/* ASK FOR MORE (George, 2026-08-28). The placeholder already lists
+                what to include; this is the nudge to keep going.
+
+                THE WORDING IS THE FOUNDER'S, VERBATIM. It first shipped as "Say
+                more rather than less — it saves a round of questions later.",
+                on the reasoning that a reason persuades where an instruction
+                orders. George replaced it with the plain instruction the same
+                day. Noted so the softer line is not "restored" as an
+                improvement: it was considered and overruled.
 
                 NOT IN ADMIN MODE. An admin on this form is CORRECTING somebody
                 else's listing, not expanding it (CLAUDE.md note 11), so telling
-                them to say more contradicts the scope the shell above has just
-                set — the same reason the member-facing heading is suppressed. */}
+                them to add detail contradicts the scope the shell above has
+                just set — the same reason the member-facing heading is
+                suppressed. */}
             {!isAdmin && (
               <p
                 className="-mt-1 mb-2 text-[12.5px]"
                 style={{ color: "var(--cl-faint)" }}
               >
-                Say more rather than less — it saves a round of questions later.
+                Give as much detail as possible.
               </p>
             )}
             <textarea
