@@ -20,6 +20,51 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-28 · Page speed: /listings from ~578ms to 121ms, and the real culprit found underneath (Claude Code)
+
+**Deployed. Slice 3b, both migrations and the page-speed pass are all live on manhattanite.com.**
+
+**MEASURED FIRST, ON PRODUCTION, WITH A SCRIPT THAT CAN BE RE-RUN.** `npm run measure` is new: six samples per route, first discarded as warm-up, cache header read on every request so a prerendered hit is never mistaken for fast server work. The point is that "the site feels slow" now has a baseline to argue with.
+
+| Route | Before | After | Change |
+|---|---|---|---|
+| `/listings` | 578ms | **121ms** | ~4.8× faster |
+| `/` | 356ms | **107ms** | ~3.3× faster |
+| `/listings?type=furniture` | 365ms | **94ms** | ~3.9× faster |
+| `/terms` | 74ms | 72ms | unchanged — already prerendered |
+
+A second baseline run mid-session gave `/listings` 497ms, so call it **four to five times faster** rather than a single precise percentage. Both baselines and the after-numbers came from the same script on the same connection, which is what makes them comparable; George's browser numbers differ in absolute terms and agree on the shape.
+
+**WHAT THE PROFILING ACTUALLY FOUND, AND WHERE THE BRIEF GUESSED WRONG.** The estimate was ~4 sequential Supabase calls. It was **two**, and one of them was a surprise:
+- `auth.getUser()` costs a guest **0ms** — supabase-js short-circuits when there is no auth cookie. Never the problem.
+- the listings select: **~185ms**.
+- signing the covers: **~185ms**, a whole second round trip, already batched, and as expensive as the query itself.
+
+**THE FIX FOR BOTH WAS ONE CHANGE.** The guest teaser is now cached for 60 seconds — the guest BRANCH, not the route, because the guest view and the member view are different pages that happen to share a URL and the route must stay dynamic. A cached function may not read cookies and must not, so it uses an ANON client; the guest read IS the anonymous read, so it cannot see anything a guest could not. Anon can sign covers (verified against prod), **so the signing moved inside the cache too and a warm guest render makes zero Supabase calls.**
+
+`unstable_cache` rather than the `use cache` directive, and this is the decision worth recording: `use cache` needs `cacheComponents: true`, which changes how every route in the app renders. That is an enormous blast radius for one branch of one page. Adopting Cache Components deliberately is its own pass.
+
+**THE CACHING WOULD HAVE BEEN WRONG WITHOUT INVALIDATION.** Four server actions that change what is published now drop the cache tag: approve/return/reject, admin correct and take down, member edit, member archive. **`updateTag`, NOT `revalidateTag`** — in Next 16 `revalidateTag` marks the entry stale and serves the OLD content while refreshing, and "serve the old one for now" is precisely wrong for a listing taken down because it has a phone number in public. `updateTag` expires immediately and is available because every caller is a Server Action.
+
+**NO NAME IS CACHED AS A NAME.** The cached value is rows plus a path→URL map; the byline is assembled per request by `cardMeta(row, isGuest)` and that branch only runs when `isGuest` is true. `audit:gates` fetches every guest-reachable route and searches the body for real member names — **0 failures against production after the change**, which is the assertion that holds this rather than the reasoning.
+
+**LAZY COVERS, BOTH CARD COMPONENTS, WHICH IS THE PASS THE OLD COMMENT ASKED FOR.** The first four stay eager so the largest contentful paint does not regress — lazy-loading the hero image is the classic way to make a page score worse while optimising it.
+
+| View | Up front before | Up front after | Deferred |
+|---|---|---|---|
+| Guest teaser (6 covers) | 5,669kb | **3,706kb** | 1,962kb |
+| Signed-in feed (17 covers) | 13,265kb | **3,706kb** | 9,558kb |
+
+**AND THAT TABLE EXPOSES THE REAL PROBLEM, WHICH IS NOT SOLVED AND IS NOW THE BIGGEST REMAINING LEVER.** Those covers are **roughly 900kb EACH**, to fill a card about 230px wide. A signed-in member was being sent **13 megabytes** of photographs to look at one screen of listings. Lazy loading defers 72% of that; it does not make the bytes smaller. Nothing resizes or re-compresses a listing photo anywhere in the product — whatever a member uploads from their phone is what every visitor downloads, at full resolution, forever.
+
+Fixing it properly is its own pass and it needs a decision, so it was flagged rather than done: **Supabase image transformations are a paid-plan feature and the brief ruled paid upgrades out of scope**, so the free route is Vercel image optimisation via `next/image`, which is complicated here by signed URLs that rotate hourly and would keep busting the image cache. A third option is resizing on upload, which costs nothing per render and changes only the write path. **If page weight is the concern rather than server time, this is where the remaining seconds are.**
+
+**Results.** `npm run build` clean, `tsc` clean, lint unchanged at the 4-error baseline. **`audit:rls` 67/67, 0 blockers** — 59 plus the 8 new admin-write-door cells, and the teardown completed cleanly, which is itself the proof that `0029` works. **`audit:gates` 0 failures locally AND against production.**
+
+**Also deployed in the same push:** Slice 3b (the five-screen admin console, `/admin/listings`, admin correction and take-down) and the frontend for `0028`/`0029`, both of which had been sitting unpushed. `git revert` of `e634dd4`, `0c79dd1` or `39d8aed` backs out the page-speed work, the docs and the console respectively, each on its own.
+
+---
+
 ## 2026-08-28 · Slice 3b: the admin console, all listings, and a foreign key that locked the door behind it (Claude Code)
 
 **The Classifieds migration is code-complete. `app/(ed)` and `app/design/` are deleted. Built, verified end to end against production, committed locally — NOT deployed, and one migration is still outstanding.**

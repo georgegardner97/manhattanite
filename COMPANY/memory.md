@@ -11,6 +11,33 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-08-28, later (page speed; everything is DEPLOYED)
+
+**Slice 3b, both migrations and the page-speed pass are live on manhattanite.com. `audit:rls` 67/67, `audit:gates` 0 failures locally and against production.**
+
+**THE NUMBERS, MEASURED THE SAME WAY BEFORE AND AFTER** (`npm run measure` — six samples, first discarded; it exists so the next "the site feels slow" has a baseline to argue with):
+
+| Route | Before | After |
+|---|---|---|
+| `/listings` | 578ms | **121ms** |
+| `/` | 356ms | **107ms** |
+| `/listings?type=furniture` | 365ms | **94ms** |
+| `/terms` | 74ms | 72ms (already prerendered) |
+
+Roughly **four to five times faster** — a second baseline run gave `/listings` 497ms, so the range is honest and a single percentage would not be.
+
+**WHAT WAS ACTUALLY SLOW.** Not cold starts, not the free tier, and not four Supabase calls — it was **two**: the listings select (~185ms) and **signing the cover images (~185ms), a whole second round trip as expensive as the query**. `auth.getUser()` costs a guest 0ms because supabase-js short-circuits with no cookie.
+
+**THE GUEST TEASER IS CACHED FOR 60 SECONDS — THE BRANCH, NOT THE ROUTE.** The guest view and the member view are different pages sharing a URL, so `/listings` stays dynamic and only the guest branch is cached. It uses an ANON client, because a cached function may not read cookies and must not: a cache entry built from one visitor's session is exactly the hole to avoid. Anon can sign covers, so **signing moved inside the cache and a warm guest render makes zero Supabase calls.** `unstable_cache`, not the `use cache` directive — that needs `cacheComponents: true`, which changes how every route in the app renders.
+
+**INVALIDATION IS PART OF THE FEATURE, NOT A FOLLOW-UP.** Four server actions drop the tag: approve/return/reject, admin correct and take down, member edit, member archive. **`updateTag`, NOT `revalidateTag`** — in Next 16 the latter serves the STALE entry while refreshing, which is exactly wrong for a listing taken down for a phone number in public.
+
+**NO NAME IS CACHED AS A NAME**, and `audit:gates` proves it against production, not the reasoning above.
+
+**THE BIGGEST REMAINING LEVER IS NOT SERVER TIME, IT IS IMAGE WEIGHT — AND IT IS UNSOLVED.** Lazy-loading below the fold cut what loads up front from 13,265kb to 3,706kb for a signed-in member. But **each listing cover is roughly 900kb, to fill a card 230px wide**, because nothing in the product ever resizes or re-compresses an uploaded photo. Lazy loading defers those bytes; it does not shrink them. Three routes, needing a decision: Supabase image transformations (PAID plan, which was ruled out of scope), Vercel `next/image` (free, but signed URLs rotate hourly and would bust the image cache), or **resize on upload** (costs nothing per render, changes only the write path — probably the right answer). If page weight is the concern, this is where the remaining seconds are.
+
+---
+
 ## Quick state addendum — 2026-08-28 (Slice 3b: the admin console; the Classifieds migration is code-complete)
 
 **Built, verified end to end against production, committed locally. NOT deployed. Migration `0029` is outstanding and `audit:rls` cannot finish its teardown until it is applied.**

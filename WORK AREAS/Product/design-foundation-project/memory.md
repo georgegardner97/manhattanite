@@ -398,3 +398,21 @@ Branch `classifieds-walkthrough-fixes` off `main`, intended as one `--no-ff` mer
 - **Two silent-failure fixes, both design problems as much as code ones.** `/admin/listings` rendered a clean, confident, EMPTY table when its read failed — on the one screen you look at to find out what is on the site. And the post form's own heading was contradicting the admin intro a hundred pixels above it ("goes back through review" vs "leaves it live"). **The member edit screen still carries that false promise**, because no edit path re-pends anything; the copy and the behaviour disagree and that is George's call.
 
 - **A bug in my own migration, found by running the audit rather than reading it.** `corrected_by` had no ON DELETE action, so an admin who corrects one listing can never be deleted. `audit:rls` died in its own teardown and left synthetic users in production. `0029` fixes it. The lesson is not about foreign keys: **a check that has only ever been reasoned about is not a check.**
+
+## 2026-08-28 (later) — Page speed measured, fixed, and deployed; the real cost turns out to be photographs
+
+**Everything is live: Slice 3b, both migrations, and the page-speed pass.**
+
+- **Measured before touching anything, and built `npm run measure` so it stays measurable.** Six samples, first discarded. `/listings` went **578ms → 121ms**, `/` **356ms → 107ms**, filtered browse **365ms → 94ms**. Four to five times faster. `/terms` was already prerendered at ~74ms and did not move, which is the control that says the measurement is real.
+
+- **The guest teaser is cached for 60 seconds — the branch, not the route.** The design point worth keeping: *the logged-out view and the signed-in view are different pages that happen to share a URL.* Treating them as one page is what forced every guest to pay for a personalised render of something identical to what the last guest saw.
+
+- **Signing the cover images was a hidden second round trip**, as expensive as the database query itself (~185ms each). Nothing on screen suggested it existed. It now happens inside the cached read, so a warm guest render touches Supabase not at all.
+
+- **Lazy covers below the fold, both card components in one pass** — the measured pass the old comment in `ClListingCard` asked for. **The first four stay eager**, because lazy-loading the hero image is the classic way to make a page score worse while "optimising" it.
+
+- **THE FINDING THAT MATTERS MOST FOR DESIGN, AND IT IS NOT FIXED.** Lazy loading cut what a signed-in member loads up front from **13,265kb to 3,706kb**. But each cover is roughly **900kb, rendered into a card about 230px wide.** Nothing anywhere resizes or re-compresses a listing photo: whatever someone uploads from their phone is what every visitor downloads, at full resolution, forever. A twenty-listing feed is thirteen megabytes of photographs.
+
+  This is a design-system problem as much as an engineering one — the card has a fixed size and the image ignores it. Three routes, and it needs a decision: Supabase image transformations (a **paid** feature, ruled out of scope), Vercel `next/image` (free, but the signed URLs rotate hourly and would keep busting the image cache), or **resizing on upload**, which costs nothing per render and changes only the write path. That last one looks right, and it is its own slice.
+
+- **The trust layer held throughout.** `audit:gates` passes against production with the cache in the path — the guest name rule is asserted by fetching every guest-reachable route and searching the body for real member names, which is what makes caching a page safe to do at all rather than something to reason about and hope.
