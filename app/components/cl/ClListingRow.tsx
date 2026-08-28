@@ -11,13 +11,27 @@
 import Link from "next/link";
 import type { ClCard } from "@/app/components/cl/ClListingCard";
 
-export default function ClListingRow({ card }: { card: ClCard }) {
+export default function ClListingRow({
+  card,
+  eager = false,
+}: {
+  card: ClCard;
+  /** The first row loads eagerly; everything below it is lazy. See the note in
+   *  ClListingCard — both card components changed in the same pass, on purpose,
+   *  so a listing cannot load one way on Browse and another on a result row. */
+  eager?: boolean;
+}) {
   return (
     <Link href={`/listings/${card.id}`} className="cl-row cl-cardlink">
       <div className="cl-media h-[100px] w-full max-[600px]:h-[68px]">
         {card.coverUrl && (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={card.coverUrl} alt="" />
+          <img
+            src={card.coverUrl}
+            alt=""
+            loading={eager ? "eager" : "lazy"}
+            decoding="async"
+          />
         )}
       </div>
 

@@ -42,16 +42,35 @@ export type ClCard = {
  * own author. A card with no destination renders as a card and not a link,
  * rather than as a link that lies.
  */
+/**
+ * How many cards to load eagerly at the top of a grid.
+ *
+ * Every card grid in the product is `repeat(auto-fit, minmax(230px, 1fr))`, so
+ * a row holds four or five on a wide screen and one or two on a phone. Four is
+ * the number that covers the common desktop first row without guessing at the
+ * viewport, which a server render cannot know. Erring high costs a couple of
+ * extra requests; erring low costs the largest contentful paint, which is the
+ * thing this pass exists to protect.
+ */
+export const EAGER_CARDS = 4;
+
 export default function ClListingCard({
   card,
   href = `/listings/${card.id}`,
   showSave = true,
+  eager = false,
 }: {
   card: ClCard;
   href?: string | null;
   /** Off on /listings/mine — saving your own listing is a control that does
    *  nothing for you, and Saved is a shortlist of other people's things. */
   showSave?: boolean;
+  /**
+   * ABOVE THE FOLD. The first row of a grid loads eagerly; everything below it
+   * is lazy. Passed by the page, because only the page knows how many cards a
+   * row holds — see the note on the <img> below.
+   */
+  eager?: boolean;
 }) {
   // Static markup when there is nowhere to go, so the whole card stops being
   // interactive — not an <a> with its href quietly removed.
@@ -74,14 +93,28 @@ export default function ClListingCard({
             className="cl-media"
             style={{ height: "clamp(170px, 15vw, 210px)" }}
           >
-            {/* No `loading` attribute, matching the live ListingCard. Browse
-                already ships up to 50 eager covers today, and switching this
-                grid to lazy would be a performance change smuggled in with a
-                design port — it belongs in its own pass, measured, across both
-                card components at once. */}
+            {/* LAZY BELOW THE FOLD — the measured pass the old note asked for
+                (2026-08-28). Browse was shipping up to 50 eager covers, and a
+                full page load on /listings took 4.3s against 0.9s to
+                DOM-ready: nearly all of the gap was images still arriving.
+
+                The first row stays EAGER so the largest contentful paint does
+                not regress — lazy-loading the hero image is the classic way to
+                make a page score worse while "optimising" it. `eager` is a prop
+                rather than an index check inside the card, because how many
+                cards make a row is a fact about the grid, not about a card.
+
+                `decoding="async"` on every cover: even an eager image should
+                not block the parser while it decodes. */}
             {card.coverUrl && (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={card.coverUrl} alt="" />
+              <img
+                src={card.coverUrl}
+                alt=""
+                loading={eager ? "eager" : "lazy"}
+                decoding="async"
+                fetchPriority={eager ? "high" : "auto"}
+              />
             )}
           </div>
         </Media>

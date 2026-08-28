@@ -22,7 +22,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type ArchiveListingState = { error: string | null };
@@ -86,6 +86,10 @@ export async function archiveListing(
   revalidatePath("/listings");
   revalidatePath("/listings/mine");
   revalidatePath(`/listings/${id}`);
+  // Same reason as update.ts: the guest teaser is a cache entry. Somebody who
+  // has just taken their own listing down should not keep seeing it on the
+  // public page for another minute.
+  updateTag("listings");
 
   // No redirect: the caller (the My Listings row) re-renders and the listing
   // is simply gone — that's the confirmation.

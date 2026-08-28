@@ -24,6 +24,8 @@
 // makes it impossible for a filter, a search term or a saved id to widen what
 // the viewer is allowed to see: there is only ever the one gated read.
 
+import { unstable_cache } from "next/cache";
+import { createClient as createAnonClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { renderByline } from "@/lib/listings/byline";
@@ -49,6 +51,15 @@ export type BrowseRow = ListingRow & {
   sponsor_names: string[];
 };
 
+/** The private bucket every listing cover lives in (0005). */
+const BUCKET = "listing-images";
+/**
+ * How long a cached guest cover stays valid. Comfortably longer than the 60s
+ * cache entry that holds it, so a URL served on the last second of a cache
+ * window still has most of its life left in the visitor's browser.
+ */
+const COVER_EXPIRY_SECONDS = 60 * 60;
+
 export const TEASER_LIMIT = 6;
 export const FEED_LIMIT = 50;
 /** A signed-in viewer's ceiling on one member's profile. */
@@ -57,6 +68,12 @@ export const MEMBER_LIMIT = 24;
 export type GatedListings = {
   rows: BrowseRow[];
   isGuest: boolean;
+  /**
+   * Covers already signed inside the cached guest read, so a warm guest render
+   * makes no Supabase calls at all. Absent on the signed-in path, which signs
+   * per request as before.
+   */
+  covers?: Map<string, string>;
 };
 
 /** Who is looking. The only thing a card needs to know about a reader, and the
@@ -64,22 +81,112 @@ export type GatedListings = {
  *  answers it, so a gated read can be passed straight through. */
 export type Viewer = { isGuest: boolean };
 
+const LISTING_COLUMNS =
+  "id, type, title, description, price_cents, created_at, images, details, is_example, author_id, author_name, sponsor_names";
+
+/**
+ * THE GUEST TEASER, CACHED — measured, 2026-08-28.
+ *
+ * Every logged-out visitor sees the same six listings, and browse was rebuilding
+ * them per request: `/listings` was `force-dynamic` with `x-vercel-cache: MISS`
+ * on every hit, ~578ms median against a ~180ms network floor. Two sequential
+ * Supabase round trips did most of the rest — the select and the cover signing,
+ * ~185ms each when timed individually. A guest pays both to be shown a page
+ * identical to the one the last guest was shown.
+ *
+ * WHY THIS FUNCTION AND NOT `export const revalidate`. The guest view and the
+ * member view are different pages that happen to share a URL. The page must
+ * stay dynamic, because whether you are signed in decides both what you see and
+ * WHOSE NAMES appear on it. So the cache wraps the guest BRANCH, not the route.
+ *
+ * WHY THE ANON CLIENT. A cached function may not read cookies — and it must
+ * not: a cache entry built from one visitor's session is exactly the hole this
+ * is meant to avoid. The guest read IS the anonymous read, so it uses an
+ * anonymous client and cannot see anything a guest could not. Anon can sign
+ * listing covers (verified against production), so the signing moves inside the
+ * cache too and a warm guest render makes ZERO Supabase calls.
+ *
+ * WHY 60 SECONDS. New listings pass through moderation before they are
+ * published, so the feed changes on a human timescale, not a machine one. A
+ * minute of staleness on the teaser is invisible; a stale members-only page
+ * would not be, which is why nothing below the guest branch is cached.
+ *
+ * WHAT IS NOT IN HERE, AND MUST NEVER BE. No name. The cached value is rows
+ * plus a path→URL map; the byline is assembled per request by cardMeta(row,
+ * isGuest), and this branch is only ever reached when isGuest is true. If a
+ * future change caches the CARDS instead of the rows, the guest/member split
+ * has to move inside the cache key or a member's name will be served to a
+ * logged-out visitor from an edge cache. audit:gates fetches every
+ * guest-reachable route and searches the body for real member names; that
+ * assertion is what holds this, not this paragraph.
+ *
+ * `unstable_cache` rather than the `use cache` directive: `use cache` needs
+ * `cacheComponents: true`, which changes how every route in the app renders.
+ * That is a large blast radius for one branch of one page, and adopting Cache
+ * Components deliberately is its own pass.
+ */
+const readGuestTeaser = unstable_cache(
+  async (): Promise<{ rows: BrowseRow[]; covers: [string, string][] }> => {
+    const anon = createAnonClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    const { data } = await anon
+      .from("listings")
+      .select(LISTING_COLUMNS)
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(TEASER_LIMIT)
+      .returns<BrowseRow[]>();
+
+    const rows = data ?? [];
+    const paths = rows
+      .map((row) => row.images?.[0]?.path)
+      .filter((p): p is string => Boolean(p));
+
+    // A Map does not survive the cache boundary, so it travels as entries.
+    let covers: [string, string][] = [];
+    if (paths.length > 0) {
+      const { data: signed } = await anon.storage
+        .from(BUCKET)
+        .createSignedUrls(paths, COVER_EXPIRY_SECONDS);
+      covers = (signed ?? [])
+        .flatMap((s) =>
+          s.signedUrl && s.path
+            ? ([[s.path, s.signedUrl]] as [string, string][])
+            : []
+        );
+    }
+
+    return { rows, covers };
+  },
+  ["cl-guest-teaser"],
+  { revalidate: 60, tags: ["listings"] }
+);
+
 export async function readPermittedListings(): Promise<GatedListings> {
   const supabase = await createClient();
 
+  // Cheap: supabase-js short-circuits when there is no auth cookie, so a guest
+  // pays nothing for this — measured at 0ms.
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const isGuest = !user;
 
+  if (isGuest) {
+    const { rows, covers } = await readGuestTeaser();
+    return { rows, isGuest: true, covers: new Map(covers) };
+  }
+
   const { data } = await supabase
     .from("listings")
-    .select(
-      "id, type, title, description, price_cents, created_at, images, details, is_example, author_id, author_name, sponsor_names"
-    )
+    .select(LISTING_COLUMNS)
     .eq("status", "published")
     .order("created_at", { ascending: false })
-    .limit(isGuest ? TEASER_LIMIT : FEED_LIMIT)
+    .limit(FEED_LIMIT)
     .returns<BrowseRow[]>();
 
   return { rows: data ?? [], isGuest };
@@ -299,13 +406,31 @@ export function cardMeta(row: BrowseRow, isGuest: boolean): string {
  */
 export async function toClCards(
   rows: BrowseRow[],
-  viewer: Viewer
+  viewer: Viewer,
+  /**
+   * Covers already signed by the caller. The cached guest read signs its own,
+   * so passing them here is what removes the second round trip; every other
+   * screen omits this and signs per request exactly as before.
+   */
+  preSigned?: Map<string, string>
 ): Promise<ClCard[]> {
-  const coverUrlByPath = await signImagePaths(
-    rows
-      .map((row) => row.images?.[0]?.path)
-      .filter((p): p is string => Boolean(p))
-  );
+  const wanted = rows
+    .map((row) => row.images?.[0]?.path)
+    .filter((p): p is string => Boolean(p));
+
+  // Only sign what the caller has not already signed. A guest whose filters
+  // narrowed the teaser needs nothing minted at all.
+  const missing = preSigned
+    ? wanted.filter((p) => !preSigned.has(p))
+    : wanted;
+
+  const coverUrlByPath =
+    missing.length === 0 && preSigned
+      ? preSigned
+      : new Map([
+          ...(preSigned ?? new Map<string, string>()),
+          ...(await signImagePaths(missing)),
+        ]);
 
   return rows.map((row) => {
     const coverPath = row.images?.[0]?.path;

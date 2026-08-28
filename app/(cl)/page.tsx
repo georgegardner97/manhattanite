@@ -58,7 +58,11 @@ const LANDING_COUNT = 6;
 
 export default async function ClassifiedsLandingPage() {
   const gated = await readPermittedListings();
-  const cards = await toClCards(gated.rows.slice(0, LANDING_COUNT), gated);
+  const cards = await toClCards(
+    gated.rows.slice(0, LANDING_COUNT),
+    gated,
+    gated.covers
+  );
 
   return (
     <>

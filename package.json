@@ -15,7 +15,8 @@
     "seed:examples": "node --env-file=.env.local --import tsx scripts/seed-example-listings.ts",
     "test:auth-error": "node --import tsx scripts/test-auth-error.ts",
     "audit:rls": "node --env-file=.env.local --import tsx scripts/audit-rls.ts",
-    "audit:gates": "node --env-file=.env.local --import tsx scripts/audit-gates.ts"
+    "audit:gates": "node --env-file=.env.local --import tsx scripts/audit-gates.ts",
+    "measure": "node --env-file=.env.local --import tsx scripts/measure-routes.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

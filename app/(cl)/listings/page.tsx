@@ -21,7 +21,9 @@
 
 import Link from "next/link";
 import AppHeader from "@/app/components/cl/AppHeader";
-import ClListingCard from "@/app/components/cl/ClListingCard";
+import ClListingCard, {
+  EAGER_CARDS,
+} from "@/app/components/cl/ClListingCard";
 import FilterRail from "@/app/components/cl/FilterRail";
 import {
   countByType,
@@ -81,7 +83,9 @@ export default async function ClassifiedsBrowsePage({
 
   // Newest-first, always: the query already returned the rows that way and
   // there is no control to reorder them. See the Sort note in filters.ts.
-  const cards = await toClCards(matched, gated);
+  // gated.covers is present only on the cached guest branch; passing it is
+  // what stops a warm guest render touching Supabase at all.
+  const cards = await toClCards(matched, gated, gated.covers);
   const chips = activeChips(q);
 
   return (
@@ -183,8 +187,12 @@ export default async function ClassifiedsBrowsePage({
             <EmptyState q={q} />
           ) : (
             <div className="mt-[26px] grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-[clamp(22px,2.4vw,34px)]">
-              {cards.map((card) => (
-                <ClListingCard key={card.id} card={card} />
+              {cards.map((card, i) => (
+                <ClListingCard
+                  key={card.id}
+                  card={card}
+                  eager={i < EAGER_CARDS}
+                />
               ))}
             </div>
           )}

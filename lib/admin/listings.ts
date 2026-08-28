@@ -31,7 +31,7 @@
 
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin } from "@/lib/admin/guard";
 import { parseListingForm } from "@/lib/listings/form";
 
@@ -60,6 +60,16 @@ function refresh(id: string) {
   revalidatePath("/listings");
   revalidatePath("/listings/mine");
   revalidatePath(`/listings/${id}`);
+  // A correction or a take-down changes what a guest sees, and the guest teaser
+  // is a cache entry rather than a route render — see the note in moderate.ts.
+  //
+  // updateTag, NOT revalidateTag. In Next 16 revalidateTag("listings", "max")
+  // marks the entry stale and serves the OLD content while fresh data loads in
+  // the background. For a listing taken down because it has a phone number in
+  // public, "serve the stale one for now" is precisely the wrong behaviour.
+  // updateTag expires immediately so the next request waits for fresh data, and
+  // it is available here because every caller is a Server Action.
+  updateTag("listings");
 }
 
 /**

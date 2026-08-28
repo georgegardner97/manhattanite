@@ -21,7 +21,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { parseListingForm } from "@/lib/listings/form";
 
@@ -119,6 +119,10 @@ export async function updateListing(
   revalidatePath("/listings/mine");
   revalidatePath(`/listings/${id}`);
   revalidatePath("/admin/moderation");
+  // The guest teaser is an unstable_cache entry, not a route render, so
+  // revalidatePath does not reach it. A published listing that was edited is a
+  // listing a logged-out visitor may be looking at right now.
+  updateTag("listings");
 
   // Success: a live listing shows the edit on its own page; anything not
   // published has no public page, so My Listings is the confirmation.

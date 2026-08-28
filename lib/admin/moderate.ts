@@ -18,7 +18,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -74,6 +74,12 @@ function refreshQueue(): void {
   revalidatePath("/admin/moderation");
   revalidatePath("/listings");
   revalidatePath("/listings/mine");
+  // THE GUEST TEASER IS A CACHE ENTRY, NOT A ROUTE RENDER. It is held by
+  // unstable_cache inside readPermittedListings, so revalidatePath above does
+  // not touch it — approving a listing would leave logged-out visitors looking
+  // at the old six for up to 60 seconds. Approval is exactly the moment the
+  // public feed changes, so the tag is dropped here.
+  updateTag("listings");
 }
 
 // The lister behind a listing, for the outcome email. Two separate queries —

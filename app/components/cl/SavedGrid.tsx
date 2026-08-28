@@ -22,7 +22,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import ClListingCard, { type ClCard } from "@/app/components/cl/ClListingCard";
+import ClListingCard, {
+  EAGER_CARDS,
+  type ClCard,
+} from "@/app/components/cl/ClListingCard";
 import ClSkeletonGrid from "@/app/components/cl/ClSkeletonGrid";
 import { subscribeSaved } from "@/lib/cl/saved-store";
 
@@ -74,13 +77,13 @@ export default function SavedGrid({ cards }: { cards: ClCard[] }) {
         label={`${mine.length} listing${mine.length === 1 ? "" : "s"} you're thinking about`}
       />
       <div className="mt-[26px] grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-[clamp(22px,2.4vw,34px)]">
-        {mine.map((card) => (
+        {mine.map((card, i) => (
           // The card brings its own overlay save pill, which on this screen is
           // the thing that removes it — so the design's separate "Remove" text
           // underneath would be a second control for one action. The pill's
           // "Saved" state is already the affordance, and tapping it empties the
           // card out of the grid.
-          <ClListingCard key={card.id} card={card} />
+          <ClListingCard key={card.id} card={card} eager={i < EAGER_CARDS} />
         ))}
       </div>
     </>

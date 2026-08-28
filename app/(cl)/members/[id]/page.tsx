@@ -54,7 +54,10 @@ import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { formatPrice, placeOf } from "@/lib/listings/card";
 import AppHeader from "@/app/components/cl/AppHeader";
 import ClGate from "@/app/components/cl/ClGate";
-import ClListingCard, { type ClCard } from "@/app/components/cl/ClListingCard";
+import ClListingCard, {
+  EAGER_CARDS,
+  type ClCard,
+} from "@/app/components/cl/ClListingCard";
 import { readMemberListings } from "@/lib/cl/listings-read";
 import { relativeDay } from "@/lib/cl/filters";
 
@@ -185,8 +188,8 @@ export default async function ClassifiedsMemberPage({
 
         <div className="cl-grouplabel mt-[34px] mb-4">Their listings</div>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[26px]">
-          {cards.map((card) => (
-            <ClListingCard key={card.id} card={card} />
+          {cards.map((card, i) => (
+            <ClListingCard key={card.id} card={card} eager={i < EAGER_CARDS} />
           ))}
         </div>
       </main>

@@ -18,7 +18,7 @@ export default async function ClassifiedsSavedPage() {
   // way to know which those are. At the 50-row ceiling that is one round-trip
   // for a handful of unused signatures, which is the price of keeping the gate
   // on the server; it would be worth revisiting if the ceiling ever moved.
-  const cards = await toClCards(gated.rows, gated);
+  const cards = await toClCards(gated.rows, gated, gated.covers);
 
   return (
     <>
