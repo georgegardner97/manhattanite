@@ -54,6 +54,7 @@ type ListingDetail = {
   details: Record<string, unknown>;
   images: { path: string }[];
   author_id: string;
+  corrected_at: string | null;
   author_name: string | null;
   sponsor_names: string[];
   is_example: boolean;
@@ -146,7 +147,7 @@ export default async function ClassifiedsDetailPage({
   const { data: listing } = await supabase
     .from("listings")
     .select(
-      "id, type, title, description, price_cents, created_at, details, images, author_id, author_name, sponsor_names, is_example"
+      "id, type, title, description, price_cents, created_at, details, images, author_id, author_name, sponsor_names, is_example, corrected_at"
     )
     .eq("id", id)
     .eq("status", "published")
@@ -385,6 +386,31 @@ export default async function ClassifiedsDetailPage({
                     </strong>
                   </>
                 )}
+              </p>
+            )}
+
+            {/* THE CORRECTION RECORD, OWNER-ONLY (Slice 3b).
+                An admin may correct any listing — spelling, a factual error, a
+                cover photo that should not be the cover. That correction is
+                never silent: on a network whose product is that a name means
+                something, an invisible rewrite of what somebody wrote under
+                their own name is the wrong default even when the intent is a
+                spelling fix.
+
+                Shown to the OWNER, not to everyone: it is a note between
+                Manhattanite and the member, not a public mark on the listing.
+                No person is named, and no email goes out per typo — the point
+                is that a member can see a change happened. */}
+            {isOwner && listing.corrected_at && (
+              <p
+                className="mt-4 text-[12.5px] leading-[1.55]"
+                style={{ color: "var(--cl-faint)" }}
+              >
+                Corrected by Manhattanite &middot;{" "}
+                {new Date(listing.corrected_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
               </p>
             )}
 

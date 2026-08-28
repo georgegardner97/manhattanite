@@ -28,6 +28,14 @@
 // the steps only toggle visibility, this is a presentation flag and not a second
 // code path: the same inputs post the same FormData either way.
 //
+// AN ADMIN CORRECTING SOMEBODY ELSE'S LISTING REUSES THIS FORM (Slice 3b), via
+// mode="admin", which changes exactly one thing: which action reads the
+// FormData. That is not laziness, it is the whole point. `details` is rebuilt
+// WHOLESALE on save from the fields the form posts, so a reduced admin editor
+// would quietly delete bedrooms, condition, dimensions and brand from any
+// listing an admin touched. Every field is mounted here the whole time, so
+// reusing this form is what makes an admin correction non-destructive.
+//
 // CATEGORIES ARE THE FOUR THAT EXIST. The design offers nine (Apartment, Sublet,
 // Room, Furniture, Bike, Art, Service, Ticket, Job); the listings type enum has
 // four, and this slice makes no schema changes. Same call as the browse rail.
@@ -35,6 +43,7 @@
 import { useActionState, useState } from "react";
 import { createListing, type CreateListingState } from "@/lib/listings/create";
 import { updateListing } from "@/lib/listings/update";
+import { adminUpdateListing } from "@/lib/admin/listings";
 import ClImageUpload from "@/app/components/cl/ClImageUpload";
 import ClRemoveListing from "@/app/components/cl/ClRemoveListing";
 import type { ListingStatus } from "@/lib/cl/listings-read";
@@ -82,21 +91,28 @@ export default function ClPostForm({
   authorName,
   sponsorNames,
   initial,
+  mode = "member",
 }: {
   userId: string;
   authorName: string | null;
   sponsorNames: string[];
   /** Present on the edit route: pre-fills the form and switches the write. */
   initial?: ClPostFormInitial;
+  /**
+   * "admin" routes the save through adminUpdateListing (0028) instead of the
+   * owner-only path, and stands the take-down control down — see below.
+   */
+  mode?: "member" | "admin";
 }) {
   const editing = Boolean(initial);
+  const isAdmin = mode === "admin";
 
   // Same FormData either way, so the only difference is which action reads it.
   // updateListing re-checks session, membership and ownership itself and leans
   // on the RLS update policy as the real gate — picking the action here changes
   // nothing about what the database will allow.
   const [state, formAction, isPending] = useActionState(
-    editing ? updateListing : createListing,
+    isAdmin ? adminUpdateListing : editing ? updateListing : createListing,
     INITIAL
   );
 
@@ -164,16 +180,24 @@ export default function ClPostForm({
           </div>
         )}
 
-        <h2 className="text-[clamp(22px,2.4vw,30px)] font-medium tracking-[-0.02em]">
-          {editing ? "Edit your listing" : STEPS[step].label}
-        </h2>
-        <p className="mt-2.5 text-[13.5px]" style={{ color: "var(--cl-muted)" }}>
-          {editing
-            ? initial!.status === "draft"
-              ? "Make the changes the moderator asked for, then send it back."
-              : "Change anything. It goes back through review before it’s live again."
-            : STEPS[step].note}
-        </p>
+        {/* NOT IN ADMIN MODE. ClAdminShell has already set the heading and said
+            what a correction does; repeating "Edit your listing · it goes back
+            through review" under it would put two contradictory sentences a
+            hundred pixels apart, and the admin one is the true one. */}
+        {!isAdmin && (
+          <>
+            <h2 className="text-[clamp(22px,2.4vw,30px)] font-medium tracking-[-0.02em]">
+              {editing ? "Edit your listing" : STEPS[step].label}
+            </h2>
+            <p className="mt-2.5 text-[13.5px]" style={{ color: "var(--cl-muted)" }}>
+              {editing
+                ? initial!.status === "draft"
+                  ? "Make the changes the moderator asked for, then send it back."
+                  : "Change anything. It goes back through review before it’s live again."
+                : STEPS[step].note}
+            </p>
+          </>
+        )}
 
         {/* ---------- 1 · Details ---------- */}
         <div hidden={!editing && step !== 0} className="mt-7 flex flex-col gap-[18px]">
@@ -420,7 +444,7 @@ export default function ClPostForm({
               disabled={isPending}
               className={isPending ? "cl-pill-disabled" : "cl-pill"}
             >
-              {isPending ? "Saving…" : "Save changes"}
+              {isPending ? "Saving…" : isAdmin ? "Save correction" : "Save changes"}
             </button>
           ) : last ? (
             <button
@@ -463,7 +487,12 @@ export default function ClPostForm({
           what shipped, for a fortnight, while a comment in this spot said it
           must not. A comment is documentation, not enforcement: the guard that
           actually holds this now is scripts/test-edit-archive.ts. */}
-      {editing && initial!.status !== "archived" && (
+      {/* NEVER FOR AN ADMIN. ClRemoveListing posts archiveListing, which is
+          owner-only by design and would answer an admin correcting somebody
+          else's listing with "Only your own listings can be removed." Admin
+          take-down is its own control, with its own required reason, on
+          /admin/listings. */}
+      {editing && !isAdmin && initial!.status !== "archived" && (
         <ClRemoveListing listingId={initial!.id} status={initial!.status} />
       )}
     </>

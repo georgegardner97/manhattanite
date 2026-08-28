@@ -23,12 +23,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { parseListingForm } from "@/lib/listings/form";
 
 export type UpdateListingState = { error: string | null };
-
-const MAX_TITLE = 80;
-const MAX_DESCRIPTION = 2000;
-const MAX_IMAGES = 6;
 
 export async function updateListing(
   _prevState: UpdateListingState,
@@ -77,115 +74,18 @@ export async function updateListing(
     return { error: "Only your own listings can be edited." };
   }
 
-  // ---- Pluck + validate shared fields (mirrors create.ts) ----
-  const type = String(formData.get("type") ?? "").trim();
-  const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const priceRaw = String(formData.get("price") ?? "").trim();
-
-  if (!["apartment", "furniture", "other", "service"].includes(type)) {
-    return { error: "Pick a listing type to get started." };
+  // ---- Parse the form ----
+  // Shared with the admin correction path (lib/listings/form.ts). `details` is
+  // rebuilt WHOLESALE from what the form posts, so a field the parser forgets
+  // is a field this save DELETES — which is exactly how furniture listings lost
+  // their neighborhood. One parser, so there is one place to forget it.
+  //
+  // A member may only reference photos in their own Storage folder.
+  const parsed = parseListingForm(formData, [`${user.id}/`]);
+  if (!parsed.ok) {
+    return { error: parsed.error };
   }
-  if (!title) {
-    return { error: "Give your listing a title." };
-  }
-  if (title.length > MAX_TITLE) {
-    return { error: `Keep the title to ${MAX_TITLE} characters or fewer.` };
-  }
-  if (!description) {
-    return { error: "Add a few lines describing what you're listing." };
-  }
-  if (description.length > MAX_DESCRIPTION) {
-    return {
-      error: `That description is a little long — keep it under ${MAX_DESCRIPTION} characters.`,
-    };
-  }
-
-  // Blank clears the price to NULL, the same way it sets it on create — see
-  // the note in create.ts. Clearing has to work, or a price typed once could
-  // never be taken back off a listing.
-  let price_cents: number | null = null;
-  if (priceRaw) {
-    const priceDollars = Number(priceRaw);
-    if (Number.isNaN(priceDollars) || priceDollars < 0) {
-      return {
-        error:
-          "That price doesn't look right — give a number in dollars, or leave it blank.",
-      };
-    }
-    price_cents = Math.round(priceDollars * 100);
-  }
-
-  // ---- Build the type-specific details (JSONB) ----
-  // Replaces the stored details wholesale, from the submitted type's fields —
-  // so switching apartment ↔ furniture leaves no stale keys behind.
-  const details: Record<string, unknown> = {};
-
-  if (type === "apartment") {
-    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
-    const bedrooms = String(formData.get("bedrooms") ?? "").trim();
-    const bathrooms = String(formData.get("bathrooms") ?? "").trim();
-    const availableFrom = String(formData.get("available_from") ?? "").trim();
-
-    if (neighborhood) details.neighborhood = neighborhood;
-    if (bedrooms && !Number.isNaN(Number(bedrooms))) {
-      details.bedrooms = Number(bedrooms);
-    }
-    if (bathrooms && !Number.isNaN(Number(bathrooms))) {
-      details.bathrooms = Number(bathrooms);
-    }
-    if (availableFrom) details.available_from = availableFrom;
-  } else if (type === "furniture") {
-    const condition = String(formData.get("condition") ?? "").trim();
-    const dimensions = String(formData.get("dimensions") ?? "").trim();
-    const brand = String(formData.get("brand") ?? "").trim();
-    // See the note in create.ts. It matters more on this side: `details` is
-    // rebuilt wholesale below, so a furniture listing that HAD a neighborhood
-    // lost it on any edit — including one that never touched the field.
-    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
-
-    if (condition) details.condition = condition;
-    if (dimensions) details.dimensions = dimensions;
-    if (brand) details.brand = brand;
-    if (neighborhood) details.neighborhood = neighborhood;
-  } else if (type === "other") {
-    const condition = String(formData.get("condition") ?? "").trim();
-    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
-
-    if (condition) details.condition = condition;
-    if (neighborhood) details.neighborhood = neighborhood;
-  } else {
-    // service — area served (reuses the neighborhood field)
-    const neighborhood = String(formData.get("neighborhood") ?? "").trim();
-    if (neighborhood) details.neighborhood = neighborhood;
-  }
-
-  // ---- Images ----
-  // Same contract as create.ts: ImageUpload sends the full, current set of
-  // paths (kept existing ones + new uploads) as a JSON array. Every path must
-  // sit in the editor's own folder. Removed images stay in Storage as orphans
-  // — same known v1 tradeoff as abandoned uploads.
-  const imagePaths: string[] = [];
-  const imagesRaw = String(formData.get("images") ?? "[]");
-  try {
-    const parsed: unknown = JSON.parse(imagesRaw);
-    if (!Array.isArray(parsed)) {
-      return { error: "Photos didn't upload cleanly. Try again." };
-    }
-    if (parsed.length > MAX_IMAGES) {
-      return { error: `Up to ${MAX_IMAGES} photos, please.` };
-    }
-    const prefix = `${user.id}/`;
-    for (const item of parsed) {
-      if (typeof item !== "string" || !item.startsWith(prefix)) {
-        return { error: "Photos didn't upload cleanly. Try again." };
-      }
-      imagePaths.push(item);
-    }
-  } catch {
-    return { error: "Photos didn't upload cleanly. Try again." };
-  }
-  const images = imagePaths.map((path) => ({ path }));
+  const { type, title, description, price_cents, details, images } = parsed.value;
 
   // ---- Update. RLS is the final gate. ----
   // The write set deliberately excludes status, author_id, and the byline

@@ -377,6 +377,49 @@ async function main() {
     });
   }
 
+  // THE ADMIN SURFACE HAD NO GATE ASSERTIONS AT ALL UNTIL SLICE 3B. Every
+  // /admin route is guarded by requireAdmin (no session → /login, signed in but
+  // not an admin → notFound, because a 404 leaks less than a redirect that
+  // confirms there is something here), and RLS guards the tables underneath.
+  // Neither was ever attacked over HTTP as the wrong principal.
+  //
+  // That matters more now than it did with three read-only screens: the console
+  // has two WRITE paths (0028), and /admin/listings puts every listing at every
+  // status on one page — the pending and archived rows a member must never see.
+  // A 404 that still ships the data in the body is not a gate.
+  console.log("\n── ADMIN SURFACE: 404 FOR EVERYONE ELSE ──");
+  const ADMIN_ROUTES = [
+    "/admin",
+    "/admin/listings",
+    `/admin/listings/${published}/edit`,
+    "/admin/moderation",
+    "/admin/applications",
+    "/admin/members",
+  ];
+  for (const route of ADMIN_ROUTES) {
+    // A guest is sent to sign in — there is nothing to hide from someone with
+    // no session, and bouncing them is friendlier than a 404.
+    await check("guest", route, null, { redirect: "/login" });
+    // A member and a Tier-1 account get the not-found shell, and crucially none
+    // of the console's own furniture: no heading, no verbs, no rows.
+    for (const [label, cookie] of [["m", M], ["t1", T]] as const) {
+      await check(label, route, cookie, {
+        status: 404,
+        notContains: "All listings",
+      });
+      await check(label, route, cookie, {
+        status: 404,
+        notContains: "Take down",
+      });
+    }
+  }
+  // The dashboard leaks a different thing — the counts — so it is asserted on
+  // its own heading rather than the directory's.
+  await check("m", "/admin", M, {
+    status: 404,
+    notContains: "The state of the network",
+  });
+
   console.log("\n── MEMBER: THE TAKEDOWN BUTTON IS ITS OWN FORM ──");
   // Published and pending both, because the two render different copy from the
   // same component and only one of them was ever looked at.

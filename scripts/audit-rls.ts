@@ -415,6 +415,101 @@ async function main(): Promise<void> {
       rec("anon", "listings (M1's AFTER approve)", "select", "ALLOW", (data?.length ?? 0) > 0 ? "ALLOW" : "DENY", `${data?.length ?? 0} row(s)`);
     }
 
+    // ============ 0028: THE TWO ADMIN WRITE DOORS ============
+    // A NEW WRITE PATH WITH NO RLS ASSERTION IS AN UNTESTED WRITE PATH. Slice 3b
+    // gave an admin the ability to edit and take down ANY listing, which is the
+    // first time anything but the owner could write to somebody else's row. The
+    // owner-only policy (listings_write_member_own_update) was deliberately NOT
+    // loosened to achieve it — the policy is the wall, the two SECURITY DEFINER
+    // functions are the door — so the thing to prove is that the door is the
+    // only way through and that it is locked to everyone but an admin.
+    console.log("\n── ADMIN WRITE DOORS (0028) ──");
+    {
+      // A member calling the correction function on ANOTHER member's listing.
+      const { error } = await m1c.rpc("admin_update_listing", {
+        p_listing_id: m2listing.id,
+        p_type: "furniture",
+        p_title: "hijacked by a member",
+        p_description: "should never land",
+        p_price_cents: 1,
+        p_details: {},
+        p_images: [],
+      });
+      rec("m1", "admin_update_listing() (M2s listing)", "rpc", "DENY", error ? "DENY" : "ALLOW",
+        error ? `err ${(error as { code?: string }).code ?? ""}: ${error.message}` : "call succeeded!");
+    }
+    {
+      // And on their OWN — being the owner must not buy the admin door either,
+      // or the guard is really an ownership check wearing an admin label.
+      const { error } = await m1c.rpc("admin_archive_listing", {
+        p_listing_id: m1listing.id,
+        p_note: "member calling the admin take-down",
+      });
+      rec("m1", "admin_archive_listing() (own listing)", "rpc", "DENY", error ? "DENY" : "ALLOW",
+        error ? `err ${(error as { code?: string }).code ?? ""}: ${error.message}` : "call succeeded!");
+    }
+    {
+      // Tier 1 is not a member at all — the weakest principal that can hold a
+      // session, and the one most likely to be forgotten in a guard.
+      const { error } = await t1c.rpc("admin_archive_listing", {
+        p_listing_id: m2listing.id,
+        p_note: "tier 1 calling the admin take-down",
+      });
+      rec("t1", "admin_archive_listing()", "rpc", "DENY", error ? "DENY" : "ALLOW",
+        error ? `err ${(error as { code?: string }).code ?? ""}: ${error.message}` : "call succeeded!");
+    }
+    {
+      // The positive control. Every "must be refused" assertion needs one
+      // beside it, or a function that refuses EVERYONE passes the whole set.
+      const { error } = await adc.rpc("admin_update_listing", {
+        p_listing_id: m2listing.id,
+        p_type: "furniture",
+        p_title: "corrected by the audit",
+        p_description: "admin correction, positive control",
+        p_price_cents: 12345,
+        p_details: { condition: "good" },
+        p_images: [],
+      });
+      rec("admin", "admin_update_listing() (M2s listing)", "rpc", "ALLOW", error ? "DENY" : "ALLOW",
+        error ? `err ${(error as { code?: string }).code ?? ""}: ${error.message}` : "ok");
+    }
+    {
+      // A correction must NOT re-pend a live listing, and it must NOT rewrite
+      // the byline. Both are read back out of band through the service role.
+      const { data } = await admin.from("listings")
+        .select("title, status, author_name, corrected_by, corrected_at")
+        .eq("id", m2listing.id)
+        .maybeSingle<{ title: string; status: string; author_name: string | null; corrected_by: string | null; corrected_at: string | null }>();
+      const okTitle = data?.title === "corrected by the audit";
+      const stamped = Boolean(data?.corrected_by) && Boolean(data?.corrected_at);
+      rec("admin", "admin_update_listing: content written + stamped", "verify",
+        "ALLOW", okTitle && stamped ? "ALLOW" : "DENY",
+        `title=${data?.title} corrected_by=${data?.corrected_by ? "set" : "null"} corrected_at=${data?.corrected_at ? "set" : "null"}`);
+      rec("admin", "admin_update_listing: status untouched", "verify",
+        "ALLOW", data?.status === "published" ? "ALLOW" : "DENY",
+        `status=${data?.status} (a correction must not pull a live listing off the site)`);
+    }
+    {
+      const { error } = await adc.rpc("admin_archive_listing", {
+        p_listing_id: m2listing.id,
+        p_note: "taken down by the audit",
+      });
+      const { data } = await admin.from("listings").select("status, moderation_note").eq("id", m2listing.id).maybeSingle<{ status: string; moderation_note: string | null }>();
+      rec("admin", "admin_archive_listing() (M2s listing)", "rpc", "ALLOW",
+        !error && data?.status === "archived" ? "ALLOW" : "DENY",
+        error ? `err ${error.message}` : `status=${data?.status} note=${data?.moderation_note ?? "(none)"}`);
+    }
+    {
+      // The reason is the record, so an empty one is refused in the database
+      // and not only in the form.
+      const { error } = await adc.rpc("admin_archive_listing", {
+        p_listing_id: m1listing.id,
+        p_note: "   ",
+      });
+      rec("admin", "admin_archive_listing() (blank reason)", "rpc", "DENY", error ? "DENY" : "ALLOW",
+        error ? `err ${(error as { code?: string }).code ?? ""}: ${error.message}` : "call succeeded!");
+    }
+
     // ======================= STORAGE =======================
     console.log("\n── STORAGE (listing-images, private bucket) ──");
     const m1path = `${m1.id}/${crypto.randomUUID()}.png`;

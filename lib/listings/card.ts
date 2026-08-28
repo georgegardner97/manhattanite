@@ -1,4 +1,4 @@
-// Shared presentation helpers for ListingCard.
+// Shared presentation helpers for the listing card, and the card's data shape.
 //
 // Design foundation, Slice 1. The landing band ("outside", dark) and the browse
 // feed ("inside", light) render the same card from the same database row, so
@@ -7,7 +7,34 @@
 // This module is display logic only. It reads columns the pages already have
 // permission to select; it does not touch the data layer.
 
-import type { ListingCardData } from "@/app/components/ListingCard";
+/**
+ * One listing, as a card renders it.
+ *
+ * THIS TYPE MOVED HERE IN SLICE 3B, and the move is the point. It used to be
+ * exported by app/components/ListingCard.tsx, so this module — which the whole
+ * Classifieds system depends on — imported a type from a component in the
+ * RETIRING editorial system. Deleting that component would have broken browse,
+ * the listing page, member profiles, the filter rail and the archived row.
+ *
+ * A data shape belongs with the data. A component may render it; it does not
+ * get to own it.
+ */
+export type ListingCardData = {
+  id: string;
+  title: string;
+  description: string | null;
+  /** The kicker: an apartment's neighborhood, or the category. See placeOf. */
+  place: string;
+  /** Formatted price, e.g. "$3,400/mo" — null when the listing has no price. */
+  price: string | null;
+  /** Formatted posted date, e.g. "July 14". */
+  postedAt: string;
+  /** Signed cover-image URL, or null when the listing has no images. */
+  coverUrl: string | null;
+  isExample: boolean;
+  /** "Listed by X · sponsored by Y" — omitted where the surface doesn't show it. */
+  byline?: string | null;
+};
 
 export type ListingType = "apartment" | "furniture" | "other" | "service";
 
