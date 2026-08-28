@@ -34,7 +34,6 @@ import {
   neighborhoodOf,
   placeOf,
   type ListingRow,
-  type ListingType,
 } from "@/lib/listings/card";
 import { relativeDay } from "@/lib/cl/filters";
 import type { ClCard } from "@/app/components/cl/ClListingCard";
@@ -299,29 +298,10 @@ export async function readOwnListings(): Promise<OwnRow[]> {
   return data ?? [];
 }
 
-/**
- * Per-type counts across every row the viewer may see, so the rail's numbers
- * stay put as the neighborhood and price filters move.
- *
- * Guests get `null` rather than numbers: with only the six teaser rows in hand,
- * "Apartments 2" would be a number about the teaser presented as a number about
- * the network.
- */
-export function countByType(
-  { rows, isGuest }: GatedListings
-): Record<ListingType, number> | null {
-  if (isGuest) return null;
-  return rows.reduce(
-    (acc, row) => {
-      acc[row.type] = (acc[row.type] ?? 0) + 1;
-      return acc;
-    },
-    { apartment: 0, furniture: 0, service: 0, other: 0 } as Record<
-      ListingType,
-      number
-    >
-  );
-}
+// countByType() lived here until 2026-08-28. It fed the per-category numbers in
+// FilterRail, and it went when they did — see the counts note in filters.ts.
+// It had one caller, so it is deleted rather than left as a public export
+// nothing reaches.
 
 /**
  * The neighborhoods actually present, so a rail can never offer a dead filter.

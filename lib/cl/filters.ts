@@ -4,9 +4,9 @@
 // it retired into Browse: it was the same read (same parseQuery, same
 // buildHref, same gated rows, same filters) differing only in presentation,
 // and nothing in the product ever linked to it. One screen, one URL shape —
-// ?q=&type=&hood=&min=&max=.
+// ?q=&type=&hood=.
 //
-// The filters are URL-driven (?type=&hood=&min=&max=), the same way the
+// The filters are URL-driven (?type=&hood=), the same way the
 // live /listings page drives its category filter. The design's canvas prototype
 // held this in client state because a canvas has nowhere else to put it; a real
 // browse screen wants shareable, back-button-able URLs, and the rail then works
@@ -17,44 +17,65 @@
 //   Categories. The design's rail lists nine (Apartments, Sublets, Rooms,
 //   Furniture, Bikes, Art, Services, Tickets, Jobs). The listings type enum has
 //   four (apartment, furniture, service, other) and this slice makes no schema
-//   changes, so the rail renders the four that exist with true counts. Nine
-//   categories with seven permanent zeroes would misrepresent the network — and
-//   advertising a narrow launch is exactly the thing the founder ruled out on
-//   2026-07-17 ("no category tiles anywhere for now, just listings").
+//   changes, so the rail renders the four that exist. Nine categories with
+//   seven permanent zeroes would misrepresent the network — and advertising a
+//   narrow launch is exactly the thing the founder ruled out on 2026-07-17
+//   ("no category tiles anywhere for now, just listings").
+//
+//   THE PER-CATEGORY COUNTS ARE GONE (George, 2026-08-28). The rail used to
+//   carry a live number beside every category. Two of them were permanently
+//   0 — Services and Everything else have never had a listing — so the first
+//   thing the rail said about the network was how empty it is. A count is also
+//   a measurement, and measuring a private network by volume invites the wrong
+//   comparison: this is not a site that wins by having the most of anything.
+//   The result line above the grid still counts what you are looking at, which
+//   answers a real question ("did my filter do anything?") without ranking
+//   anything. `countByType` went with the numbers rather than being left to
+//   rot in listings-read.ts.
 //
 //   Neighborhoods. Not a column — they live in the `details` JSON, written by
 //   the post form. The rail derives the list from the listings actually on
 //   screen, so it can never offer a filter that returns nothing.
 //
-//   Sort. THERE IS NO SORT CONTROL, and this is a product decision, not a gap
-//   (George, 2026-08-27). The design offers Newest · Price · Closest.
-//   "Closest" never had a viewer location or listing coordinates to work from.
-//   "Price" was removed on purpose: ranking the network cheapest-first is the
-//   Craigslist frame, and the opposite of what this product is for. The min/max
-//   boxes in the rail already answer the real question — a filter says "within
-//   what I can spend", a sort says "rank these people by how cheap they are",
-//   and only the first of those is a budget tool. That left "Newest" alone, and
-//   a control with one option is dead UI, so the row went with it. The feed is
-//   newest-first as a property of the page.
+//   PRICE IS NOT A WAY TO ORGANIZE THIS NETWORK — no sort, and now no filter
+//   either. Both were removed on purpose, a day apart, for one reason.
 //
-//   A stale ?sort= in someone's open tab is IGNORED, not an error — parseQuery
-//   simply never reads it.
+//   The sort went first (George, 2026-08-27). The design offered Newest · Price
+//   · Closest; "Closest" never had a viewer location or listing coordinates to
+//   work from, and "Price" ranks the network cheapest-first, which is the
+//   Craigslist frame and the opposite of what this product is for. That left
+//   "Newest" alone, and a control with one option is dead UI, so the row went
+//   with it. The feed is newest-first as a property of the page.
 //
-//   Removing the Price sort also removed the only reason unpriced listings
-//   needed a documented sort position (they used to be forced LAST, because a
-//   listing with no price is neither free nor expensive). That rule is gone
-//   because the thing it governed is gone — it was not lost by accident, and it
-//   should not come back on its own. Blank prices still render as no price line
-//   and are still EXCLUDED by a min/max filter; neither of those changed.
+//   THE MIN/MAX BOXES FOLLOWED (George, 2026-08-28), and that SUPERSEDES the
+//   argument written here on the 27th. The case for keeping them was that a
+//   filter says "within what I can spend" while a sort says "rank these people
+//   by how cheap they are", and only the first is a budget tool. The founder's
+//   call is that the distinction is too fine to be worth the furniture: a price
+//   box on the rail still makes price the axis you are invited to shop on,
+//   which is the frame both removals exist to avoid. There is now NO
+//   price-based narrowing anywhere in browse. Prices are still on every card
+//   and on the listing page — this is about how the network is SORTED and
+//   SIFTED, not about hiding what things cost.
+//
+//   A stale ?sort=, ?min= or ?max= in someone's open tab is IGNORED, not an
+//   error — parseQuery simply never reads them, so an old bookmark degrades to
+//   the unfiltered feed rather than breaking.
+//
+//   TWO RULES DIED WITH THE CONTROLS THEY GOVERNED, and neither should come
+//   back on its own. Unpriced listings once had a documented sort position
+//   (forced LAST, being neither free nor expensive) — that existed only because
+//   price sorting did. Unpriced listings were also EXCLUDED by a min/max filter,
+//   because a missing number cannot satisfy a bound — that existed only because
+//   the filter did. What has NOT changed: a blank price renders as no price
+//   line at all, and 0 is a real asking price, so nothing may branch on
+//   falsiness.
 
 import type { ListingType } from "@/lib/listings/card";
 
 export type ClQuery = {
   type: ListingType | null;
   hood: string | null;
-  /** Dollars, not cents — this is what a person types into the box. */
-  min: number | null;
-  max: number | null;
   /**
    * The typed search term. It lives in the same shape as every other facet
    * because search IS browse with a term added (2026-08-27) — same parse, same
@@ -84,15 +105,6 @@ function firstValue(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
 
-// A price box accepts what people actually type — "6,800", "$6800", " 6800 ".
-// Anything that isn't a non-negative finite number becomes null, i.e. no bound,
-// so a typo widens the results rather than emptying them.
-function parseMoney(raw: string | undefined): number | null {
-  if (!raw) return null;
-  const n = Number(raw.replace(/[$,\s]/g, ""));
-  return Number.isFinite(n) && n >= 0 ? n : null;
-}
-
 export function parseQuery(
   sp: Record<string, string | string[] | undefined>
 ): ClQuery {
@@ -102,16 +114,14 @@ export function parseQuery(
   // label and the chip row, and a 20KB query string should not become a 20KB
   // heading. 80 characters is longer than any real search on this network.
   const rawText = firstValue(sp.q)?.trim().slice(0, 80);
-  const min = parseMoney(firstValue(sp.min));
-  const max = parseMoney(firstValue(sp.max));
 
+  // sp.min, sp.max and sp.sort are deliberately not read. See the price note in
+  // the header: an old bookmark carrying them degrades to the unfiltered feed
+  // rather than erroring, which is the same treatment ?sort= has had since the
+  // 27th.
   return {
     type: rawType && VALID_TYPES.has(rawType) ? (rawType as ListingType) : null,
     hood: rawHood ? rawHood : null,
-    // An inverted range is a slip, not an intent. Swapping beats returning
-    // nothing and leaving the visitor to work out which box was wrong.
-    min: min !== null && max !== null ? Math.min(min, max) : min,
-    max: min !== null && max !== null ? Math.max(min, max) : max,
     text: rawText ? rawText : null,
   };
 }
@@ -161,19 +171,13 @@ export function buildHref(
   // Not written when the resulting category cannot be filtered by
   // neighborhood — see hoodApplies. This is the drop, not FilterRail's.
   if (next.hood && hoodApplies(next)) params.set("hood", next.hood);
-  if (next.min !== null) params.set("min", String(next.min));
-  if (next.max !== null) params.set("max", String(next.max));
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
 
 export function isFiltered(q: ClQuery): boolean {
   return (
-    q.type !== null ||
-    (q.hood !== null && hoodApplies(q)) ||
-    q.min !== null ||
-    q.max !== null ||
-    q.text !== null
+    q.type !== null || (q.hood !== null && hoodApplies(q)) || q.text !== null
   );
 }
 
@@ -220,10 +224,6 @@ export function resultLabel(q: ClQuery, count: number): string {
 
 export type ClChip = { key: string; label: string; clear: Partial<ClQuery> };
 
-function money(dollars: number): string {
-  return `$${dollars.toLocaleString("en-US")}`;
-}
-
 /**
  * One chip per facet in play, each carrying the patch that removes it.
  *
@@ -254,18 +254,8 @@ export function activeChips(q: ClQuery): ClChip[] {
     chips.push({ key: "hood", label: q.hood, clear: { hood: null } });
   }
 
-  // One chip for the range, not two — "From $2,000" and "Under $7,000" side by
-  // side reads as two filters when it is one, and removing half of a range
-  // someone set on purpose is rarely what they meant.
-  if (q.min !== null || q.max !== null) {
-    const label =
-      q.min !== null && q.max !== null
-        ? `${money(q.min)}–${money(q.max)}`
-        : q.max !== null
-          ? `Under ${money(q.max)}`
-          : `From ${money(q.min as number)}`;
-    chips.push({ key: "price", label, clear: { min: null, max: null } });
-  }
+  // There was a price chip here until 2026-08-28, carrying the min/max range.
+  // It went with the boxes that set it — see the price note in the header.
 
   return chips;
 }

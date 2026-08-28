@@ -1,16 +1,32 @@
 // FilterRail — the left column of screen 02.
 //
-// Three groups, in the design's order: Category (with counts), Neighborhood,
-// Price. Every control is a link or a GET form, so the rail works with
-// JavaScript off and every filtered view has its own URL.
+// TWO GROUPS NOW: Category, and Neighborhood when it applies. Every control is
+// a link, so the rail works with JavaScript off and every filtered view has its
+// own URL.
+//
+// WHAT WAS HERE AND IS NOT (George, 2026-08-28), because a rail that loses two
+// of its four elements looks like something broke:
+//
+//   THE PER-CATEGORY COUNTS. Every category carried a live number. Two of them
+//   were permanently 0 — nothing has ever been listed under Services or
+//   Everything else — so the rail opened by telling you how empty the network
+//   is. The result line above the grid still counts the current view, which is
+//   the question worth answering.
+//
+//   THE PRICE BOXES. Min/max and "Apply price" are gone, one day after the
+//   price SORT went, and for the same reason: price is not the axis this
+//   network is organized on. Full reasoning in the header of filters.ts, which
+//   is also where the superseded 27 Aug argument for keeping them is recorded.
+//
+// Neither removal touches what a listing SHOWS. Prices are still on every card.
 //
 // MOBILE IS AN ADDITION, NOT A PORT. The design file specifies one layout: a
 // 220px rail beside the grid. Stacked on a phone that rail is ~400px of
 // chrome before the first listing, which is the exact problem the live browse
 // page already solved once (mobile pass, 2026-07-21 — the vertical rail falls
 // back to a horizontal row). The same answer is taken here: below 860px the
-// categories become a horizontally scrolling chip row, and neighborhood and
-// price fold into a disclosure that starts closed. Desktop is the design.
+// categories become a horizontally scrolling chip row, and neighborhood folds
+// into a disclosure that starts closed. Desktop is the design.
 
 import Link from "next/link";
 import {
@@ -19,13 +35,9 @@ import {
   hoodApplies,
   type ClQuery,
 } from "@/lib/cl/filters";
-import type { ListingType } from "@/lib/listings/card";
 
 export type RailProps = {
   q: ClQuery;
-  /** Live counts per type, keyed by enum value; `null` means don't show any. */
-  counts: Record<ListingType, number> | null;
-  total: number;
   /** Neighborhoods present in the current result set, already sorted. */
   hoods: string[];
 };
@@ -51,10 +63,6 @@ export default function FilterRail(props: RailProps) {
             <HoodRows {...props} />
           </Group>
         )}
-
-        <Group label="Price">
-          <PriceForm q={props.q} />
-        </Group>
       </aside>
 
       {/* ---------- Mobile: chips + a disclosure ---------- */}
@@ -62,7 +70,6 @@ export default function FilterRail(props: RailProps) {
         <div className="mh-no-scrollbar flex gap-2 overflow-x-auto whitespace-nowrap pb-1">
           {CATEGORIES.map((c) => {
             const on = c.value === props.q.type;
-            const count = countFor(props, c.value);
             return (
               <Link
                 key={c.label}
@@ -71,43 +78,38 @@ export default function FilterRail(props: RailProps) {
                 className={`cl-chip shrink-0${on ? " cl-chip-on" : ""}`}
               >
                 {c.label}
-                {count !== null && (
-                  <span
-                    className="ml-1.5 tabular-nums"
-                    style={{ opacity: 0.6 }}
-                  >
-                    {count}
-                  </span>
-                )}
               </Link>
             );
           })}
         </div>
 
-        <details className="mt-3.5">
-          {/* A <summary> with its marker removed reads as static text, so the
-              caret is restored explicitly and rotates on open — otherwise the
-              only two filters a phone has are invisible. */}
-          <summary
-            className="cl-summary flex cursor-pointer list-none items-center gap-1.5 text-[13px]"
-            style={{ color: "var(--cl-muted)" }}
-          >
-            {showHoods ? "Neighborhood and price" : "Price"}
-            <span className="cl-caret" aria-hidden="true">
-              ▾
-            </span>
-          </summary>
-          <div className="mt-3.5 flex flex-col gap-[22px]">
-            {showHoods && (
+        {/* THE DISCLOSURE IS RENDERED ONLY WHEN IT HAS SOMETHING IN IT. It used
+            to hold neighborhood and price, so it always had at least the price
+            boxes and could be rendered unconditionally. With price gone its
+            only content is neighborhood, which appears for apartments alone —
+            rendering it regardless would put a "Neighborhood ▾" toggle on every
+            other category that opens onto nothing. */}
+        {showHoods && (
+          <details className="mt-3.5">
+            {/* A <summary> with its marker removed reads as static text, so the
+                caret is restored explicitly and rotates on open — otherwise the
+                only filter a phone has is invisible. */}
+            <summary
+              className="cl-summary flex cursor-pointer list-none items-center gap-1.5 text-[13px]"
+              style={{ color: "var(--cl-muted)" }}
+            >
+              Neighborhood
+              <span className="cl-caret" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            <div className="mt-3.5">
               <Group label="Neighborhood">
                 <HoodRows {...props} />
               </Group>
-            )}
-            <Group label="Price">
-              <PriceForm q={props.q} />
-            </Group>
-          </div>
-        </details>
+            </div>
+          </details>
+        )}
       </div>
     </>
   );
@@ -122,20 +124,11 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function countFor(
-  { counts, total }: Pick<RailProps, "counts" | "total">,
-  value: ListingType | null
-): number | null {
-  if (!counts) return null;
-  return value === null ? total : counts[value];
-}
-
 function CategoryRows(props: RailProps) {
   return (
     <>
       {CATEGORIES.map((c) => {
         const on = c.value === props.q.type;
-        const count = countFor(props, c.value);
         return (
           <Link
             key={c.label}
@@ -144,7 +137,6 @@ function CategoryRows(props: RailProps) {
             className={`cl-rail-row${on ? " cl-rail-row-on" : ""}`}
           >
             <span className="min-w-0 truncate">{c.label}</span>
-            {count !== null && <span className="cl-rail-count">{count}</span>}
           </Link>
         );
       })}
@@ -176,53 +168,5 @@ function HoodRows({ q, hoods }: RailProps) {
         );
       })}
     </>
-  );
-}
-
-// A plain GET form. The hidden fields carry the facets the visitor did NOT
-// touch — without them, submitting a price would silently clear the category,
-// neighborhood and (since search moved onto Browse) the term they typed.
-function PriceForm({ q }: { q: ClQuery }) {
-  return (
-    <form action="/listings" method="get">
-      {q.text && <input type="hidden" name="q" value={q.text} />}
-      {q.type && <input type="hidden" name="type" value={q.type} />}
-      {/* Only while it applies, for the same reason buildHref refuses to
-          write it — otherwise applying a price would resurrect a dead ?hood=. */}
-      {q.hood && hoodApplies(q) && (
-        <input type="hidden" name="hood" value={q.hood} />
-      )}
-
-      <div className="flex gap-2">
-        {/* inputMode=numeric brings up the number pad without rejecting the
-            "$6,800" a person may paste in — parseMoney strips the formatting. */}
-        <input
-          className="cl-input w-1/2 text-[13px]"
-          style={{ padding: "9px 10px" }}
-          type="text"
-          inputMode="numeric"
-          name="min"
-          defaultValue={q.min ?? ""}
-          placeholder="Min"
-          aria-label="Minimum price"
-        />
-        <input
-          className="cl-input w-1/2 text-[13px]"
-          style={{ padding: "9px 10px" }}
-          type="text"
-          inputMode="numeric"
-          name="max"
-          defaultValue={q.max ?? ""}
-          placeholder="Max"
-          aria-label="Maximum price"
-        />
-      </div>
-
-      {/* Submit is needed for keyboard and no-JS use; it stays quiet because
-          the rail's other controls apply on click. */}
-      <button type="submit" className="cl-quiet mt-2.5 text-[12.5px]">
-        Apply price
-      </button>
-    </form>
   );
 }

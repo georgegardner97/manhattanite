@@ -6,6 +6,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-28 · The rail loses its counts and its price boxes (Claude Code)
+
+**George, from the live site: he does not want the per-category listing counts in the browse sidebar, and does not want the price range inputs — "same reason" as dropping the price sort the day before.** Both removed, built, verified.
+
+**THE COUNTS.** Every category in the rail carried a live number. Two of the five were permanently `0` — nothing has ever been listed under Services or Everything else — so **the first thing the rail said about the network was how empty it is**. A count is also a measurement, and measuring a private network by volume invites exactly the comparison this product does not want to be in. **The result line above the grid stays** ("3 listings in furniture"), because "did my filter do anything?" is a real question and does not rank anything.
+
+**THE PRICE BOXES.** Min/max and "Apply price" are gone. This **supersedes the argument written into the code on the 27th**, which was that a filter ("within what I can spend") is a budget tool where a sort ("rank these people by how cheap they are") is not — that distinction was the stated reason the min/max boxes survived when the sort went. George's call is that the distinction is too fine to be worth the furniture: a price box on the rail still makes price the axis you are invited to shop on. **There is now no price-based narrowing anywhere in browse.** Both the old reasoning and the reversal are recorded in `lib/cl/filters.ts` rather than quietly overwritten, because the next person to look will otherwise reinstate the boxes on the 27th's logic.
+
+**This does NOT hide what things cost.** Prices still render on every card and on the listing page. The change is to how the network is sorted and sifted.
+
+**What was removed, so nothing rots:** `min`/`max` out of `ClQuery`, `parseQuery`, `buildHref`, `isFiltered`, `activeChips` (the range chip), the browse row filter and both forms' hidden fields; `parseMoney` and `money` with them. **`countByType` was DELETED from `lib/cl/listings-read.ts`** — it had exactly one caller and leaving it would have left a public export nothing reaches. `.cl-rail-count` went from `classifieds.css`.
+
+**TWO RULES DIED WITH THE CONTROLS THAT NEEDED THEM,** and both are flagged in CLAUDE.md note 14 so they do not creep back: unpriced listings had a documented sort position (last), which existed only because price sorting did; and a price filter EXCLUDED unpriced listings, because a missing number cannot satisfy a bound — that existed only because the filter did. **Unchanged and still load-bearing: blank renders as no price line at all, and `0` is a real asking price, so nothing branches on falsiness.**
+
+**A BUG THE CHANGE WOULD HAVE INTRODUCED, CAUGHT BEFORE IT SHIPPED.** The mobile disclosure held neighborhood *and* price, so it always had content and was rendered unconditionally. With price gone its only content is neighborhood — which applies to apartments alone — so on every other category it would have rendered a **"Neighborhood ▾" toggle that opens onto nothing**. It is now conditional on `showHoods`. Verified both ways on a phone: furniture has no disclosure at all, apartments has one, closed by default.
+
+**A stale `?min=`/`?max=` is IGNORED, not an error and not a silent filter** — the same treatment `?sort=` has had since the 27th. Checked rather than assumed: as a member, `/listings?min=1000&max=2000` returns the full 21, identical to the unfiltered feed, and `?type=furniture&min=5&max=9` returns all 8 furniture rows.
+
+**Verified as a real member, not only as a guest** — the counts only ever rendered to members, so a guest check would have proved nothing. Minted a member session through the audit fixtures and read the real HTML: no counts, no price form, Neighborhood present for apartments only and correctly listing the eight neighborhoods in the data, result line intact per category. Fixtures torn down clean.
+
+**Results.** `npm run build` exit 0, `tsc` clean, **lint unchanged at the 4-error baseline**, **`audit:gates` 0 failures**.
+
+---
+
 ## 2026-08-28 · Landing v4 verified, the signed-in door closed, shipped (Claude Code)
 
 **Landing v4 is built, verified and pushed.** Picking up Cowork's uncommitted rewrite of `app/(cl)/page.tsx`: the one thing it could not do — `next build` — passes clean, and the one decision it left open is closed.

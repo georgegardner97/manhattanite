@@ -26,7 +26,6 @@ import ClListingCard, {
 } from "@/app/components/cl/ClListingCard";
 import FilterRail from "@/app/components/cl/FilterRail";
 import {
-  countByType,
   neighborhoodsIn,
   readPermittedListings,
   toClCards,
@@ -55,7 +54,6 @@ export default async function ClassifiedsBrowsePage({
   const gated = await readPermittedListings();
   const { rows: all, isGuest } = gated;
 
-  const counts = countByType(gated);
   // Apartment rows only. The neighborhood filter applies to apartments (see
   // hoodApplies), so a list built from every row would offer a neighborhood
   // that only a sofa is in — a filter that returns nothing once it is applied.
@@ -71,13 +69,10 @@ export default async function ClassifiedsBrowsePage({
       return false;
     if (q.type && row.type !== q.type) return false;
     if (q.hood && hoodApplies(q) && neighborhoodOf(row) !== q.hood) return false;
-    // The boxes are in dollars; the column is in cents. A listing with NO
-    // price cannot satisfy a bound, so a price filter excludes it rather than
-    // treating a missing number as zero.
-    if (q.min !== null && (row.price_cents === null || row.price_cents < q.min * 100))
-      return false;
-    if (q.max !== null && (row.price_cents === null || row.price_cents > q.max * 100))
-      return false;
+    // No price predicate. The min/max boxes were removed on 2026-08-28 and
+    // price_cents is not read here any more — including the rule that a listing
+    // with NO price could not satisfy a bound, which existed only to serve
+    // them. See the price note in filters.ts before adding either back.
     return true;
   });
 
@@ -96,7 +91,7 @@ export default async function ClassifiedsBrowsePage({
       <AppHeader active="browse" width="wide" />
 
       <main className="mx-auto grid w-full max-w-[1400px] grid-cols-[220px_1fr] items-start gap-[clamp(24px,3vw,44px)] px-[clamp(16px,2.4vw,28px)] pt-[22px] pb-[clamp(32px,4vw,56px)] max-[860px]:grid-cols-1 max-[860px]:gap-5">
-        <FilterRail q={q} counts={counts} total={all.length} hoods={hoods} />
+        <FilterRail q={q} hoods={hoods} />
 
         {/* min-w-0: a grid track defaults to min-width:auto, so the nowrap
             prices and the mobile chip row would otherwise refuse to shrink and
@@ -105,9 +100,9 @@ export default async function ClassifiedsBrowsePage({
           {/* A plain GET form, so a search has its own URL, works with the
               back button, and needs no JavaScript. The hidden fields carry the
               facets the visitor did not touch — searching must not silently
-              clear the category, neighborhood or price they already picked.
-              `hood` only rides along while it applies, for the same reason
-              buildHref refuses to write it. */}
+              clear the category or neighborhood they already picked. `hood`
+              only rides along while it applies, for the same reason buildHref
+              refuses to write it. There are no price fields to carry now. */}
           <form
             action={BROWSE_PATH}
             method="get"
@@ -117,8 +112,6 @@ export default async function ClassifiedsBrowsePage({
             {q.hood && hoodApplies(q) && (
               <input type="hidden" name="hood" value={q.hood} />
             )}
-            {q.min !== null && <input type="hidden" name="min" value={q.min} />}
-            {q.max !== null && <input type="hidden" name="max" value={q.max} />}
 
             <label htmlFor="cl-search" className="sr-only">
               Search listings

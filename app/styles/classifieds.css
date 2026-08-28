@@ -368,11 +368,6 @@ body:has(.cl-root) {
   font-weight: 500;
 }
 
-.cl-rail-count {
-  color: var(--cl-disabled);
-  font-variant-numeric: tabular-nums;
-}
-
 @media (hover: hover) {
   .cl-rail-row:hover {
     background: var(--cl-fill-active);
