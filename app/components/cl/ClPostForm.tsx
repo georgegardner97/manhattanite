@@ -71,7 +71,11 @@ const TYPES = [
 ] as const;
 
 const STEPS = [
-  { label: "Details", note: "Category, title, price, neighborhood." },
+  // "where it is" rather than "neighborhood": the field is labelled
+  // Neighborhood for three categories and Location for a service (2026-08-28),
+  // so naming either one makes this line wrong on the other. This step summary
+  // is static across categories and not worth branching for one word.
+  { label: "Details", note: "Category, title, price, where it is." },
   { label: "Photos", note: "Photos of the actual item or place." },
   { label: "Review", note: "Read by a person before it goes live." },
 ];
@@ -263,8 +267,30 @@ export default function ClPostForm({
               />
             </div>
             <div>
+              {/* SERVICE SAYS "LOCATION", NOT "AREA SERVED" (George,
+                  2026-08-28). "Area served" asks a plumber to describe a
+                  coverage radius; most people offering something through this
+                  network are answering the simpler question of where they are.
+                  Marked optional for the same reason — a service may not have
+                  one meaningful location, and the field has never been
+                  `required`, so the label was under-reporting what the form
+                  already allowed.
+
+                  THE INPUT IS STILL name="neighborhood" AND MUST STAY THAT WAY.
+                  It is the key the parser reads (lib/listings/form.ts reads
+                  `neighborhood` for all four types) and the key neighborhoodOf()
+                  reads back out of `details` for search and the card kicker.
+                  Renaming the input would silently drop the value on every
+                  save, because `details` is rebuilt wholesale. This is a LABEL
+                  change and nothing else. */}
               <label htmlFor="cl-hood" className="cl-fieldlabel">
-                {type === "service" ? "Area served" : "Neighborhood"}
+                {type === "service" ? "Location" : "Neighborhood"}
+                {type === "service" && (
+                  <>
+                    {" "}
+                    <span style={{ color: "var(--cl-faint)" }}>optional</span>
+                  </>
+                )}
               </label>
               <input
                 id="cl-hood"
@@ -372,6 +398,24 @@ export default function ClPostForm({
             <label htmlFor="cl-desc" className="cl-fieldlabel">
               Details
             </label>
+            {/* ASK FOR MORE, AND SAY WHY (George, 2026-08-28). The placeholder
+                already lists what to include; this is the nudge to keep going.
+                It gives the reason rather than the instruction — "as much
+                detail as possible" is an order, and a member deciding how much
+                to write responds better to what it buys them.
+
+                NOT IN ADMIN MODE. An admin on this form is CORRECTING somebody
+                else's listing, not expanding it (CLAUDE.md note 11), so telling
+                them to say more contradicts the scope the shell above has just
+                set — the same reason the member-facing heading is suppressed. */}
+            {!isAdmin && (
+              <p
+                className="-mt-1 mb-2 text-[12.5px]"
+                style={{ color: "var(--cl-faint)" }}
+              >
+                Say more rather than less — it saves a round of questions later.
+              </p>
+            )}
             <textarea
               id="cl-desc"
               name="description"

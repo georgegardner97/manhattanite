@@ -6,6 +6,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-28 · Post form: "Location" for services, and a nudge to write more (Claude Code)
+
+**Two copy changes George asked for on the live post form.**
+
+**A SERVICE ASKS FOR "LOCATION", NOT "AREA SERVED", and says it is optional.** "Area served" asks a plumber to describe a coverage radius; most people offering something through this network are answering the simpler question of where they are. The field has never carried `required` — so the old label was under-reporting what the form already allowed, and it now says `optional` in the same faint style the Price field uses.
+
+**THE INPUT IS STILL `name="neighborhood"`, AND THAT IS THE WHOLE SAFETY OF THIS CHANGE.** It is the key `lib/listings/form.ts` reads for all four categories and the key `neighborhoodOf()` reads back out of `details` for search and the card kicker. Renaming the input to match the new label would have silently dropped the value on every save, because `details` is rebuilt WHOLESALE — the exact shape of the 27 Aug bug that wiped neighborhoods off furniture listings. **This is a label change and nothing else.**
+
+**Proved rather than assumed**, per the standing lesson that a form control which renders is not a form control the server reads: drove `parseListingForm` directly across four cases. Service with a location stores `{"neighborhood":"West Village"}`; service with the box blank, and service with the field absent entirely, both parse OK to `{}` with no error — so "it can be left blank" is true at the parser, not just in the markup. Apartment is unchanged.
+
+**A NUDGE ON THE DETAILS BOX.** New faint line between the label and the textarea: *"Say more rather than less — it saves a round of questions later."* It gives the REASON rather than the instruction — "as much detail as possible" is an order, and a member deciding how much to write responds better to what it buys them. The placeholder ("Condition, timing, anything a buyer should know.") is kept: it says what to include, the new line says how much.
+
+**NOT SHOWN IN ADMIN MODE.** An admin on this form is CORRECTING somebody else's listing, not expanding it (CLAUDE.md note 11), so telling them to say more would contradict the scope `ClAdminShell` has just set — the same reason the member-facing heading is already suppressed there.
+
+**One knock-on fixed rather than left wrong.** The step summary read "Category, title, price, neighborhood." — which, after the rename, named a field that does not exist on a service listing. It is now "Category, title, price, where it is.", true for all four categories, and cheaper than branching a static string per category.
+
+**Verified by driving the real form as a real member** (minted fixture session, clicked the Service chip with a trusted click rather than a scripted one — a synthetic `.click()` does not move React's controlled state, which cost a false negative first time round). Label reads "Location optional", the apartment-only fields hide correctly, and the details hint renders on both desktop and mobile.
+
+**Results.** `npm run build` exit 0, `tsc` clean, **lint unchanged at the 4-error baseline**, **`audit:gates` 0 failures**. Fixtures torn down; 0 synthetic users left, seed members intact.
+
+---
+
 ## 2026-08-28 · The rail loses its counts and its price boxes (Claude Code)
 
 **George, from the live site: he does not want the per-category listing counts in the browse sidebar, and does not want the price range inputs — "same reason" as dropping the price sort the day before.** Both removed, built, verified.
