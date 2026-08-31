@@ -90,3 +90,13 @@ Calendar = real time commitments only (morning routine, AA, the 90-min Manhattan
 Category: Working style / build cadence
 
 George wants a deliberate pause to walk through and explore the live site once it's worth seeing. AGREED CHECKPOINT: the end of /apply Slice C (the apply→approve→welcome-email loop complete), because that's the first time the full trust mechanic works end to end — visit → account → browse → apply → approved → post (the spec's v1 success path). When Slice C ships, PROACTIVELY tell George it's time, and run a guided walkthrough / help him test everything out (don't wait for him to ask). Caveat to mention then: landing page (Phase 1.5 redesign pending) and thin content (2 listings, no real photos, placeholder sponsor) will still look unfinished — the "looks real" checkpoint is after seed listings + photos load. Offer both checkpoints.
+
+### 2026-08-31 — A generated prompt goes in the chat IN FULL, always
+Category: Working style / Deliverables
+
+When the deliverable is a prompt — a Claude Code handoff, a prompt for another tool, anything George will copy and paste somewhere — paste the whole thing in the chat as well as saving it to the project's outputs folder. A file path on its own is not delivery: it sends him off to open a file, find it and copy it out, when the point of the thing is to paste it immediately. He stated this on 2026-08-27 and had to repeat it on 2026-08-31, with "I don't want to have to tell you again." Same rule for any short artefact whose purpose is to be pasted elsewhere — an email draft, a message to send, a snippet. Reports and documents are different: a pointer to the file is fine for those.
+
+### 2026-08-31 — AA SOS removed from the calendar
+Category: Time / Habit
+
+George asked for the recurring "AA — SOS" series (Mon/Tue/Wed 07:30) to be deleted outright, past and future. Done. The weekday template rule in the Life preferences file still says "AA meeting 7:30–8:30 AM" as a standing anchor; until George says otherwise, briefings should stop auto-inserting a 07:30 AA slot on Mon/Tue/Wed and only schedule AA where a real calendar event exists. Saturday Beginners 10:30 is unaffected.

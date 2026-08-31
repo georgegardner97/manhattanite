@@ -80,7 +80,8 @@ What we don't take:
 
 - **Manhattanite** — always capital M, never all-caps, never lowercase
 - **Founding Member** — capitalized when referring to the cohort title
-- **Member, sponsor, listing** — lowercase unless starting a sentence
+- **Member, voucher, listing** — lowercase unless starting a sentence
+- **Vouch, not sponsor** (George, 2026-08-31). "Sponsor" carries financial and recovery meanings that pull against a trust product, and half the product already said vouch. The member-facing words are **vouch for**, **vouched for by**, **vouching** — never *sponsor*, *sponsored*, *sponsorship*. The database columns and code still say sponsor; that is deliberate and invisible to members. Prefer "the member who vouched for you" over any noun for the person: *voucher* reads like a coupon.
 - **The Network** — capitalized in marketing copy for weight ("Welcome to The Network"); lowercase in body text
 
 ## Spelling and language
@@ -121,13 +122,13 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 
 > Hi [first name],
 >
-> [Sponsor's name] has brought you into Manhattanite, a private network for New Yorkers who are tired of the noise on Craigslist and Facebook Marketplace.
+> [Name of the member vouching] has brought you into Manhattanite, a private network for New Yorkers who are tired of the noise on Craigslist and Facebook Marketplace.
 >
-> Inside, you'll find apartments, furniture, jobs, and services posted by people who've been vouched for. Every listing is reviewed. Every member is sponsored.
+> Inside, you'll find apartments, furniture, jobs, and services posted by people who've been vouched for. Every listing is reviewed. Every member is vouched for.
 >
 > **[Activate your membership →]**
 >
-> One thing worth knowing: your sponsor's name will appear on your profile. They've put their reputation behind you. That's how the trust works.
+> One thing worth knowing: the name of the member who vouched for you will appear on your profile. They've put their reputation behind you. That's how the trust works.
 >
 > Welcome.
 
@@ -139,7 +140,7 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 >
 > **Listings move quickly.** Apartments especially. If you see something you like, message the poster through the site.
 >
-> **You can sponsor too.** Bring in people you'd want to live next to. Sponsorship is public, and it counts.
+> **You can vouch too.** Bring in people you'd want to live next to. Vouching is public, and it counts.
 >
 > **Quality matters more than quantity.** We'd rather have 100 great listings than 10,000 mediocre ones. If you post something, make it worth a member's time.
 >
@@ -150,14 +151,14 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 > **Two-bedroom · West Village · $5,400/mo**
 > Floor-through in a brownstone. Original wood floors. Available 1 July.
 >
-> Listed by Anna · sponsored by Max
+> Listed by Anna · vouched for by Max
 
 ### Furniture listing card
 
 > **Ceccotti Collezioni dining table · $1,200**
 > Solid walnut. Seats six. Bought from Wyeth in 2022. Light wear on top.
 >
-> Listed by Lila · sponsored by Anna
+> Listed by Lila · vouched for by Anna
 
 ### New listing notification (email or push)
 
@@ -205,11 +206,11 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 
 > **Account.** Free. Browse every listing in the network. No application needed.
 >
-> **Member.** Required to post, contact, or sponsor. Apply when you're ready, or ask a current member to bring you in.
+> **Member.** Required to post, contact, or vouch. Apply when you're ready, or ask a current member to bring you in.
 
 ### Interaction gate — account holder tries to contact a member
 
-> To message [name], you need a member account. Members are sponsored by an existing member or approved through application.
+> To message [name], you need a member account. Members are vouched for by an existing member or approved through application.
 >
 > **[Apply for membership →]**
 >
@@ -221,9 +222,9 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 >
 > **[Apply for membership →]**
 
-### Interaction gate — account holder tries to sponsor
+### Interaction gate — account holder tries to vouch
 
-> Sponsorship is a member privilege. When you sponsor someone, your name appears on their profile — so we save it for members who've earned the trust.
+> Vouching is a member privilege. When you vouch for someone, your name appears on their profile — so we save it for members who've earned the trust.
 >
 > **[Apply for membership →]**
 
@@ -249,7 +250,7 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 >
 > A few things worth knowing:
 >
-> **You can sponsor others.** Bring in people you'd want to live next to. Sponsorship is public, and it counts.
+> **You can vouch for others.** Bring in people you'd want to live next to. Vouching is public, and it counts.
 >
 > **Listings move quickly.** Especially apartments. If you see something you like, message the poster through the site.
 >
@@ -263,7 +264,7 @@ Use this everywhere until we revisit. Alts to consider in a later round:
 >
 > Thanks for your interest in Manhattanite. We're not able to approve your application right now.
 >
-> This isn't a comment on you. We're keeping the network small while we build, and not every application is the right fit at this stage. If you know a member who'd sponsor you, we'd be happy to reconsider.
+> This isn't a comment on you. We're keeping the network small while we build, and not every application is the right fit at this stage. If you know a member who'd vouch for you, we'd be happy to reconsider.
 >
 > Best,
 > The Manhattanite team

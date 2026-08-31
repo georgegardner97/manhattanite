@@ -4,6 +4,16 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-08-31 · The plan runs again: timeline v3, and two copy calls
+
+**Timeline v3 written** (`outputs/Manhattanite_MVP-Timeline_v3.md`) — v2's last week expired on 30 August with nobody invited. v3 covers 1 Sep to 4 Oct: prep, ten invitations, answer them, a conditional second wave, then assess. Replaces Phases 6-8 of v2 only.
+
+**Pre-launch gaps confirmed by reading the code, not the briefings:** no error reporting wired (the one that matters once strangers are on the site), no community guidelines page, `Test - Ignore` still unconfirmed as removed. Analytics is NOT a gap — privacy no longer claims any. The hero photo task is dead: nothing references `hero-brownstone.jpg` since landing v4.
+
+**Two copy changes shipped to disk (uncommitted, Cowork cannot push):** the edit screen now says what saving actually does per status instead of promising a review that never happens; and **"sponsor" is gone from everything a member can read, replaced by "vouched for by"** — copy only, the schema keeps its names. Both typechecked and lint-clean; neither is build-verified, which Cowork cannot do on this repo.
+
+---
+
 ## 2026-08-18 · Classifieds migration Slice 1 — the public face, on a branch
 
 Branch `design/classifieds-live` (one commit, 85 files), pushed. `main` pushed too — it had been two commits ahead locally while production ran 22 July code.

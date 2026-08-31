@@ -41,3 +41,13 @@ Timestamped entries from conversation and scheduled runs. Newest at the bottom o
 
 ## 2026-08-28 (Friday)
 **07:00** — Morning briefing ran. First run since 18 Aug: no daily files exist for 19 to 27 Aug (Newport 19 to 24, then four working days back), so the plan was reconstructed from git, Gmail and Todoist. Week 14 of 14, soft launch has not started, `Test - Ignore` still live on prod, yesterday's profile/sort/takedown work built but uncommitted, Con Ed due today.
+
+## 2026-08-29 (Saturday)
+**07:00** — Morning briefing ran. Yesterday reversed itself: everything that was uncommitted on Friday morning shipped by end of day (Slice 3b, migrations 0028+0029, page-speed pass, landing v4, rail removals). Tree clean, main matches origin, audits green against prod. Week 14 of 14 ends tomorrow with Phase 8 unstarted and no week after it in the timeline. Con Ed went overdue. Gospel NYC RSVP still unanswered.
+
+## 2026-08-31 (Monday)
+**05:46** — George asked "where are we, what next" (Cowork). Status given: build is code-complete and deployed, Week 14 ended 30 Aug with Phase 8 unstarted, timeline v2 has no week after it and the recut still is not written (file untouched since May). Recommended next moves: write the recut, then post his own music-lessons listing as the first real Phase 8 action. Flagged the 09:00 Chloe M. / deep-work clash (deep work realistically 10:00–11:30), tomorrow's Gospel NYC RSVP still unanswered, and that `Test - Ignore` removal is still unconfirmed. Cleared a stale `.git/index.lock` (29 Aug) blocking git writes.
+
+**07:00** — Morning briefing ran. Timeline v3 recut is written, so the plan gap that opened three briefings ago is closed. Week 1 of five opens tomorrow. Today has a five-hour Sid rehearsal from 10:00, which finally resolves the 09:00 Chloe clash by making the morning impossible either way; deep work moved to 15:30. Roughly twenty files of the vouched-for-by rename still uncommitted. Con Ed three days overdue. New: Tompkins Square show Sunday 6 Sep unanswered.
+
+**12:28** — Deleted the "AA — SOS" recurring series (Mon/Tue/Wed 07:30, running since 10 Aug) from the personal Google Calendar at George's request. Whole series, past and future instances gone. AA — Saturday Beginners (10:30 Sat) is untouched and is now the only AA event on the calendar. The default weekday template in both preferences files still opens with a 07:30 AA slot, so briefings will keep proposing it until that line is updated.

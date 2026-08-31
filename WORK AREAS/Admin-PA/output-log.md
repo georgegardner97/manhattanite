@@ -37,3 +37,5 @@ Append-only. Most recent at the bottom.
 - 2026-07-13 · Founding-Members_Pitch-Cards_v1.pdf · Growth/founding-member-acquisition-project — printable pitch cards (generator: generators/generate_pitch_cards_pdf.py)
 - 2026-07-13 · Manhattanite_Company-Briefing_v1.pdf · Growth/founding-member-acquisition-project — founder's briefing: model, plan, finances, legal, hard Q&A (generator: generators/generate_company_briefing_pdf.py)
 - 2026-08-27 · Manhattanite_Pricing-Model_v1.md · WORK AREAS/Product/monetization-project/outputs/ · pricing analysis: comparators, unit economics, revenue by member count
+- 2026-08-31 — `Manhattanite_MVP-Timeline_v3.md` (Product / mvp-build-project/outputs) — the recut: five weeks, 1 Sep to 4 Oct, first invite wave in week 2.
+- 2026-08-31 — `Manhattanite_Vouched-Copy-Pass_Claude-Code-Prompt_v1.md` (Product / mvp-build-project/outputs) — build, verify, commit, push and prod-check today's two copy changes.

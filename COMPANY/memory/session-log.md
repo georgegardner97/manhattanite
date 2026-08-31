@@ -6,6 +6,64 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-31 · The edit screen stops promising a review that never happens, and "sponsor" becomes "vouched" (Cowork)
+
+**George's call on a thing flagged twice and left open since the 28th: fix the copy, not the behaviour.** The member edit screen told every editor "It goes back through review before it's live again." `updateListing` has never written `status` — deliberately, and the 0017 trigger waves an unchanged status through — so an edit to a published listing goes straight back live. The product was promising a moderation step it does not perform.
+
+**One line became four, keyed on status** (`EDIT_NOTES` in `ClPostForm.tsx`), because the old sentence was wrong in three of the four cases and right in none of them by accident:
+
+- `draft` — "Make the changes the moderator asked for, then send it back." (unchanged; a returned listing really does go back, through `resubmit.ts`)
+- `pending` — "Change anything. It's still waiting on review — your edits go with it."
+- `published` — "Change anything. Your edits go live as soon as you save."
+- `archived` — "Change anything. This listing is off the site, and saving won't put it back."
+
+**The archived case had no copy at all before** — it fell into the "goes back through review" branch, which was the most misleading of the four: a member could reasonably read it as the way to bring a removed listing back, and nothing in the member product does that.
+
+**The map is typed `Record<ListingStatus, string>` on purpose.** A fifth status cannot be added without the compiler demanding the sentence that goes with it. The comment above it names the rule that has to travel with any future change: if an edit is ever made to re-enter review, `EDIT_NOTES` changes in the same commit, because it is the only place the product tells a member what saving will do.
+
+**Admin mode is untouched** — the whole block is still suppressed there, since `ClAdminShell` has already said what a correction does and two contradictory sentences a hundred pixels apart was the original 28 Aug bug.
+
+**Verification, and its ceiling.** `tsc --noEmit` clean, `eslint` clean on the file. **`next build` cannot run from Cowork** (node_modules is darwin-arm64, the device shell is linux/arm64 with no registry) — so this is typechecked, not build-verified. **Uncommitted and undeployed; Cowork cannot push.**
+
+**Also this session:** cleared a stale `.git/index.lock` left from 29 Aug that was blocking git writes. CLAUDE.md note 10 rewritten from "flagged, not fixed" to the shipped rule.
+
+**THE WORD "SPONSOR" IS GONE FROM EVERYTHING A MEMBER CAN READ — decided and implemented the same session.** George raised it unprompted: the connotations are financial and recovery, neither of which is what a member does here. Radio Hong Kong-Pacific's "seconder" was his example. Three options were put to him — **vouched by** (recommended), the club register **proposed / seconded**, and **introduced by**. He chose vouched by.
+
+**It ended an inconsistency rather than starting a rename**, which is why it was the cheap answer: `/members/[id]` already said "Vouched by", `/profile` already had a Vouching panel, the members-only wall already said "a member has to vouch for you first" — while the listing byline said "sponsored by" and the console said "approve to record as sponsor". Roughly 32 member-facing sponsor strings against 45 places already saying vouch.
+
+**Changed:** the byline (`lib/listings/byline.ts` — now "Listed by Claire · vouched for by Dan"), the listing detail inset, the invite and join screens, the vouch-request screen and its email, the members-only contact gate, the approval and welcome emails, four strings in the admin console, and **Terms and Privacy** ("Membership and vouching"; the public claim about names now reads "not the lister's, and not the name of whoever vouched for them"). `COMPANY/voice-and-copy.md` was updated in the same pass — it is the source the contact gate is held verbatim against, so leaving it would have guaranteed the language drifted back.
+
+**THE RENAME IS COPY-ONLY, ON PURPOSE.** `sponsorships`, `sponsor_names`, `sponsor_id`, the RPCs and every identifier keep their names. Renaming a live schema to change a noun buys nothing a member can see and risks the byline every listing depends on. The reasoning is written into `byline.ts` and CLAUDE.md so the next reader does not "finish the job".
+
+**No noun for the person**: *voucher* reads like a coupon, so the copy says "the member who vouched for you".
+
+**"VOUCHED FOR BY", NOT "VOUCHED BY"** — George corrected it on reading the byline back, and he is right: you vouch FOR a person, so the short form reads as though Dan is the one being vouched rather than the one doing it. Changed everywhere including the guest line ("Vouched for by a member"), the member profile stat and the post form's review step.
+
+---
+
+## 2026-08-31 · The timeline recut — a launch has a date again (Cowork)
+
+**`WORK AREAS/Product/mvp-build-project/outputs/Manhattanite_MVP-Timeline_v3.md`.** v2 expired on 30 August with Phase 8 unstarted and no week after it, so every morning briefing was reading from a plan that had run out. v3 replaces Phases 6-8 only; Phases 0-5 stand as the record of the build.
+
+**The framing that made it writable: this is not a slipped build, it is an unscheduled launch.** The product is finished and live; what is missing is people. August went to work v2 never contained — the Classifieds system becoming the site, the admin console, two migrations, the speed pass — about three weeks of it, and it overtook Phases 6 and 7.
+
+**Five weeks, one must-hit each:** prep and walk the invitation path (1-6 Sep) → 10 invitations (7-13 Sep) → answer them and get the first real member-to-member contact (14-20 Sep) → a conditional second wave (21-27 Sep) → assess and reopen the parked questions (28 Sep-4 Oct).
+
+**Three calls inside it worth keeping:**
+- **Ten invitations, not twenty-five.** Small enough that every one gets a personal reply in the same week.
+- **The five friend interviews fold INTO wave one** rather than running as a separate GTM task. The people he wanted to interview are the people he is inviting, and they answer better having just used it.
+- **Wave two is conditional on wave one producing listings.** Inviting more people into an empty network makes it look emptier, twice as fast.
+
+**The success measure is deliberately not the invite count.** It is whether two members who did not know each other used the product to reach one another. Until that happens once, the loop is unproven.
+
+**Both band weekends (NANM, 18-20 and 25-27 Sep) are written in as no-work days**, so they are not counted as slippage when they arrive. The first wave lands before them on purpose.
+
+**Four things verified while writing it rather than repeated from the briefings:** there is no Sentry and no Plausible in the codebase (the privacy copy no longer claims analytics, so only error reporting is a real gap); `public/hero-brownstone.jpg` is referenced by nothing since landing v4, so **the "licensed hero photo" task is moot and should be closed**; there is no community-guidelines route; and `/invite` is linked only from `/join/[token]`, so George reaches it by URL — fine for a founder-run wave, and the growth-loop decision it is waiting on stays parked.
+
+**The failure mode named in the doc, because it is the likely one:** not slipping a week, but inviting nobody while the site gets slightly better. The build is finished; more polish is now avoidance.
+
+---
+
 ## 2026-08-28 · Post form: "Location" for services, and a nudge to write more (Claude Code)
 
 **Two copy changes George asked for on the live post form.**

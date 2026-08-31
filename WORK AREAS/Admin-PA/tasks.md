@@ -9,9 +9,17 @@ Format per task:
 
 ## Open
 
+- [ ] **WEEK 1 OF THE RECUT (by Sun 6 Sep) — launch prep.** Five things, in this order: test the invitation path end to end on a personal address; confirm `Test - Ignore` is off the site; secure the first two or three real offerings (Cole / Cody / mover / shop perk); write the community guidelines; decide hello@ vs info@. Plan: `Product/mvp-build-project/outputs/Manhattanite_MVP-Timeline_v3.md`. *(Source: timeline recut, added 2026-08-31, area: Product / Launch)*
+
+- [ ] **Wire error reporting before the first wave** — nothing is capturing production errors, so a broken screen reaches you via a member rather than the system. **[Claude Code]** *(Source: timeline recut, added 2026-08-31, area: Product / Hardening)*
+
+- [ ] **Send the first ten invitations (week of Mon 7 Sep, from Tue 8)** — ten, not twenty-five, so every one gets a personal reply the same week. The five friend interviews fold into this wave rather than running separately. *(Source: timeline recut, added 2026-08-31, area: GTM / Seed)*
+
+- [ ] **Commit and deploy the two copy changes sitting on disk** — the edit-screen fix and the sponsor→vouched-for-by rename. Typechecked and lint-clean; Cowork cannot build or push. Ready-to-run prompt: `Product/mvp-build-project/outputs/Manhattanite_Vouched-Copy-Pass_Claude-Code-Prompt_v1.md`. It also picks up the `Test - Ignore` confirmation. **[Claude Code]** *(Source: 2026-08-31 session, added 2026-08-31, area: Product)*
+
 - [ ] **Run the Week 12 Hardening session** — RLS audit with synthetic accounts (prove the trust gate holds at the API layer) + Sentry/Plausible/Resend verification. Ready-to-run prompt: `Product/mvp-build-project/outputs/Manhattanite_Week-12-Hardening_Claude-Code-Prompt_v1.md`. **[Claude Code]** *(Source: timeline Week 12 must-hit, added 2026-08-13, area: Product / Hardening)*
 
-- [ ] **Run the First-Five-Offerings playbook** — the 5 offerings broken into ≤15-min micro-steps with ask scripts: `Growth/.../outputs/Manhattanite_First-Five-Offerings_Playbook_v1.md`. Order: your music-lessons listing (today, 30 min, no ask needed) → Cole → Cody → mover → shop perk. Outcome: 3–4 first real members + 5 real listings across all three pillars. *(Source: Strawberry.me session + George, added 2026-08-13, area: GTM / Seed)*
+- [ ] **Run the First-Five-Offerings playbook** — the 5 offerings broken into ≤15-min micro-steps with ask scripts: `Growth/.../outputs/Manhattanite_First-Five-Offerings_Playbook_v1.md`. Order REVISED 2026-08-31 (George): **his own music-lessons listing is OUT as the opener — wrong calibre for a first post.** The first listings set the standard a visitor judges the network by, so they should be the strongest offerings, not the easiest to arrange. New opening order to be picked from Cole / Cody / the mover / the shop perk. Outcome: 3–4 first real members + 5 real listings across all three pillars. *(Source: Strawberry.me session + George, added 2026-08-13, area: GTM / Seed)*
 
 - [ ] **Pick the 5 interview friends** — script in `Manhattanite_Strategy-Session_2026-08-13.md` §8; 5 minutes with your contacts list. *(Source: Strawberry.me session, added 2026-08-13, area: GTM / Research)*
 
