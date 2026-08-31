@@ -41,13 +41,17 @@ export default function ClLandingCard({ card }: { card: ClCard }) {
       </div>
 
       <div className="mt-2 text-[12.5px]" style={{ color: "var(--cl-muted)" }}>
-        {/* The EXAMPLE tag follows the listing everywhere, including here.
-            Seed content on the most public page in the product is exactly where
-            mistaking it for a live deal costs the most. */}
+        {/* THE EXAMPLE TAG IS KEPT HERE AND ONLY HERE. It was dropped from the
+            card and the detail page on 2026-08-31 because only George can reach
+            the site; this component renders on NOTHING today (landing v4 is the
+            door — CLAUDE.md note 13) and is held unreferenced for that revert.
+            If it ever renders again it is the most public page in the product,
+            which is the one place mistaking seed content for a live deal costs
+            the most — so the tag stays with the code it would come back with. */}
         {card.isExample && (
           <span className="cl-chip cl-chip-xs cl-tag-vouched mr-2">Example</span>
         )}
-        {card.meta}
+        {[card.meta, card.when].filter(Boolean).join(" · ")}
       </div>
     </Link>
   );

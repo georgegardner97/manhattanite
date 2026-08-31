@@ -53,7 +53,7 @@ export default function ClListingRow({
           className="mt-[7px] text-[12.5px]"
           style={{ color: "var(--cl-muted)" }}
         >
-          {card.meta}
+          {[card.meta, card.when].filter(Boolean).join(" · ")}
         </div>
       </div>
 

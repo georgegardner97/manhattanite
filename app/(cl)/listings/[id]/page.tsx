@@ -244,14 +244,12 @@ export default async function ClassifiedsDetailPage({
           {/* ---------- The listing ---------- */}
           <div className="min-w-0">
             <div className="cl-kicker flex flex-wrap items-center gap-x-2 gap-y-2">
-              {/* Seed content, labelled. This survives the change of design
-                  system because it is a trust requirement, not a style choice —
-                  nobody should mistake an example for a live deal. */}
-              {listing.is_example && (
-                <span className="cl-chip cl-chip-xs cl-tag-vouched mr-1">
-                  Example
-                </span>
-              )}
+              {/* The EXAMPLE chip was here and is gone (George, 2026-08-31) —
+                  the same call as on the card, and the reasoning lives in the
+                  header of ClListingCard.tsx. Removed in both places together
+                  on purpose: a tag on the card that vanishes on the detail
+                  page, or the reverse, is worse than having no tag at all.
+                  `is_example` is still selected and still on the row. */}
               <span>
                 {[neighborhood, TYPE_LABEL[listing.type]]
                   .filter(Boolean)

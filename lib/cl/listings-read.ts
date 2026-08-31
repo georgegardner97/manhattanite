@@ -351,23 +351,29 @@ export function neighborhoodsIn(rows: BrowseRow[]): string[] {
  * landing used to carry its own `anonymousMeta()`; this is that function, moved
  * to where every screen already reads.
  */
+/**
+ * THE DATE IS NO LONGER PART OF THIS STRING (2026-08-31). It used to return
+ * "… · 4 days ago" as one blob, which meant the card could only render it as
+ * one run of text — and a member's byline is wider than a card, so the line
+ * wrapped and left "ago" orphaned on a line of its own. The card now sets the
+ * byline and the date as two elements so the byline can truncate while the date
+ * always survives; `when` travels beside `meta` on ClCard. Nothing about WHO IS
+ * NAMED changed, which is the part that matters — this is still the one place
+ * that decision is made.
+ */
 export function cardMeta(row: BrowseRow, isGuest: boolean): string {
-  const when = relativeDay(row.created_at);
-
   if (isGuest) {
-    // "Vouched for by a member · 4 days ago" — the trust fact, no name attached.
-    // Nobody has sponsored it yet, so there is no vouching to claim: saying so
-    // plainly beats implying a sponsor that does not exist.
-    const who =
-      row.sponsor_names.length > 0
-        ? "Vouched for by a member"
-        : "Listed by a member";
-    return `${who} · ${when}`;
+    // "Vouched for by a member" — the trust fact, no name attached. Nobody has
+    // sponsored it yet, so there is no vouching to claim: saying so plainly
+    // beats implying a sponsor that does not exist.
+    return row.sponsor_names.length > 0
+      ? "Vouched for by a member"
+      : "Listed by a member";
   }
 
   // renderByline stays the single source of truth for how sponsors are named
-  // (the hybrid-at-2 rule); this system only adds the date.
-  return `${renderByline(row.author_name, row.sponsor_names)} · ${when}`;
+  // (the hybrid-at-2 rule).
+  return renderByline(row.author_name, row.sponsor_names);
 }
 
 /**
@@ -420,6 +426,7 @@ export async function toClCards(
       place: placeOf(row),
       price: formatPrice(row.price_cents, row.type),
       meta: cardMeta(row, viewer.isGuest),
+      when: relativeDay(row.created_at),
       coverUrl: coverPath ? coverUrlByPath.get(coverPath) ?? null : null,
       isExample: row.is_example,
     };

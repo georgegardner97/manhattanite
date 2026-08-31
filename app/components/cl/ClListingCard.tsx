@@ -7,12 +7,19 @@
 // the price up beside a serif title; this one lets the image do the work and
 // keeps the type quiet underneath.
 //
-// ONE THING CARRIED OVER FROM THE LIVE SYSTEM, NOT IN THE DESIGN: the EXAMPLE
-// tag. Seed listings exist to show what the network looks like, and nobody
-// should be able to mistake one for a live deal — that is a trust requirement,
-// not a style choice, so it survives the change of design system. It is set
-// here in the "vouched" tag colors, which is the warmest chip the palette has
-// and the closest thing it offers to "read this before you read the price".
+// THE EXAMPLE TAG IS GONE FROM THE CARD (George, 2026-08-31). It had been kept
+// as a trust requirement — nobody should mistake a seed listing for a live deal
+// — and that reasoning has not changed; what changed is who is looking. Nobody
+// but George can reach the site yet, he knows which listings are his own seed
+// content, and the chip was costing the byline a second line on every card.
+//
+// THE TAG COMES BACK OR THE LISTINGS GO, BEFORE THE FIRST INVITATION. George's
+// plan is the latter: remove the seed listings entirely once the site is
+// circulated (wave one is 7-13 Sep in timeline v3). Whichever way it goes, a
+// stranger must never meet an unlabelled example. `is_example` is still read,
+// still on the row and still in ClCard — only the chip stopped rendering — so
+// this is one JSX block to restore, and the seed rows stay findable by the flag
+// when it is time to delete them.
 
 // Both links point INSIDE the preview (/listings/[id], screen 03). The
 // first slice sent them to the live /listings/[id] because screen 03 did not
@@ -29,8 +36,15 @@ export type ClCard = {
   place: string;
   /** Preformatted, e.g. "$6,800/mo" — null when the listing has no price. */
   price: string | null;
-  /** Byline plus relative date — "Listed by Claire · vouched for by Dan · 4 days ago". */
+  /**
+   * The byline alone — "Listed by Claire · vouched for by Dan". Empty string on
+   * a member's own profile, where every card has the same author and naming him
+   * once per card is noise.
+   */
   meta: string;
+  /** Relative date — "4 days ago". Kept apart from `meta` so it cannot be the
+   *  half that gets truncated; see the meta row below. */
+  when: string;
   coverUrl: string | null;
   isExample: boolean;
 };
@@ -135,16 +149,31 @@ export default function ClListingCard({
           {card.title}
         </div>
 
+        {/* ONE LINE, ALWAYS, AND THE DATE IS NEVER THE HALF THAT GOES.
+            Measured: a card is ~300px wide on a 1280px screen, a guest's
+            "Vouched for by a member" costs ~230px and fits, but a member's
+            "Listed by Lila · vouched for by George Gardner" costs ~345px and
+            does not. As one string it wrapped and stranded "ago" on its own
+            line, and where it broke depended on how long the lister's name was,
+            so no two cards in a row agreed.
+
+            So the byline truncates (min-w-0 is what lets it) and the date is
+            shrink-0 beside it: every card gets exactly one line, and what is
+            lost when a name is long is the tail of the name — never "4 days
+            ago", which is the part that says whether a listing is stale. The
+            separator is rendered here rather than baked into either string, so
+            the profile page's date-only card does not start with a stray "·".*/}
         <div
-          className="mt-[7px] text-[12.5px]"
+          className="mt-[7px] flex items-baseline gap-x-1.5 text-[12.5px]"
           style={{ color: "var(--cl-muted)" }}
         >
-          {card.isExample && (
-            <span className="cl-chip cl-chip-xs cl-tag-vouched mr-2">
-              Example
-            </span>
+          {card.meta && (
+            <>
+              <span className="min-w-0 truncate">{card.meta}</span>
+              <span className="shrink-0">·</span>
+            </>
           )}
-          {card.meta}
+          <span className="shrink-0 whitespace-nowrap">{card.when}</span>
         </div>
       </Media>
     </div>
