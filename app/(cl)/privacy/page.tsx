@@ -82,7 +82,7 @@ export default function ClassifiedsPrivacyPage() {
       <p>
         Trust on Manhattanite is visible on purpose. Other members can see your
         first and last name, your neighborhood, and the name of the member who
-        sponsored you. Your listings show this byline too. Your email address,
+        vouched for you. Your listings show this byline too. Your email address,
         password, and application details are not shown to other members. If
         you&rsquo;d rather not be named, Manhattanite isn&rsquo;t the right fit —
         being vouched for, and named, is the point.
@@ -92,8 +92,9 @@ export default function ClassifiedsPrivacyPage() {
           because "who can see my name" is a privacy question first. */}
       <p>
         Members are named to members. A logged-out visitor can read the most
-        recent few listings, but sees no member names and no sponsor names —
-        listings are public, the people behind them are not.
+        recent few listings, but sees no member names at all — not the
+        lister&rsquo;s, and not the name of whoever vouched for them. Listings
+        are public, the people behind them are not.
       </p>
 
       <h2>Who else can access it</h2>

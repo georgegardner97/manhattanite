@@ -1,4 +1,4 @@
-// Shared listing byline — the single place the "Listed by … · sponsored by …"
+// Shared listing byline — the single place the "Listed by … · vouched for by …"
 // string is assembled. Both listing pages (browse + detail) import from here so
 // the format lives in exactly one spot (Build Plan §4, Multi-Sponsor slice).
 //
@@ -8,9 +8,17 @@
 //
 // Hybrid-at-2 (real names up to two, then a count):
 //   0 sponsors → "Listed by Marcus"
-//   1 sponsor  → "Listed by Marcus · sponsored by John R."
-//   2 sponsors → "Listed by Marcus · sponsored by John R. & Sarah K."
-//   3+ sponsors → "Listed by Marcus · sponsored by John R., Sarah K. + 1 more"
+//   1 sponsor  → "Listed by Marcus · vouched for by John R."
+//   2 sponsors → "Listed by Marcus · vouched for by John R. & Sarah K."
+//   3+ sponsors → "Listed by Marcus · vouched for by John R., Sarah K. + 1 more"
+//
+// THE WORD MEMBERS READ IS "VOUCHED", THE WORD THE CODE USES IS "SPONSOR"
+// (George, 2026-08-31). "Sponsor" carries financial and recovery meanings he
+// does not want on a trust product, and the product already said "vouch" in
+// half its screens. The rename is DELIBERATELY COPY-ONLY: the columns
+// (sponsor_names, sponsor_id), the sponsorships table, the RPCs and these
+// identifiers all keep their names, because renaming a live schema to change
+// a noun buys nothing and risks the byline every listing depends on.
 //
 // The threshold, punctuation, and pluralization all live here, so changing the
 // rule later is a code edit, not a database re-run.
@@ -26,7 +34,7 @@ export function renderByline(
   const author = `Listed by ${authorName ?? "a member"}`;
   const names = sponsorNames ?? [];
   if (names.length === 0) return author;
-  return `${author} · sponsored by ${formatSponsors(names)}`;
+  return `${author} · vouched for by ${formatSponsors(names)}`;
 }
 
 function formatSponsors(names: string[]): string {

@@ -312,7 +312,7 @@ export async function sendReviewerPing(args: {
 export function renderMemberWelcome(): RenderedEmail {
   const bodyHtml =
     p(
-      "Your application was approved, and your sponsor’s name now stands next to yours. You can post listings, message members, and vouch for someone yourself when the time comes."
+      "Your application was approved, and the name of the member who vouched for you now stands next to yours. You can post listings, message members, and vouch for someone yourself when the time comes."
     ) + p("Welcome to the network.", { last: true });
 
   const cta = { label: "Browse the network", href: "https://manhattanite.com/listings" };
@@ -328,7 +328,7 @@ export function renderMemberWelcome(): RenderedEmail {
     text: textLayout({
       headline: "You’re in.",
       lines: [
-        "Your application was approved, and your sponsor’s name now stands next to yours. You can post listings, message members, and vouch for someone yourself when the time comes.",
+        "Your application was approved, and the name of the member who vouched for you now stands next to yours. You can post listings, message members, and vouch for someone yourself when the time comes.",
         "Welcome to the network.",
       ],
       cta,
@@ -434,7 +434,7 @@ export function renderSponsorshipRequest({
       `<strong>${esc(requesterName)}</strong> is applying to join Manhattanite and named you as someone who would vouch for them.`
     ) +
     p(
-      "If you know them and you're happy to sponsor them, confirm it below. If not, you can decline — they won't be told who declined.",
+      "If you know them and you're happy to vouch for them, confirm it below. If not, you can decline — they won't be told who declined.",
       { last: true }
     );
 
@@ -445,7 +445,7 @@ export function renderSponsorshipRequest({
       lines: [
         sponsorName ? `Hi ${sponsorName},` : "Hi,",
         `${requesterName} is applying to join Manhattanite and named you as someone who would vouch for them.`,
-        "If you know them and you're happy to sponsor them, confirm it below. If not, you can decline — they won't be told who declined.",
+        "If you know them and you're happy to vouch for them, confirm it below. If not, you can decline — they won't be told who declined.",
       ],
       cta,
     }),

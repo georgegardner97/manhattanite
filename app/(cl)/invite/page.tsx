@@ -57,7 +57,7 @@ export default async function ClassifiedsInvitePage() {
           style={{ color: "var(--cl-muted)" }}
         >
           Invite someone you&rsquo;d vouch for. They join through you, and
-          you&rsquo;re named as their sponsor on the network.
+          you&rsquo;re named as the member who vouched for them.
         </p>
 
         <div className="mt-8">

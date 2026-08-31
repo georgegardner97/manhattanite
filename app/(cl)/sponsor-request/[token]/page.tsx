@@ -126,7 +126,7 @@ export default async function ClassifiedsSponsorRequestPage({
       <AppHeader active="none" />
       <ClAuthCard
         title={`${requesterName} asked you to vouch.`}
-        note={`If you know them and you’re happy to sponsor them, confirm below. Your name is shown as their sponsor, on their profile and on everything they post.`}
+        note={`If you know them and you’re happy to vouch for them, confirm below. Your name is shown beside theirs, on their profile and on everything they post.`}
       >
         <ClSponsorActions token={token} requesterName={requesterName} />
 

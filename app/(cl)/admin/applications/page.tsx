@@ -253,20 +253,20 @@ function ApplicationCard({
         <p className="mt-3.5 text-[13.5px]">
           <span className="cl-grouplabel">
             {requestStatus === "confirmed"
-              ? "Sponsor confirmed:"
+              ? "Vouch confirmed:"
               : requestStatus === "declined"
-                ? "Sponsor declined:"
+                ? "Vouch declined:"
                 : "Referred by:"}
           </span>{" "}
           {sponsor.name ?? "a member"}
           <span style={{ color: "var(--cl-muted)" }}>
             {requestStatus === "confirmed"
-              ? " — they vouched; approve to record as sponsor"
+              ? " — they vouched; approve to record it"
               : requestStatus === "declined"
                 ? " — they declined the request"
                 : requestStatus === "pending"
                   ? " — asked to vouch, awaiting their reply"
-                  : " — a member; approve to record as sponsor"}
+                  : " — a member; approve to record the vouch"}
           </span>
         </p>
       )}

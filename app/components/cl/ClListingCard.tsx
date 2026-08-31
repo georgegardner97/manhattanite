@@ -29,7 +29,7 @@ export type ClCard = {
   place: string;
   /** Preformatted, e.g. "$6,800/mo" — null when the listing has no price. */
   price: string | null;
-  /** Byline plus relative date — "Listed by Claire · sponsored by Dan · 4 days ago". */
+  /** Byline plus relative date — "Listed by Claire · vouched for by Dan · 4 days ago". */
   meta: string;
   coverUrl: string | null;
   isExample: boolean;

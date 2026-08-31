@@ -21,7 +21,7 @@
 //   3. Inserts the 17 rows: status 'published' (service role passes the 0017
 //      pre-moderation trigger — auth.uid() is null), is_example = true. The
 //      0012 BEFORE INSERT trigger fills author_name + sponsor_names, so member
-//      listings render "Listed by Anna · sponsored by George Gardner".
+//      listings render "Listed by Anna · vouched for by George Gardner".
 //
 // Idempotency: members are matched by email, listings by (author, title,
 // is_example) — re-running skips what already exists. Caveat: if a run dies

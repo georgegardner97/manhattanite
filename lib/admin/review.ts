@@ -36,7 +36,7 @@ function readableError(message: string): string {
     return "They're already a member — nothing to approve.";
   }
   if (/is not a member/i.test(message)) {
-    return "That sponsor isn't a member, so they can't vouch for anyone.";
+    return "That person isn't a member, so they can't vouch for anyone.";
   }
   if (/not pending|not found/i.test(message)) {
     return "This application was already reviewed (or no longer exists). Refresh the queue.";

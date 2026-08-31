@@ -355,12 +355,12 @@ export function cardMeta(row: BrowseRow, isGuest: boolean): string {
   const when = relativeDay(row.created_at);
 
   if (isGuest) {
-    // "Vouched by a member · 4 days ago" — the trust fact, no name attached.
+    // "Vouched for by a member · 4 days ago" — the trust fact, no name attached.
     // Nobody has sponsored it yet, so there is no vouching to claim: saying so
     // plainly beats implying a sponsor that does not exist.
     const who =
       row.sponsor_names.length > 0
-        ? "Vouched by a member"
+        ? "Vouched for by a member"
         : "Listed by a member";
     return `${who} · ${when}`;
   }

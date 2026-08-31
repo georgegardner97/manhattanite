@@ -63,12 +63,12 @@ export default function ClassifiedsTermsPage() {
         either.
       </p>
 
-      <h2>Membership and sponsorship</h2>
+      <h2>Membership and vouching</h2>
       <p>
-        Members are brought in by other members who vouch for them. Sponsorship
-        is a social act of trust, not a legal guarantee: a sponsor is not
-        responsible for, and does not warrant, the conduct of the people they
-        bring in. We may approve, decline, or revoke membership at our
+        Members are brought in by other members who vouch for them. Vouching is a
+        social act of trust, not a legal guarantee: a member who vouches for
+        someone is not responsible for, and does not warrant, the conduct of
+        the people they bring in. We may approve, decline, or revoke membership at our
         discretion to protect the network.
       </p>
 
@@ -114,12 +114,13 @@ export default function ClassifiedsTermsPage() {
         Our <Link href="/privacy">Privacy Policy</Link> explains what we collect
         and how we use it. Worth knowing up front: to make trust visible, your
         first and last name, your neighborhood, and the name of the member who
-        sponsored you are shown to other members.
+        vouched for you are shown to other members.
       </p>
       <p>
         To people outside the network, they are not. Listings are public —
-        anyone can read the most recent few — but member names and sponsor names
-        are shown only to people who are signed in.
+        anyone can read the most recent few — but member names, both the
+        lister&rsquo;s and the name of whoever vouched for them, are shown only
+        to people who are signed in.
       </p>
 
       <h2>Suspending or closing accounts</h2>

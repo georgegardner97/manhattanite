@@ -162,7 +162,7 @@ export default async function ClassifiedsMemberPage({
             >
               {[
                 neighborhoods[0],
-                sponsors.length > 0 && `Vouched by ${sponsors.slice(0, 2).join(" & ")}`,
+                sponsors.length > 0 && `Vouched for by ${sponsors.slice(0, 2).join(" & ")}`,
               ]
                 .filter(Boolean)
                 .join(" · ")}
@@ -180,7 +180,7 @@ export default async function ClassifiedsMemberPage({
               count for anyone who can reach this page now that a guest cannot. */}
           <Stat label="Listings" value={String(rows.length)} />
           <Stat
-            label={sponsors.length === 1 ? "Vouched by" : "Vouched by"}
+            label="Vouched for by"
             value={String(sponsors.length)}
             divided
           />

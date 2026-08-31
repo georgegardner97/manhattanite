@@ -212,13 +212,16 @@ function GateBody({
       <CardHead title="Members only" onClose={onClose} />
 
       {/* VERBATIM, COMPANY/voice-and-copy.md → "Interaction gate — account
-          holder tries to contact a member". Do not reword. */}
+          holder tries to contact a member". Do not reword. One word has moved
+          since it was written: "sponsored by" → "vouched for by" (George,
+          2026-08-31), and voice-and-copy.md was updated in the same pass, so
+          this is still verbatim against the library. */}
       <p
         className="mt-3 max-w-[46ch] text-[13.5px] leading-[1.55]"
         style={{ color: "var(--cl-body)" }}
       >
-        To message {listerName}, you need a member account. Members are sponsored
-        by an existing member or approved through application.
+        To message {listerName}, you need a member account. Members are vouched
+        for by an existing member or approved through application.
       </p>
 
       <Link href="/apply" className="cl-pill mt-5 inline-block">
@@ -243,7 +246,7 @@ function GateBody({
         style={{ color: "var(--cl-faint)" }}
       >
         Have an invitation? Open the link in that email instead — it arrives with
-        your sponsor already attached.
+        the member who vouched for you already attached.
       </p>
     </>
   );

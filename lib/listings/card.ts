@@ -32,7 +32,7 @@ export type ListingCardData = {
   /** Signed cover-image URL, or null when the listing has no images. */
   coverUrl: string | null;
   isExample: boolean;
-  /** "Listed by X · sponsored by Y" — omitted where the surface doesn't show it. */
+  /** "Listed by X · vouched for by Y" — omitted where the surface doesn't show it. */
   byline?: string | null;
 };
 

@@ -10,7 +10,7 @@
 //
 // What it covers (mirrors §5):
 //   1. 1 sponsor   — approve a synthetic applicant (founder default) → post →
-//                    "Listed by [m1] · sponsored by George Gardner".
+//                    "Listed by [m1] · vouched for by George Gardner".
 //   2. 2 sponsors  — add_sponsor(m1, m2) → "... George Gardner & [m2]".
 //   3. 3 sponsors  — add_sponsor(m1, m3) → "... George Gardner, [m2] + 1 more".
 //   4. Rename      — rename m2 → that name updates in m1's byline.
@@ -240,7 +240,7 @@ async function main(): Promise<void> {
     listingId = listing.id;
 
     let { row, byline } = await readByline(admin, listingId);
-    check("byline (1 sponsor)", byline, `Listed by ${M1_NAME} · sponsored by ${founderName}`);
+    check("byline (1 sponsor)", byline, `Listed by ${M1_NAME} · vouched for by ${founderName}`);
     checkTrue("primary (founder) renders first", row.sponsor_names[0] === founderName,
       `sponsor_names=${JSON.stringify(row.sponsor_names)}`);
 
@@ -256,7 +256,7 @@ async function main(): Promise<void> {
 
     ({ row, byline } = await readByline(admin, listingId));
     check("byline (2 sponsors)", byline,
-      `Listed by ${M1_NAME} · sponsored by ${founderName} & ${M2_NAME}`);
+      `Listed by ${M1_NAME} · vouched for by ${founderName} & ${M2_NAME}`);
     checkTrue("primary still first", row.sponsor_names[0] === founderName,
       `sponsor_names=${JSON.stringify(row.sponsor_names)}`);
 
@@ -272,7 +272,7 @@ async function main(): Promise<void> {
 
     ({ row, byline } = await readByline(admin, listingId));
     check("byline (3 sponsors)", byline,
-      `Listed by ${M1_NAME} · sponsored by ${founderName}, ${M2_NAME} + 1 more`);
+      `Listed by ${M1_NAME} · vouched for by ${founderName}, ${M2_NAME} + 1 more`);
     checkTrue("primary still first", row.sponsor_names[0] === founderName,
       `sponsor_names=${JSON.stringify(row.sponsor_names)}`);
 
@@ -286,7 +286,7 @@ async function main(): Promise<void> {
 
     ({ byline } = await readByline(admin, listingId));
     check("byline reflects renamed sponsor", byline,
-      `Listed by ${M1_NAME} · sponsored by ${founderName}, ${M2_RENAME} + 1 more`);
+      `Listed by ${M1_NAME} · vouched for by ${founderName}, ${M2_RENAME} + 1 more`);
 
     // ----- Test 5: remove a sponsor -----
     console.log("\nTest 5 — remove a sponsor:");
@@ -299,7 +299,7 @@ async function main(): Promise<void> {
 
     ({ row, byline } = await readByline(admin, listingId));
     check("byline after removal (back to 2)", byline,
-      `Listed by ${M1_NAME} · sponsored by ${founderName} & ${M2_RENAME}`);
+      `Listed by ${M1_NAME} · vouched for by ${founderName} & ${M2_RENAME}`);
     checkTrue("count dropped to 2", row.sponsor_names.length === 2,
       `sponsor_names=${JSON.stringify(row.sponsor_names)}`);
 

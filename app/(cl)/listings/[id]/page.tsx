@@ -367,7 +367,7 @@ export default async function ClassifiedsDetailPage({
             </div>
 
             {/* The sponsor line, in the design's quiet inset. renderByline is
-                not used here: it assembles "Listed by X · sponsored by Y" as one
+                not used here: it assembles "Listed by X · vouched for by Y" as one
                 string for a card's meta row, and this block has already given
                 the name its own line above. The hybrid-at-2 rule still governs
                 how many sponsors are named — see below. */}
@@ -380,7 +380,7 @@ export default async function ClassifiedsDetailPage({
                   <>Vouched for by a member.</>
                 ) : (
                   <>
-                    Sponsored by{" "}
+                    Vouched for by{" "}
                     <strong className="font-medium">
                       {formatSponsors(listing.sponsor_names)}
                     </strong>
@@ -462,7 +462,7 @@ export default async function ClassifiedsDetailPage({
 }
 
 // The hybrid-at-2 rule, in the shape this block needs. lib/listings/byline.ts
-// owns the rule for the "Listed by … · sponsored by …" string; the threshold
+// owns the rule for the "Listed by … · vouched for by …" string; the threshold
 // and punctuation are restated rather than re-exported because that module's
 // public function returns the whole byline, author included, and this card has
 // already set the author on his own line.

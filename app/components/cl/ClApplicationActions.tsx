@@ -63,7 +63,7 @@ export default function ClApplicationActions({
           <input type="hidden" name="id" value={applicationId} />
           {sponsorId && <input type="hidden" name="sponsor_id" value={sponsorId} />}
           <p className="text-[13px] leading-[1.6]" style={{ color: "var(--cl-muted)" }}>
-            Bring them in? Membership is immediate, sponsored by{" "}
+            Bring them in? Membership is immediate, vouched for by{" "}
             {sponsorName ?? "George"}, and the welcome email goes out.
           </p>
           <Controls

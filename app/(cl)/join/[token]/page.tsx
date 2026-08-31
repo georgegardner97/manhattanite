@@ -131,7 +131,7 @@ export default async function ClassifiedsJoinPage({
       <AppHeader active="none" />
       <ClAuthCard
         title={`${inviter} brought you in.`}
-        note={`Manhattanite is a private marketplace for New Yorkers. Set a password to claim your spot — ${inviter} is your sponsor, and we’ll confirm your place by hand.`}
+        note={`Manhattanite is a private marketplace for New Yorkers. Set a password to claim your spot — ${inviter} vouched for you, and we’ll confirm your place by hand.`}
         footer={
           <>
             Already have an account?{" "}

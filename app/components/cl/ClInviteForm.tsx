@@ -80,8 +80,8 @@ export default function ClInviteForm() {
             the introduction: your name is attached to theirs, publicly, and
             that is the whole mechanic. */}
         <p className="mt-4 text-[12.5px]" style={{ color: "var(--cl-faint)" }}>
-          You&rsquo;ll be named as their sponsor. We still read every new member
-          by hand.
+          You&rsquo;ll be named as the member who vouched for them. We still read
+          every new member by hand.
         </p>
       </form>
     </div>

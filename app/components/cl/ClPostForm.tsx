@@ -80,6 +80,24 @@ const STEPS = [
   { label: "Review", note: "Read by a person before it goes live." },
 ];
 
+// WHAT AN EDIT ACTUALLY DOES, PER STATUS — and it does not touch the queue.
+// updateListing NEVER writes `status` (lib/listings/update.ts), and the 0017
+// trigger waves an unchanged status through, so a published listing stays
+// published and the change is public the moment it saves; a pending one stays
+// pending; an archived one stays off the site. The one line this replaced
+// ("It goes back through review before it’s live again") promised every
+// editor a review step the product has never performed. George's call, 31 Aug
+// 2026: fix the copy, not the behaviour. If an edit is ever made to re-enter
+// review, THIS MAP has to change in the same commit — it is the only place the
+// product tells a member what saving will do.
+const EDIT_NOTES: Record<ListingStatus, string> = {
+  draft: "Make the changes the moderator asked for, then send it back.",
+  pending: "Change anything. It’s still waiting on review — your edits go with it.",
+  published: "Change anything. Your edits go live as soon as you save.",
+  archived:
+    "Change anything. This listing is off the site, and saving won’t put it back.",
+};
+
 // Which step each required field lives on, so an invalid one can be shown
 // rather than silently blocking the submit. Keyed by the input's `name`.
 const STEP_OF_FIELD: Record<string, number> = {
@@ -194,11 +212,7 @@ export default function ClPostForm({
               {editing ? "Edit your listing" : STEPS[step].label}
             </h2>
             <p className="mt-2.5 text-[13.5px]" style={{ color: "var(--cl-muted)" }}>
-              {editing
-                ? initial!.status === "draft"
-                  ? "Make the changes the moderator asked for, then send it back."
-                  : "Change anything. It goes back through review before it’s live again."
-                : STEPS[step].note}
+              {editing ? EDIT_NOTES[initial!.status] : STEPS[step].note}
             </p>
           </>
         )}
@@ -473,7 +487,7 @@ export default function ClPostForm({
 
             <p className="cl-inset mt-5">
               Posted as {authorName ?? "you"}
-              {sponsorNames.length > 0 && ` · vouched by ${sponsorNames[0]}`}. Buyers
+              {sponsorNames.length > 0 && ` · vouched for by ${sponsorNames[0]}`}. Buyers
               reply to your email address.
             </p>
           </div>
