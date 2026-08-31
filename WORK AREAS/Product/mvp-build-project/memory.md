@@ -4,6 +4,20 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-08-31 · Example tag off, card meta split in two
+
+**George's call on the browse grid:** drop the Example tag — he knows which listings are seed content — and use the freed space to even up the vouched-for line.
+
+**The tag is off the card and the listing page, and it has a deadline.** Kept until now as a trust requirement; the reasoning has not changed, only who is looking. **Before wave one goes out (7-13 Sep) either the tag returns or the seed listings are deleted** — his plan is deletion. `is_example` is untouched, so restoring the chip is one JSX block and the seed rows stay findable by the flag.
+
+**The "even up" ask was a real layout bug.** A card is ~300px; a guest byline costs ~230px and fits, a member byline ~345px and does not. As one string it wrapped and stranded "ago" alone, breaking at a different point per lister name. `cardMeta()` now returns the byline only, with the date alongside as `ClCard.when`: byline truncates, **date never does** — losing "4 days ago" would lose the staleness signal.
+
+**`cardMeta()` is the guest-anonymity enforcement point**, so this went through `audit:gates` rather than a visual check alone. Who is named did not change.
+
+**Next:** the seed listings themselves. 19 published, 12 of them apartments — still the largest reason browse reads as a rental site, and still content rather than code.
+
+---
+
 ## 2026-08-31 · The two copy calls are built, verified and live
 
 **Both shipped** — `bde97db` (code) and `7299ebd` (docs), pushed to `main`, deployed, confirmed on manhattanite.com. The entry below saying "uncommitted, Cowork cannot push" is superseded.

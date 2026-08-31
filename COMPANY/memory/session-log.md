@@ -6,6 +6,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-31 · The Example tag comes off, and the card's meta line becomes two things (Claude Code)
+
+**George, on seeing the browse grid: get rid of the Example tag — "I know that they are examples" — and use the space it frees to even up the vouched-for line so it looks neat.** Two changes, and the second is the one with the reasoning in it.
+
+**THE TAG IS GONE FROM THE CARD AND THE LISTING PAGE, WITH A DEADLINE ATTACHED.** It had been kept as a trust requirement — nobody should mistake a seed listing for a live deal — and **that reasoning has not changed; what changed is who is looking.** Nobody but George can reach the site, he knows which listings are his own seed content, and the chip was costing the byline a second line on every card. **Before the first invitation (wave one, 7-13 Sep) either the tag comes back or the seed listings go.** His plan is the latter. Written into CLAUDE.md note 15 and the header of `ClListingCard.tsx`, because it is exactly the kind of condition that gets forgotten.
+
+**`is_example` is untouched** — still on the row, still selected, still on `ClCard`. Only the chip stopped rendering, so restoring it is one JSX block and the seed rows stay findable by the flag when it is time to delete them. **Card and detail page were done together**: a tag on one that vanishes on the other is worse than no tag. **`ClLandingCard` KEEPS its chip** — it renders on nothing today (note 13) and is held for that revert, so the tag stays with the code it would come back with.
+
+**"EVEN UP THE VOUCHED-FOR PART" TURNED OUT TO BE A REAL BUG, NOT A NUDGE.** Measured rather than eyeballed: a card is ~300px wide at a 1280px viewport, a guest's "Vouched for by a member" costs ~230px and fits on one line, but a member's "Listed by Lila · vouched for by George Gardner" costs ~345px and does not. `cardMeta()` returned the byline and the date as ONE string, so the card could only render it as one run of text — it wrapped, stranded "ago" on a line of its own, and **where it broke depended on how long the lister's name was, so no two cards in a row agreed.** That raggedness was what George was looking at.
+
+**So the string was split.** `cardMeta()` now returns the byline alone and the date travels beside it as `ClCard.when`. The byline gets `min-w-0 truncate`, the date `shrink-0`: every card is exactly one line, and what is lost on a long name is the tail of the name — **never "4 days ago", which is the part that says whether a listing is stale.** Truncating the whole string would have been the one-line change and would have eaten the date, which is why it was not done.
+
+**NOTHING ABOUT WHO IS NAMED CHANGED**, which is the part that matters — `cardMeta()` is still the single place that decision is made, so CLAUDE.md note 0a stands. **That is also why this needed `audit:gates` and not just a look**: `cardMeta` is the guest-anonymity enforcement point, and `audit:rls` cannot see it.
+
+**An empty `meta` now means date-only**, which is what `/members/[id]` passes (every card there has the same author). The separator is rendered by the card rather than baked into either string, so a date-only card does not open with a stray "·".
+
+**Verified:** `next build` exits 0, `tsc --noEmit` clean, eslint 5 — unchanged baseline. Guest browse and the listing page read back with zero occurrences of "Example" and the vouched line intact; signed-in markup confirmed as three separate spans (byline · date) and the profile page as date-only with no leading separator; measured in the live DOM that a member-length byline keeps the row at one line (19px, same as a guest's) with the date fully visible. Desktop and 375px both checked.
+
+---
+
 ## 2026-08-31 · The copy pass built, verified, committed and shipped (Claude Code)
 
 **Closing the gap Cowork could not close.** The edit-screen `EDIT_NOTES` change and the sponsor→vouched copy pass were typechecked but NOT build-verified and NOT deployed — Cowork's node_modules is darwin-arm64 against a linux/arm64 device shell, and it cannot push. Both are now done. The line in the entry below reading "Uncommitted and undeployed" was true when written and is superseded by this one.
