@@ -6,6 +6,44 @@ Newest entries at the top.
 
 ---
 
+## 2026-08-31 · The copy pass built, verified, committed and shipped (Claude Code)
+
+**Closing the gap Cowork could not close.** The edit-screen `EDIT_NOTES` change and the sponsor→vouched copy pass were typechecked but NOT build-verified and NOT deployed — Cowork's node_modules is darwin-arm64 against a linux/arm64 device shell, and it cannot push. Both are now done. The line in the entry below reading "Uncommitted and undeployed" was true when written and is superseded by this one.
+
+**Two commits, code then docs** (`bde97db`, `7299ebd`), pushed to `main`, deployed and confirmed on manhattanite.com.
+
+**Every number:**
+- `next build` — **exits 0**. The one check Cowork could not run.
+- `tsc --noEmit` — clean.
+- `eslint` — **5 errors, byte-identical to the same run at HEAD**. Verified by stashing the changes and re-running, rather than trusting the remembered baseline: **the baseline is 5, not the 4 in the handover** (ClListingCard's `react-hooks/static-components` error prints two source locations and had been counted once). 4 in `app` + `lib` + `scripts`, 1 in the stray July worktree. Unchanged either way.
+- `npm run test:multi-sponsor` — **16/16**. The real check that the moved assertion strings and the renderer agree.
+- `npm run audit:gates` against **production, post-deploy — 67/67, 0 failures.**
+
+**THE NAME-LEAK ASSERTIONS STILL HAVE TEETH, AND THAT WAS CHECKED RATHER THAN ASSUMED.** The worry was that changing the guest byline string could make them pass for the wrong reason. It cannot: they assert the ABSENCE of real member names in guest HTML and never mention the byline wording, so no string move can satisfy them. Three things confirm they are live — 16 real names were loaded and searched, `/listings?q=…` is still among the routes fetched, and the member-side run asserts the *presence* of "Lila" on the same member page a guest gets the wall for. Names render when signed in and do not when signed out; the check separates the two.
+
+**The four edit strings were read off real rendered screens, not the diff** — a real member session, one fixture listing per status, all four correct, none showing another status's sentence, the old "goes back through review" line absent from every one, and admin mode suppressing the block entirely. Repeated against the deployed build for the two statuses the founder owns (published, archived). Fixtures torn down after; `+slice2` scoped, seed members untouched.
+
+**On production, signed out:** "Vouched for by a member" on every teaser card, six rows, and no occurrence of "sponsor" in the visible text of `/`, `/listings`, `/terms` or `/privacy`. **Signed in as the founder:** "Listed by Lila · vouched for by George Gardner" and three more like it, zero occurrences of "sponsored by" or the bare "vouched by".
+
+**`Test - Ignore` WAS ALREADY GONE — no action needed.** It is `archived`, invisible to a member, and so is a second one nobody had recorded: "QA TEST — ignore (auto-posted, will be removed)". **That is why the published count is 19, not the 20 the handover predicted** — the prediction assumed one takedown from 21, and two had happened. 3 archived + 19 published = 22 rows.
+
+**Left deliberately uncommitted:** a parallel Cowork session wrote `Manhattanite_Decision-Inventory_v1.md` and its log entry at 12:39, mid-run. Swept into the docs commit only after it had stopped changing; called out here because it is not this session's work.
+
+---
+
+## 2026-08-31 · Decision inventory for the Miro matrix (Cowork)
+
+**`WORK AREAS/Admin-PA/outputs/Manhattanite_Decision-Inventory_v1.md`.** Every open decision on the record, pulled from `decisions.md`, `legal-and-policy.md`, the pricing model, the 13 Aug strategy session and the timeline v3 parked list, plus twenty that had never been written down. 58 in seven groups; the ones new to the record are marked.
+
+**Eight of them block wave one** (1-13 Sep) and are grouped as such: what happens to the example listings, the apartment-heavy listing mix, the first ten names, the unpicked one-line pitch, how an invitation physically reaches someone, whether seed listings stay under George's name, the absence of any report control, and the support address.
+
+**The genuinely new ones worth naming here**, because they are gaps rather than deferrals: there is no way to report a listing; nothing expires, so the network will silently fill with stale rows; there is no reason for a member to return between visits (no digest); the vouching model has no rule for what happens to the people a removed member vouched for, no probation before a new member can vouch, and no cap on how many they may vouch for; geography is undecided beyond the name; and the admin service key exists on one laptop.
+
+**Flagged on the matrix itself:** the template's "likelihood of success" axis is built for actions. For decisions it reads better as "how much does answering it change what happens next", or everything lands in one corner.
+
+---
+
+
 ## 2026-08-31 · The edit screen stops promising a review that never happens, and "sponsor" becomes "vouched" (Cowork)
 
 **George's call on a thing flagged twice and left open since the 28th: fix the copy, not the behaviour.** The member edit screen told every editor "It goes back through review before it's live again." `updateListing` has never written `status` — deliberately, and the 0017 trigger waves an unchanged status through — so an edit to a published listing goes straight back live. The product was promising a moderation step it does not perform.

@@ -4,6 +4,20 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-08-31 · The two copy calls are built, verified and live
+
+**Both shipped** — `bde97db` (code) and `7299ebd` (docs), pushed to `main`, deployed, confirmed on manhattanite.com. The entry below saying "uncommitted, Cowork cannot push" is superseded.
+
+**`next build` exits 0** — the one check Cowork structurally cannot run on this repo. `tsc --noEmit` clean. `test:multi-sponsor` 16/16, which is the check that the moved assertion strings and the renderer agree. **`audit:gates` against production, post-deploy: 67/67, 0 failures.** eslint 5 errors, byte-identical to the same run at HEAD — and **the baseline is 5, not the 4 in circulation**: one error prints two source locations and had been counted once.
+
+**`Test - Ignore` IS ALREADY GONE — the open item from the 27th is closed, and nothing had to be done.** It is archived and invisible to a member. So is a second test row nobody had recorded, "QA TEST — ignore (auto-posted, will be removed)". **The published count is 19, not the 20 that was predicted**, because two takedowns had happened rather than one. 19 published + 3 archived.
+
+**Guest-anonymity assertions were checked for teeth, not just for green.** They assert the ABSENCE of member names and never reference the byline wording, so the changed guest string could not buy a false pass; 16 real names were loaded, and the member-side run asserts the *presence* of a name on the same page a guest gets the wall for.
+
+**Still open after this:** no error reporting wired, and no community guidelines page. Both carry into wave-one prep.
+
+---
+
 ## 2026-08-31 · The plan runs again: timeline v3, and two copy calls
 
 **Timeline v3 written** (`outputs/Manhattanite_MVP-Timeline_v3.md`) — v2's last week expired on 30 August with nobody invited. v3 covers 1 Sep to 4 Oct: prep, ten invitations, answer them, a conditional second wave, then assess. Replaces Phases 6-8 of v2 only.
