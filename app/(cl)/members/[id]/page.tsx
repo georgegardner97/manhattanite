@@ -22,6 +22,16 @@
 // `sponsorships` rather than from listing bylines for exactly the same reason.
 // The listings half is unchanged and may legitimately be empty.
 //
+// EACH VOUCHER NAME IS A LINK TO THAT MEMBER PROFILE (George, 2026-08-31):
+// "you are able to see who vouched for them by name, and equally are able to
+// click through to that person profile too". Seeing the name has worked since
+// 0026; the click-through could not, because 0026 returned the vouchers as
+// NAMES ONLY and a name is not an address — /members/[id] is keyed on the
+// account id. Migration 0030 adds sponsor_ids, paired BY INDEX with
+// sponsor_names, and a voucher with an id renders as a link. A voucher without
+// one renders as plain text, which is what the byline fallback below always
+// yields and what every name does until 0030 is run.
+//
 // notFound() now means ONE thing — this id is not an approved member — which is
 // what a 404 should mean. 0026 returns no row for a Tier 1 account or a
 // stranger, so non-members still have no public face.
@@ -56,6 +66,8 @@
 // logged-out visitor, and it gets the wall.
 // ---------------------------------------------------------------------------
 
+import { Fragment } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
@@ -71,7 +83,7 @@ import { relativeDay } from "@/lib/cl/filters";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
-/** The row shape of get_member_profile() (0026). */
+/** The row shape of get_member_profile() — 0026, plus sponsor_ids from 0030. */
 type MemberProfile = {
   name: string | null;
   avatar_path: string | null;
@@ -80,6 +92,8 @@ type MemberProfile = {
   linkedin_url: string | null;
   member_since: string | null;
   sponsor_names: string[] | null;
+  /** 0030. Absent until it is run, which is why every read of it is optional. */
+  sponsor_ids?: string[] | null;
 };
 
 /**
@@ -152,15 +166,27 @@ export default async function ClassifiedsMemberPage({
   const name =
     profile?.name ?? rows.find((r) => r.author_name)?.author_name ?? "A member";
 
-  // Sponsors from `sponsorships` when 0026 is live, because that is the whole
+  // Vouchers from `sponsorships` when 0026 is live, because that is the whole
   // point of the page and it must not depend on having posted. The union across
   // listing bylines is the fallback: the cache is per-listing and can differ
   // between rows if sponsors were added over time, so the union is the fullest
   // true answer available from that source.
-  const sponsors =
+  //
+  // THE ID IS WHAT MAKES THE NAME A LINK, and only the first path carries one.
+  // 0030 returns sponsor_ids paired by index with sponsor_names; `?.[i] ?? null`
+  // is deliberate rather than an index into an assumed-parallel array, so a
+  // missing 0030, a shorter array or a null entry all degrade to plain text
+  // instead of building a link to `/members/undefined`.
+  const vouchers: { name: string; id: string | null }[] =
     profile?.sponsor_names && profile.sponsor_names.length > 0
-      ? profile.sponsor_names
-      : [...new Set(rows.flatMap((r) => r.sponsor_names ?? []))];
+      ? profile.sponsor_names.map((n, i) => ({
+          name: n,
+          id: profile.sponsor_ids?.[i] ?? null,
+        }))
+      : [...new Set(rows.flatMap((r) => r.sponsor_names ?? []))].map((n) => ({
+          name: n,
+          id: null,
+        }));
 
   // Public bucket → a plain URL, no signing. Same path as /profile.
   const avatarUrl = profile?.avatar_path
@@ -232,13 +258,33 @@ export default async function ClassifiedsMemberPage({
               className="mt-[7px] text-[13.5px]"
               style={{ color: "var(--cl-muted)" }}
             >
-              {[
-                neighborhood,
-                sponsors.length > 0 &&
-                  `Vouched for by ${sponsors.slice(0, 2).join(" & ")}`,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
+              {neighborhood}
+              {neighborhood && vouchers.length > 0 && " · "}
+              {vouchers.length > 0 && (
+                <>
+                  {"Vouched for by "}
+                  {/* Every voucher is named. This used to slice(0, 2), which
+                      quietly disagreed with the "Vouched for by" stat below —
+                      three vouchers read as two names above the number 3 — and
+                      it contradicts the ask, which is to see who vouched for
+                      someone by name. Serial commas, "&" before the last. */}
+                  {vouchers.map((v, i) => (
+                    <Fragment key={v.id ?? v.name}>
+                      {i > 0 && (i === vouchers.length - 1 ? " & " : ", ")}
+                      {v.id ? (
+                        <Link
+                          href={`/members/${v.id}`}
+                          className="underline underline-offset-2"
+                        >
+                          {v.name}
+                        </Link>
+                      ) : (
+                        v.name
+                      )}
+                    </Fragment>
+                  ))}
+                </>
+              )}
             </p>
             {linkedin && (
               <a
@@ -269,7 +315,7 @@ export default async function ClassifiedsMemberPage({
           {/* Everything they have published, capped at 24 — which is the true
               count for anyone who can reach this page now that a guest cannot. */}
           <Stat label="Listings" value={String(rows.length)} />
-          <Stat label="Vouched for by" value={String(sponsors.length)} divided />
+          <Stat label="Vouched for by" value={String(vouchers.length)} divided />
           {memberSince && (
             <Stat label="Member since" value={memberSince} divided />
           )}
