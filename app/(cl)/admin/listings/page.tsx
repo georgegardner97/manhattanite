@@ -43,6 +43,7 @@ type AdminListing = {
   author_name: string | null;
   created_at: string;
   corrected_at: string | null;
+  outcome: string | null;
 };
 
 const STATUSES = ["published", "pending", "draft", "archived"] as const;
@@ -61,6 +62,26 @@ const TYPE_LABEL: Record<string, string> = {
   service: "Service",
   other: "Everything else",
 };
+
+// Why a member took their own listing down (0031). Read as data, not rendered
+// as a chip: this is a fact George is reading, not a status a member is being
+// judged by. found_here and found_elsewhere stay separate words on purpose —
+// see the migration header for why merging them would flatter the number.
+const OUTCOME_LABEL: Record<string, string> = {
+  found_here: "found its person here",
+  found_elsewhere: "sorted elsewhere",
+  withdrawn: "withdrawn",
+  no_luck: "no luck",
+};
+
+// A null renders as NOTHING, never "Unknown": the three populations that
+// produce one (archived before 0031, taken down by an admin, withdrawn while
+// still pending) are not the same thing, and one word for all three would
+// invent a fourth.
+function outcomeLabel(outcome: string | null): string | null {
+  if (outcome === null) return null;
+  return OUTCOME_LABEL[outcome] ?? outcome;
+}
 
 function first(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
@@ -101,7 +122,7 @@ export default async function AdminListingsPage({
   const { data, error } = await supabase
     .from("listings")
     .select(
-      "id, type, title, price_cents, status, author_id, author_name, created_at, corrected_at"
+      "id, type, title, price_cents, status, author_id, author_name, created_at, corrected_at, outcome"
     )
     .order("created_at", { ascending: false })
     .returns<AdminListing[]>();
@@ -126,8 +147,10 @@ export default async function AdminListingsPage({
           className="mt-3 max-w-[62ch] text-[13px] leading-[1.6]"
           style={{ color: "var(--cl-muted)" }}
         >
-          If this names a missing column, migration{" "}
-          <code>0028_admin_listing_edit.sql</code> has not been applied yet.
+          If this names a missing column, the migration that adds it has not
+          been applied yet — <code>corrected_at</code> is{" "}
+          <code>0028_admin_listing_edit.sql</code>, <code>outcome</code> is{" "}
+          <code>0031_listing_outcome.sql</code>.
         </p>
       </ClAdminShell>
     );
@@ -261,6 +284,7 @@ export default async function AdminListingsPage({
                   >
                     {TYPE_LABEL[row.type]} · {row.author_name ?? "(no name)"} ·{" "}
                     {formatDate(row.created_at)}
+                    {outcomeLabel(row.outcome) && ` · ${outcomeLabel(row.outcome)}`}
                   </div>
                 </div>
 

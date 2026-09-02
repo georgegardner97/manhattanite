@@ -9,6 +9,12 @@
 // re-checks session + membership + ownership, and the RLS update policy
 // (listings_write_member_own_update) is the real, database-level gate.
 //
+// WHY THE OUTCOME IS WRITTEN HERE. The takedown is the only moment the reason
+// a listing came down is knowable, and the four buttons on the confirm step ARE
+// the confirmation — so this action reads `outcome` off the same post that
+// flips the status. The values, why NULL is meaningful, and why no RLS change
+// was needed are in supabase/migrations/0031_listing_outcome.sql.
+//
 // Two RLS facts shape this file:
 //   1. No .select() after the update — we don't need the row back; the
 //      revalidate + re-render is the confirmation. (Migration 0016 added
@@ -26,6 +32,18 @@ import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export type ArchiveListingState = { error: string | null };
+
+// The four values 0031's check constraint allows. Validated HERE rather than
+// left to the constraint: a malformed post must not be able to fail a member's
+// own takedown, so anything unrecognized is treated as unanswered (null) and
+// the listing still comes down.
+const OUTCOMES = ["found_here", "found_elsewhere", "withdrawn", "no_luck"] as const;
+type Outcome = (typeof OUTCOMES)[number];
+
+function readOutcome(formData: FormData): Outcome | null {
+  const raw = String(formData.get("outcome") ?? "");
+  return (OUTCOMES as readonly string[]).includes(raw) ? (raw as Outcome) : null;
+}
 
 export async function archiveListing(
   _prevState: ArchiveListingState,
@@ -68,11 +86,14 @@ export async function archiveListing(
     return { error: "Only your own listings can be removed." };
   }
 
-  // Soft delete. status is the ONLY column written. No .select() — see the
-  // header note on RETURNING vs the published-only read policy.
+  // Soft delete. status and outcome are written in ONE statement, never two:
+  // a takedown that succeeds and then fails to record why loses the fact
+  // permanently, and it cannot be reconstructed from the row afterwards.
+  // No .select() — see the header note on RETURNING vs the published-only
+  // read policy.
   const { error } = await supabase
     .from("listings")
-    .update({ status: "archived" })
+    .update({ status: "archived", outcome: readOutcome(formData) })
     .eq("id", id)
     .eq("author_id", user.id);
 
