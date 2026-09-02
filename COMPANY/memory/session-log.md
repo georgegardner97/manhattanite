@@ -6,6 +6,126 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-02 · The takedown outcome is built, verified in a real browser, and pushed (Claude Code)
+
+**The app side of the handoff below is done and on `main`.** `0031` turned out to be **already applied to production** — probed before any code was written, exactly as the prompt required: the column selects, and a deliberate bogus write is rejected with `23514 listings_outcome_check`. The migration file was **untracked in git** until now and went in with the code commit.
+
+**THE ANSWER IS THE CONFIRMATION, and that is the whole design.** The confirm step's one button became four submits carrying `name="outcome"` and their own values. The browser sends only the clicked submitter's pair, so the choice arrives in the server action with no client state and no hidden field to keep in sync.
+
+**The four choices are not four red buttons.** They take the rail's own furniture — full-width `cl-rail-row` items in a `cl-panel`, the same pattern as the filter rail — so they read as a list of choices rather than four ways to do damage. The red stays on the control that opens the step, where the destruction actually is. Stacks vertically at 390px with the longest label ("Sorted, but not through Manhattanite") still on one line.
+
+**Server action:** validates against the four literals rather than passing a string through to the check constraint, and **an unrecognized value is treated as absent (null) rather than erroring** — a malformed post must never block a member from removing their own listing. `status` and `outcome` are written in **ONE** update: a takedown that succeeds and then fails to record why loses the fact permanently.
+
+**VERIFIED BY DRIVING THE REAL FORM IN A REAL BROWSER, NOT BY READING THE DIFF** — puppeteer-core against installed Chrome, a genuine member session minted the `generateLink` → `verifyOtp` way, clicking the actual buttons. A fetch-based test would have proved nothing here, because the entire design rests on browser submitter semantics. **All four values written and read back off the row; the pending fixture showed zero outcome buttons, kept the single button and wrote null; a tampered button value still took the listing down and stored null.** `next build` exits 0, `tsc --noEmit` clean, **eslint 5 errors — the baseline, unmoved, none in the touched files**, `audit:gates` **0 failures** including `checkNotInForm()` and the guest name-leak assertions.
+
+**A PRE-EXISTING BUG FOUND AND DELIBERATELY NOT FIXED: a member cannot take down a `draft` listing at all.** Isolated properly rather than guessed at — the same update fails identically with and without `outcome` (`42501 not allowed: members cannot make that status change`, from the 0017 trigger), and succeeds from `pending` and `published`. **So it predates this work entirely and the outcome column is not implicated.** The consequence is live today: the takedown control renders on a returned draft, a member can open it and pick a reason, and gets the generic "Something went wrong" error. **It needs a product decision before it is coded** — should a member be able to withdraw a listing a moderator returned to them? — which is why it was flagged rather than patched.
+
+**Two facts about production that the docs get wrong.** The **seed members (Anna, Max, Lila, Sam) no longer exist** — `audit:gates` teardown reports "seed members still present: 0", and prod is 3 auth users (George, Emma Kanne, info@) with 3 listings. CLAUDE.md and the synthetic-prefix safety notes still describe them as owning most of the live marketplace. Nothing was lost in this session: prod was confirmed byte-for-byte back to its pre-run state afterwards, Emma Kanne intact.
+
+**Housekeeping:** `puppeteer-core` was installed with `--no-save` so `package.json` and `package-lock.json` were never touched (confirmed clean); it lives only in gitignored `node_modules` and disappears on the next `npm ci`. All scratch scripts were kept in gitignored `_to_delete/`.
+
+---
+
+## 2026-09-02 · The takedown outcome: migration written, app-side handed to Claude Code (Cowork)
+
+**George's idea, in his words: "it would be useful for when a listing is taken down for there to be a choice — was this listing fulfilled? So that we have data on what was working and what wasn't." Agreed and specified the same session.**
+
+**THE ARGUMENT FOR DOING IT NOW RATHER THAN LATER IS THAT IT CANNOT BE BACKFILLED.** "Did this find its person" is answerable at exactly one moment — the takedown. A listing archived without being asked is a fact lost permanently; it cannot be reconstructed from the row, from `listing_contacts`, or by asking the member weeks later. With three listings on the network this is the cheapest it will ever be, and it is the only metric that separates a board that produces transactions from a newsletter with photographs.
+
+**FOUR VALUES, NOT A BOOLEAN, and the two extra ones carry the information.** `found_here` / `found_elsewhere` / `withdrawn` / `no_luck`. A fulfilled yes-no collapses three different ways of not succeeding into one. **`no_luck` is the failure signal** — it says which categories the network cannot serve yet. **`found_elsewhere` is the honesty check on the headline number** — a member who sells the table to their sister has fulfilled the listing without the network doing anything, and counting that as a match would flatter us into believing something untrue. Nothing reporting on this may merge those two.
+
+**THE DESIGN DECISION THAT MAKES THE DATA TRUSTWORTHY: the answer IS the confirmation.** The remove flow already has a confirm step whose primary control is one button ("Yes, take it down"). It becomes four submit buttons carrying `name="outcome"`. No separate survey, no extra tap, no skip. A question asked afterwards gets answered by nobody; a required extra step gets answered dishonestly by people trying to leave; this costs zero and should approach a 100% response rate.
+
+**NULL IS MEANINGFUL AND WILL STAY COMMON — three populations, never "missing data":** everything archived before today; everything an ADMIN took down (`/admin/listings` goes through `admin_archive_listing` with its own moderation note, and a founder removing someone's listing is a moderation event, not a member outcome — that path deliberately writes nothing here); and a `pending` listing withdrawn before publication, which the UI does not ask about because a listing nobody could see cannot have found anyone. **The denominator for any rate is member-archived, previously-published listings, not every archived row.**
+
+**Written and in the repo:** `supabase/migrations/0031_listing_outcome.sql` — nullable column, four-value check constraint, partial index, no RLS change (it rides on `listings_write_member_own_update` from 0014, the same policy that permits the status flip). **George runs it in the SQL editor; it is backwards-compatible, so it can go in before the app code without breaking anything.**
+
+**Handed off, not built here:** `WORK AREAS/Product/mvp-build-project/outputs/Manhattanite_Listing-Outcome_Claude-Code-Prompt_v1.md`. Cowork cannot run `next build` or push, and this touches a server action and a client component, so verification belongs in Claude Code. The prompt carries the constraints that are easy to break — `ClRemoveListing` must not end up nested in another form (`checkNotInForm()` guards it), `cardMeta()` is not to be touched, and **the eslint baseline is 5, not 4**.
+
+**Deliberately not built: any dashboard, chart or rate.** With one published listing, a percentage is noise. Aggregation is a separate decision for when there is something to aggregate.
+
+---
+
+## 2026-09-02 · The migration backlog is cleared, and it was smaller than the docs said (Cowork)
+
+**George ran 0029 and 0030 in the Supabase SQL editor. Both verified applied against production from Cowork within a minute of the run. There is now NO gap between `supabase/migrations/` on disk and the live database.**
+
+**THE DOCS WERE WRONG ABOUT 0027 AND THAT ERROR WAS REPEATED TO GEORGE BEFORE IT WAS CAUGHT.** The 2026-08-27 walkthrough entry says the blank-price migration "has to be run in the Supabase SQL editor before anyone can actually post a blank price". **It had already been run.** Verified by setting `price_cents` to null on a real row and restoring it — null was accepted. The claim that blank prices were blocked was carried forward from a note written at the time the migration was authored, and nobody checked the database afterwards. **General rule this earns: a migration's status is a fact about the database, never a fact about a document. Probe before repeating.**
+
+**Actual state at the start of today, once probed rather than assumed:** 0027 applied, 0028 applied (its `corrected_by`/`corrected_at` columns were live), 0029 unknown, 0030 NOT applied. So the real backlog was two, one of them unverifiable, not the four-deep pile the docs implied.
+
+**0030 was the one that mattered.** `get_member_profile` was returning seven fields; it now returns eight. Probed against Emma Kanne's row: `sponsor_names=["George Gardner"]` and `sponsor_ids=["85ce5315-…"]`, one each, lined up. That is the function behind member profile pages linking a voucher's name to their profile.
+
+**0029 WAS TESTED END-TO-END, NOT INSPECTED.** The FK's on-delete behaviour cannot be read off a schema through PostgREST, so it was exercised: a throwaway auth user was created, an archived listing's `corrected_by` was pointed at it, and the account was deleted. **The delete succeeded and the pointer went to null** — which is exactly 0029's purpose and the opposite of what would have happened without it (the delete would have been blocked). Probe user and all its rows removed, `corrected_by` restored to null. Worth keeping as the pattern: constraint behaviour is verified by causing it, not by reading the migration file.
+
+**Two writes were made to production rows in the course of verifying, both restored and both re-read to confirm:** `price_cents` on "Spare room in East Village apartment" (nulled, restored to 185000) and `corrected_by` on the same row (set, restored to null). Disclosed to George at the time.
+
+**Noticed, not caused:** George archived "Spare room in East Village apartment" himself mid-session, most likely testing the takedown flow he had just proposed instrumenting. **The live board is now ONE published listing** — the Ceccotti walnut dining table.
+
+**Next, agreed:** 0031 for the takedown-outcome question. Four options replacing the single confirm button on the remove step, so the answer IS the confirmation and there is no separate survey to skip: found its person here / sorted but not through Manhattanite / changed my mind / no luck. Rationale in the entry below and in the chat: a fulfilled yes-no destroys the two facts worth having, and the question can never be backfilled onto listings taken down before it exists.
+
+---
+
+## 2026-09-02 · The seed data is gone from production (Cowork)
+
+**George: "get rid of the example listings and the fake members." Done, against prod, verified. This closes CLAUDE.md note 15 five days before its deadline.**
+
+**What went, in three passes.** The seeder's own `--unseed` path did the bulk — 17 example listings, 20 storage objects, the 4 seed members (Anna, Max, Lila, Sam). A second pass took what `--unseed` cannot match: `george.gardner480+anna@googlemail.com` (a tier-1 orphan under the pre-`+seed-` alias convention, which is exactly why the script misses it) and four unnamed tier-1 signups from strangers — `b.h.a.nson.s.hi@`, `s.m.o.c.k.e.t.t1@`, `rfischer753@aol.com`, `ov.o.l.man.02.2@`. George chose those four knowing they were probably real people who found the form rather than test data. Third pass: the two rows titled "Test - Ignore" and "QA TEST — ignore (auto-posted, will be removed)".
+
+**PROD NOW: 3 listings, 3 accounts.** Two published (Spare room in East Village; Ceccotti walnut dining table) and one archived (Sunny one-bedroom, West Village) — all George's, all photoless. Accounts: the founder, `george.gardner480@gmail.com` (tier-1, kept at George's direction), and **Emma Kanne, the one real member, untouched — her sponsorship from George is the single surviving row in `sponsorships`.**
+
+**Backed up before anything was destroyed.** `WORK AREAS/Product/mvp-build-project/outputs/backups/prod-snapshot_2026-09-02_pre-unseed.json` — every deleted row plus the full accounts/sponsorships/applications/listing_contacts tables as they stood. **That folder was added to `.gitignore` in the same session because it contains real member emails.**
+
+**THE TOOLING FINDING, WHICH CHANGES WHAT COWORK CAN DO.** The orientation note said prod scripts cannot run from Cowork. Half wrong, and the half that is wrong matters: **device_bash HAS network access to Supabase and to manhattanite.com** — it is the npm registry and git push that are blocked. And `tsx` still fails (esbuild's native binary is darwin-arm64 against a linux-arm64 shell), but **`node --experimental-strip-types --env-file=.env.local scripts/<file>.ts` runs the TypeScript scripts directly.** That is how `--unseed` was run. **Caveat: it does not resolve extensionless imports, so `audit-gates.ts` (which imports `./screen-fixtures`) still cannot run here** — single-file scripts work, multi-file ones do not.
+
+**Verified by reading production, not by trusting the script.** Guest HTML of `/listings` contains zero occurrences of Anna, Lila, Sam, Emma, Kanne, "George Gardner" or Max as a word, and the count line reads "2 listings". The `listing-images` bucket is **empty — 0 objects, 0 orphans**. `listing_contacts` is empty (the one row referencing an example listing went with its cascade). `/`, `/listings`, `/terms` all 200; `/members` 404s as it should. **`npm run audit:gates` was NOT run — it cannot run from Cowork. Worth one run from Claude Code before the invitations.**
+
+**What this makes true, and what it costs.** Browse is now two photoless listings by one person. The cold-start problem from the earlier conversation is no longer theoretical, and the answer to it is still George posting real things before wave one. The welcome panel that would have covered the gap is parked.
+
+---
+
+## 2026-09-02 · The empty-board welcome panel: mocked, then parked (Cowork)
+
+**George: get rid of all the example listings and put one clickable non-listing in the grid instead — a welcome message, a how-it-works blurb and community guidelines. Explored, mocked up, and PARKED the same session. No code was touched.**
+
+**The half that is not parked: the seed listings still have to go.** CLAUDE.md note 15 already sets the condition — before the first invitation (wave one, 7-13 Sep) either the Example tag comes back or the seed rows are deleted. Parking the welcome panel does not move that date, and 12 of the 20 seed listings being apartments is still the largest reason browse reads as a rental site.
+
+**The argument against the single card, for the record, since it may come back.** A tile in the grid shaped like a listing but not one reads as a placeholder or a bug before it reads as a welcome. Two cheaper shapes already exist: the `/listings` empty state (built, unused, currently says "No listings yet") and a page-furniture panel above the grid. The mockup took the second.
+
+**Mockup:** `WORK AREAS/Product/design-foundation-project/outputs/Welcome-Panel_Mockup_v1.html` — two artboards in the live `cl-` tokens. A, first sign-in with an empty board; B, the same screen a week later with the panel collapsed to one line. The collapse trigger drawn was "you haven't posted yet", not "the site is new", so a member joining in October still meets the full version.
+
+**Two open items it surfaced, both outliving the park:**
+1. **There is no house-rules / community-guidelines page.** The panel linked to it twice; nothing is behind that link. `COMPANY/trust-and-moderation.md` has the operational rules but no member-facing page exists.
+2. **The shared-liability line still is not true.** The "Who's here" column stops at "their name stays beside yours" because the product has no rule for what happens to people a removed member vouched for. Already on `tasks.md` as a wave-one blocker; this is the second surface that wants it.
+
+**Also noted, unresolved:** the real answer to a cold-start board is George posting three or four things he actually owns, not a card. Raised, not decided.
+
+---
+
+## 2026-09-02 · The variants rebuilt on the long pitch — which quietly re-picks the default (Cowork)
+
+**George: do it again, based on the longer spoken version.** `Manhattanite_Pitch-Variants_v2.md` + PDF; v1 stays on disk, the generator now emits v2.
+
+**That is a positioning change, not a formatting one, and it is written into the sheet as such: the LONG version is now the base and the short line is the escape hatch.** The finalised pitch doc still holds both as decided; what changed is which one he reaches for first.
+
+**The sheet is now organised around five named beats** — define, mechanism, consequence, picture, close — because a two-paragraph pitch cannot be held word for word and a beat map can. "If you lose the thread, go to beat 4" is on the front panel.
+
+**Five scenarios** (coffee or dinner, phone or voice note, straight after their own bad story, handed over by a primed friend, walking or in a car), **six person types** at full length, **five written variants** including a new long one for anyone who asks him to send something rather than tell them, and the ten questions that come back.
+
+**A drop-back panel was added rather than assumed.** The long version in the wrong room reads as needing something from the listener — so the short line is correct when they asked to be polite, when one of them is standing, when it is noisy, or when it is the fourth time that day and he can hear himself performing it.
+
+---
+
+## 2026-09-02 · The variants sheet, off the back of the finalised pitch (Cowork)
+
+**`WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Pitch-Variants_v1.md` and its PDF.** The decided spoken line bent to fit the room: seven scenarios, six person types at opener level, four written variants, and the questions that actually come back.
+
+**The last part is the one that earns the sheet.** The pitch was never the hard bit — *"is it free"*, *"who else is on it"*, *"is this a startup"* and *"is it just Manhattan"* are. Two answers there are new positions rather than restatements: **"I'll ask them before I start using their names — same courtesy you'd get"** (naming members without asking is off), and **"Manhattan first. I'd rather it were dense than big"** (honest, since geography is undecided beyond the name).
+
+**Scoped against the pitch cards on purpose.** The cards own the twelve angle lines; this sheet owns the opener and the room. Stated on the sheet itself so the next reader doesn't merge them.
+
+---
+
 ## 2026-09-02 · The pitch is finalised, and the mechanism got sharper (Cowork)
 
 **Open since 1 August and on the wave-one blocker list: the one-line pitch was recommended but never chosen. Chosen today, and it changed on the way.**

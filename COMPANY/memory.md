@@ -11,6 +11,22 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-09-02 (the takedown outcome is BUILT, verified and pushed)
+
+**`0031_listing_outcome.sql` was ALREADY APPLIED to prod before the app code was written — probed, not assumed.** The column selects and the check constraint rejects a bogus value (`23514`). The migration file itself was untracked in git until this commit; it is in now.
+
+**Taking a listing down asks why, and the answer IS the confirmation.** The confirm step's single button became four submits carrying `name="outcome"`. No survey, no extra tap, no skip — choosing is how you complete the takedown. That is the whole reason the data is worth having: a question asked afterwards gets answered by nobody, and one asked as a toll gets answered dishonestly by people trying to leave.
+
+**A pending listing is never asked** (it was never published, so it cannot have found anyone) and writes null. **The admin path is untouched** — `/admin/listings` still goes through `admin_archive_listing` with its own moderation note, and those rows keep a meaningful null. **`/admin/listings` shows the outcome as plain text on archived rows; a null renders as NOTHING, never "Unknown".**
+
+**VERIFIED IN A REAL BROWSER, NOT FROM THE DIFF.** Four fixtures taken down with the four real buttons and each value read back off the row; a pending one confirmed to show no choices and write null; a tampered button value confirmed to still take the listing down while storing null. `next build` 0, `tsc` clean, **eslint 5 — the baseline, unmoved**, `audit:gates` 0 failures including `checkNotInForm()` and the guest name-leak block.
+
+**A PRE-EXISTING BUG WAS FOUND AND NOT FIXED: a member cannot take down a `draft` listing at all.** The 0017 trigger answers `42501 not allowed: members cannot make that status change`, identically with and without `outcome`, so it predates this work. The takedown control still renders on a returned draft, so a member can pick a reason and get the generic error. Needs a decision (should withdrawing a returned draft be allowed?) — see the session log.
+
+**Doc drift worth knowing: the seed members (Anna, Max, Lila, Sam) are GONE from prod.** `audit:gates` teardown reports "seed members still present: 0". Prod is 3 auth users (George, Emma Kanne, info@) and 3 listings. CLAUDE.md and the synthetic-prefix warnings still describe them as owning most of the marketplace; they do not.
+
+---
+
 ## Quick state addendum — 2026-08-28, later (page speed; everything is DEPLOYED)
 
 **Slice 3b, both migrations and the page-speed pass are live on manhattanite.com. `audit:rls` 67/67, `audit:gates` 0 failures locally and against production.**

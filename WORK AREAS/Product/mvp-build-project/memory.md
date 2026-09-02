@@ -4,6 +4,24 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-02 · Why a listing came down — built, verified, pushed
+
+**George's ask, in his words:** *"it would be useful for when a listing is taken down for there to be a choice — was this listing fulfilled? So that we have data on what was working and what wasn't."*
+
+**`0031` was already applied to prod** — probed first (column selects; bogus value rejected `23514`), so the app code could be verified against a real column. The migration file was untracked in git and went in with the code commit.
+
+**The single confirm button became four submits carrying `name="outcome"`.** The answer IS the confirmation — no survey, no extra tap, no skip — which is what makes the data trustworthy rather than optional. They use `cl-rail-row` inside a `cl-panel`, the filter rail's own pattern, so four choices do not read as four destructive actions; the red stays on the control that opens the step.
+
+**Pending is never asked** and writes null. **Admin take-down still records nothing** — a moderation event is not a member outcome. **`/admin/listings` shows the outcome as plain text on archived rows, and a null renders as nothing at all.**
+
+**Verified by driving the real form in a real browser** (puppeteer-core + installed Chrome, real member session): all four values written and read back, pending showed zero choices and wrote null, a tampered value still took the listing down and stored null. `next build` 0, `tsc` clean, **eslint 5 (baseline, unmoved)**, `audit:gates` 0 failures including `checkNotInForm()`.
+
+**BLOCKER FOUND, NOT FIXED — a member cannot take down a `draft` listing at all.** The 0017 trigger rejects it (`42501`), identically with and without `outcome`, so it is pre-existing. The control still renders on a returned draft, so the member hits a dead end with a generic error. **Needs George's call: should withdrawing a moderator-returned draft be allowed?**
+
+**Next:** the wave-one blocker from the pitch work is still open and unrelated to this — what happens to the people a removed member vouched for. Still needs deciding before 7 September.
+
+---
+
 ## 2026-08-31 · Example tag off, card meta split in two
 
 **George's call on the browse grid:** drop the Example tag — he knows which listings are seed content — and use the freed space to even up the vouched-for line.
