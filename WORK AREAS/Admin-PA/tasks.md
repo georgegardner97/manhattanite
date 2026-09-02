@@ -11,6 +11,8 @@ Format per task:
 
 - [ ] **WEEK 1 OF THE RECUT (by Sun 6 Sep) — launch prep.** Five things, in this order: test the invitation path end to end on a personal address; confirm `Test - Ignore` is off the site; secure the first two or three real offerings (Cole / Cody / mover / shop perk); write the community guidelines; decide hello@ vs info@. Plan: `Product/mvp-build-project/outputs/Manhattanite_MVP-Timeline_v3.md`. *(Source: timeline recut, added 2026-08-31, area: Product / Launch)*
 
+- [ ] **WAVE-ONE BLOCKER: write down what happens to the people a removed member vouched for.** The finalised pitch says "if you break the rules, you're both out" — the product has no such rule, and the decision inventory records the gap. It is a two-line policy and it is now the strongest sentence in the pitch, so make it true rather than soften it. Needed before the first invitation on Mon 7 Sep. Related and still open from the same list: no probation before a new member can vouch, and no cap on how many one member may vouch for — neither blocks the pitch. *(Source: pitch finalisation session, added 2026-09-02, area: Product / Trust)*
+
 - [ ] **Wire error reporting before the first wave** — nothing is capturing production errors, so a broken screen reaches you via a member rather than the system. **[Claude Code]** *(Source: timeline recut, added 2026-08-31, area: Product / Hardening)*
 
 - [ ] **Send the first ten invitations (week of Mon 7 Sep, from Tue 8)** — ten, not twenty-five, so every one gets a personal reply the same week. The five friend interviews fold into this wave rather than running separately. *(Source: timeline recut, added 2026-08-31, area: GTM / Seed)*
@@ -29,7 +31,7 @@ Format per task:
 
 - [ ] **Designer shortlist** — George's verdict: current design "too AI," wants a professional. First ask: Cole's network; then Manhattan editorial/brand studios. Brief package already exists (brand-guide v2 draft + photo rules + steal sheet + audit + screenshots). Serif/accent decisions FROZEN pending this. *(Source: George mind dump, added 2026-08-13, area: Product / Design)*
 
-- [ ] **Rework the one-line pitch** — draft options delivered 2026-08-01 (`Manhattanite_One-Line-Pitch_v1.md`); slogan candidates added 2026-08-13 (Strategy-Session §9). Decision deliberately deferred: test both in the friend interviews, then pick. *(Source: Marwan Roushdy meeting, added 2026-07-14, area: GTM / Positioning)*
+- [x] **Rework the one-line pitch — DONE 2026-09-02.** Finalised with George: two descriptions, spoken and written, in `Growth/.../outputs/Manhattanite_One-Line-Pitch_v2.md`. Pitch cards and their PDF rebuilt on it. *(Source: Marwan Roushdy meeting, added 2026-07-14, closed 2026-09-02, area: GTM / Positioning)*
 
 - [ ] **Audience + pillar reconciliation decision (post-Newport)** — with interview data in hand: who is Manhattanite for (plutocratic consumer vs young professional), and is the three-pillar framing (discounts / services / trusted buy-sell) positioning language or a category roadmap change to `mvp-spec.md`? *(Source: George mind dump + coaching, added 2026-08-13, area: Strategy)*
 

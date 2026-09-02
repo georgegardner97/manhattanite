@@ -40,3 +40,7 @@ Append-only. Most recent at the bottom.
 - 2026-08-31 — `Manhattanite_MVP-Timeline_v3.md` (Product / mvp-build-project/outputs) — the recut: five weeks, 1 Sep to 4 Oct, first invite wave in week 2.
 - 2026-08-31 — `Manhattanite_Vouched-Copy-Pass_Claude-Code-Prompt_v1.md` (Product / mvp-build-project/outputs) — build, verify, commit, push and prod-check today's two copy changes.
 - 2026-08-31 · Manhattanite_Decision-Inventory_v1.md · Admin-PA/outputs · full open-decision list for the Miro decision matrix
+- 2026-08-31 · Manhattanite_Decision-Board_v1.html · Admin-PA/outputs · interactive sticky-note version of the decision inventory (published as a Claude artifact; the artifact keeps its own state)
+- 2026-09-02 · Manhattanite_One-Line-Pitch_v2.md · Growth/founding-member-acquisition-project/outputs — the finalised pitch: spoken (short + long) and written descriptions, rules of use, retired lines
+- 2026-09-02 · Founding-Members_Pitch-Cards_v2.md · Growth/founding-member-acquisition-project/outputs — new spine, 12 angle lines rebuilt on shared liability, sponsor removed, Raya variant retired
+- 2026-09-02 · Founding-Members_Pitch-Cards_v2.pdf · Growth/founding-member-acquisition-project/outputs — printable practice sheet (generator: generators/generate_pitch_cards_pdf.py, updated and re-run)

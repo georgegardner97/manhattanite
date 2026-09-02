@@ -139,3 +139,45 @@ Cole's voice-note advice distilled (full version in `outputs/Manhattanite_Strate
 Category: Decision
 
 From George's mind dump + Strawberry.me coaching: (1) sublets/apartments are NOT the entry wedge (market saturated) — a category, not the lead; (2) new starter framing under test: locals-only discounts / community-based services / buy-sell with trusted neighbors — flagged as a scope shift vs mvp-spec, treated as positioning input until validated; (3) audience question formally open (plutocratic consumer vs young professional) — to be resolved via 5 friend interviews + offering reactions, not debate; (4) growth math logged: from 20 seed members, r≈0.5/month referral conversion hits the 50–100 year-end target — the 3-names ritual is the engine, approval throughput the deliberate brake; (5) GdC-style strictness confirmed as a feature to advertise. All organized in `outputs/Manhattanite_Strategy-Session_2026-08-13.md`.
+
+### 2026-09-02 — The pitch finalised: two descriptions, and a sharper mechanism
+
+Category: Decision
+
+Closed the decision that had been open since 14 July and on the wave-one blocker list since 31 August. **Two descriptions, not one** — spoken wins on punch, written wins on dignity (`outputs/Manhattanite_One-Line-Pitch_v2.md`). Spoken default: *"It's an invite-only listings site for New Yorkers. A member has to vouch for you to get in — and if you behave badly, they go too."* Written: four short paragraphs ending on the invitation to be one of the first ten.
+
+### 2026-09-02 — Shared liability replaces the name-on-a-profile
+
+Category: Decision
+
+George's own wording, and the biggest change in the pitch: *"the voucher is responsible for the behaviour of the people they let in — break the rules and you both go."* A consequence rather than a label. Every angle line in the cards was rebuilt on it, and the PRIDE motive shifted from *whose name means something* to *whose judgement you'd trust*.
+
+### 2026-09-02 — Craigslist is the comparison, never the self-description
+
+Category: Lessons learned
+
+Settled by looking at what the comparators actually say about themselves. Radio H-P's founder: "an honourable and trusted network" (Air Mail's headline: "a posh Craigslist"). Gens de Confiance: "a trustworthy ad site" / "buy, sell, or rent with confidence" (everyone else: classified ads). Neither uses the comparison or the word *classifieds* about itself, and both get described that way without harm. **Let the listener reach for it and agree warmly; never volunteer it.** This retired "It's Craigslist, if everyone on it was vouched for" and, with it, George's worry that "classifieds" sounds antiquated — the fix was dropping the category noun for verbs, not finding a synonym.
+
+### 2026-09-02 — Radio H-P documented for the first time
+
+Category: Progress
+
+radio-hp.co.uk, founder Nigel Hadden-Paton, Companies House 11923265. Pure login wall, no public marketing surface. ~8,000 members at the 2019 Air Mail profile. **Two nominations plus written testimonials, founder reviews every one personally** — stricter than our one voucher, no testimonial. Raised with George; not opened as a decision.
+
+### 2026-09-02 — Pitch cards v2 delivered
+
+Category: Progress
+
+`outputs/Founding-Members_Pitch-Cards_v2.md` + `.pdf` (generator updated and re-run on the device; reportlab is available there). New four-beat spine (open / swap / picture / close), twelve angle lines rewritten, "sponsor" gone, Raya variant deleted rather than parked, page one now carries both descriptions. Landlord card gained an explicit fair-housing line: **never "likeminded" or anything about the type of person** — the standard is conduct. That phrase was in George's own draft and was cut.
+
+### 2026-09-02 — Blocker: the pitch promises a rule the product doesn't have
+
+Category: Blocker
+
+The pitch now says "you're both out", and there is no rule for what happens to the people a removed member vouched for. Two-line policy, needed before the first invitation on 7 Sep. Added to `tasks.md`. Also still open from the same list and not blocking: no probation before a new member can vouch, no cap on how many one member may vouch for.
+
+### 2026-09-02 — Next steps
+
+Category: Next steps
+
+Say the spoken line out loud a few times before the first coffee. Write the cascade-removal rule. Then the invitation email itself, which the written description is now the body of.

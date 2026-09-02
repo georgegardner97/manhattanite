@@ -6,6 +6,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-02 · The pitch is finalised, and the mechanism got sharper (Cowork)
+
+**Open since 1 August and on the wave-one blocker list: the one-line pitch was recommended but never chosen. Chosen today, and it changed on the way.**
+
+**Two descriptions, not one, because they do different jobs.** Spoken wins on punch, written wins on dignity. Both in `WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_One-Line-Pitch_v2.md`.
+
+- **Spoken, the default:** *"It's an invite-only listings site for New Yorkers. A member has to vouch for you to get in — and if you behave badly, they go too."*
+- **Written, the invitation:** four short paragraphs — familiar half ("the same stuff you'd find on any classifieds site"), the turn ("the difference is who's on it"), the group-chat spare-room picture, and the invitation to be one of the first ten.
+
+**THE BIG CHANGE IS GEORGE'S, NOT A REWRITE OF THE OLD MATERIAL. Shared liability replaced the name-on-a-profile.** "Their name stays on your profile" describes a feature; "if you break the rules, they go too" describes a consequence. Every angle line in the pitch cards was rebuilt on it, and the PRIDE motive moved from *whose name means something* to *whose judgement you'd trust* — which is what a vouch actually is, a bet a member makes with their own membership.
+
+**CRAIGSLIST IS THE COMPARISON, NEVER THE SELF-DESCRIPTION — and that was settled by looking at what the comparators actually say.** Radio H-P's founder calls his site "an honourable and trusted network"; Air Mail calls it "a posh Craigslist". Gens de Confiance calls itself "a trustworthy ad site" and "buy, sell, or rent with confidence"; everyone else calls it classified ads. **Neither says classifieds or Craigslist about itself, and both get described that way without harm.** So the rule is: let the listener make the comparison, agree warmly when they do, never volunteer it. That retired "It's Craigslist, if everyone on it was vouched for" — a good sentence doing the wrong job.
+
+**George's instinct that "classifieds" sounds antiquated was right, and the fix was not a synonym.** It was to drop the category noun and use verbs, which is what GDC does. `voice-and-copy.md` already fixes the product's noun as *Listing, never post or ad*, so the July pitch cards saying "classifieds site" were out of step with the product.
+
+**Radio H-P, for the record, since it had never been described here:** radio-hp.co.uk, founder Nigel Hadden-Paton (hence H-P), Companies House 11923265. Pure login wall, no public marketing surface at all. ~8,000 members at the 2019 Air Mail profile. **Joining requires nomination by TWO existing members with written testimonials, and the founder reads every one himself** — stricter than Manhattanite's one voucher and no testimonial. Raised with George, not opened as a decision.
+
+**Also produced:** `Founding-Members_Pitch-Cards_v2.md` and its PDF (generator updated and re-run on the device — reportlab is available there). Twelve angle lines rewritten, "sponsor" gone, the Raya variant deleted rather than parked, and page one now carries both descriptions.
+
+**Fair-housing catch worth keeping.** George's own draft said the point was "a space with likeminded people". Cut. With apartments in the listing mix, the standard has to be about conduct, never about the type of person — the landlord card now says so explicitly.
+
+**NOT YET TRUE, AND THIS IS THE THING TO FIX.** The pitch now says "you're both out". The decision inventory records that the vouching model has **no rule** for what happens to the people a removed member vouched for. It is a promise the product does not yet keep, it is the strongest sentence in the pitch, and it needs writing down before the first invitation on 7 September. Added to `tasks.md` as a wave-one blocker.
+
+---
+
 ## 2026-08-31 · The Example tag comes off, and the card's meta line becomes two things (Claude Code)
 
 **George, on seeing the browse grid: get rid of the Example tag — "I know that they are examples" — and use the space it frees to even up the vouched-for line so it looks neat.** Two changes, and the second is the one with the reasoning in it.
@@ -58,6 +83,8 @@ Newest entries at the top.
 **Eight of them block wave one** (1-13 Sep) and are grouped as such: what happens to the example listings, the apartment-heavy listing mix, the first ten names, the unpicked one-line pitch, how an invitation physically reaches someone, whether seed listings stay under George's name, the absence of any report control, and the support address.
 
 **The genuinely new ones worth naming here**, because they are gaps rather than deferrals: there is no way to report a listing; nothing expires, so the network will silently fill with stale rows; there is no reason for a member to return between visits (no digest); the vouching model has no rule for what happens to the people a removed member vouched for, no probation before a new member can vouch, and no cap on how many they may vouch for; geography is undecided beyond the name; and the admin service key exists on one laptop.
+
+**Follow-on the same session: the inventory became an interactive board.** Published as a Claude artifact — the 58 decisions as draggable sticky notes in a 2x2 matrix (Decide today / Big bets / Fill-ins / Time sinks) plus an Unsorted tray and a Decided drawer, with add, edit, delete, area filters and a "Copy for Miro" export. It saves itself, so its state is the record and survives sessions; the source is kept at `WORK AREAS/Admin-PA/outputs/Manhattanite_Decision-Board_v1.html`. **The board, not the markdown file, is now the live list** — the markdown is the snapshot it was seeded from.
 
 **Flagged on the matrix itself:** the template's "likelihood of success" axis is built for actions. For decisions it reads better as "how much does answering it change what happens next", or everything lands in one corner.
 
