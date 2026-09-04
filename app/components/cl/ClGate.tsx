@@ -42,8 +42,12 @@ export default function ClGate({
         <Link href="/login" className="cl-pill">
           Sign in
         </Link>
+        {/* Relabelled 2026-09-04: with the tiers scrapped there is no access
+            to request, so the second control explains the way in rather than
+            offering a door that isn't there. Still /apply, which is now the
+            invitation-only screen. */}
         <Link href="/apply" className="cl-ghost">
-          Request access
+          How to join
         </Link>
       </div>
     </div>

@@ -17,7 +17,7 @@ import ClAccess from "@/app/components/cl/ClAccess";
 export const dynamic = "force-dynamic"; // session state varies per request.
 
 export const metadata: Metadata = {
-  title: "Request access · Manhattanite",
+  title: "Invitation only · Manhattanite",
 };
 
 export default function ApplyPage() {

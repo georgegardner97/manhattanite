@@ -27,7 +27,7 @@ import { Resend } from "resend";
 // CLI approve path it comes from `node --env-file=.env.local`.
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const APPLICATIONS_FROM = "Manhattanite <applications@manhattanite.com>";
+const APPLICATIONS_FROM = "Manhattanite <info@manhattanite.com>";
 const REVIEWER_TO = "info@manhattanite.com";
 
 // ---------------------------------------------------------------------------
@@ -370,7 +370,7 @@ export function renderInviteEmail({
     p(
       `<strong>${esc(inviterName)}</strong> would like to bring you into Manhattanite — a private marketplace for New Yorkers, where everyone is brought in by someone who already belongs.`
     ) +
-    p(`It's why there are no scams, no spam, and no strangers. ${esc(inviterName)} is your way in.`, {
+    p(`${esc(inviterName)} is your way in.`, {
       last: true,
     });
 
@@ -381,7 +381,7 @@ export function renderInviteEmail({
       lines: [
         inviteeName ? `Hi ${inviteeName},` : "Hi,",
         `${inviterName} would like to bring you into Manhattanite — a private marketplace for New Yorkers, where everyone is brought in by someone who already belongs.`,
-        `It's why there are no scams, no spam, and no strangers. ${inviterName} is your way in.`,
+        `${inviterName} is your way in.`,
       ],
       cta,
     }),

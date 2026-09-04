@@ -135,7 +135,7 @@ export default async function ClassifiedsLandingPage() {
                 as boilerplate here, which is the trade v3 refused to make and
                 this version accepts: the hero is worth more undivided than the
                 ask is worth prominent. */}
-            <Link href="/login">Request access</Link>
+            <Link href="/apply">How to join</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
             {/* Read at request time, not hardcoded — a copyright year that has

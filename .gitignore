@@ -51,3 +51,6 @@ next-env.d.ts
 
 # scratch bin for stale git lock files — never committed
 _to_delete/
+
+# Prod snapshots taken before destructive runs — contain real member emails.
+WORK AREAS/Product/mvp-build-project/outputs/backups/

@@ -14,18 +14,21 @@
 // request-access form for everybody, because a canvas has one state. The real
 // pipeline has four, and showing the wrong one is worse than showing none:
 //
-//   guest            → you cannot apply without an account. The card says so and
-//                      sends you to signup, rather than collecting a name and an
-//                      email into a form that has nowhere to post them.
+//   guest            → invitation only. Since 2026-09-04 there is no account to
+//                      send them to: the card explains the shape and stops,
+//                      rather than collecting a name and an email into a form
+//                      that has nowhere to post them.
 //   account (Tier 1) → the real application form.
 //   applied already  → we have it; here is what happens next.
 //   member           → you're in. Nothing to ask for.
 //
-// THE RIGHT CARD IS THE `pane` PROP, and it is the whole reason /signup is not a
-// loop. Screen 09 draws a sign-in card and a "Create an account" link beside it;
-// if /signup rendered this same screen unchanged, that link would point at the
-// page it was already on. So the right card carries sign-in on /login and /apply
-// and the real create-account form on /signup, and each offers the other.
+// THE RIGHT CARD IS THE `pane` PROP. It carried sign-in on /login and /apply and
+// the real create-account form on /signup, and each offered the other. /signup
+// is a redirect since 2026-09-04, so `pane="signup"` now has NO caller and the
+// branch is unreachable. It is kept, not deleted: reopening the self-serve door
+// is then one file — restore the page — rather than rebuilding a form. If that
+// stays true for long enough to feel permanent, delete the branch and this
+// paragraph together.
 //
 // WHAT IS NOT HERE: "Email me a link". The design's sign-in card offers a magic
 // link beside the password. Magic-link-only was the original plan and was
@@ -135,45 +138,37 @@ export default async function ClAccess({
             ) : (
               <>
                 <Head
-                  title="Request access"
-                  note="A member has to vouch for you."
+                  title="Invitation only"
+                  note="A member has to bring you in."
                 />
-                {/* The honest version of the design's cold form: it takes two
-                    steps, and pretending otherwise would collect a name and an
-                    email into a form with nowhere to post them. */}
+                {/* NO SELF-SERVE DOOR (George, 2026-09-04: the tiers are
+                    scrapped — you are a member brought in by someone else, or
+                    you are not). There is no form here and no account to
+                    create, because there is nothing a stranger can do from
+                    this screen but understand it. Collecting an email into a
+                    waiting list would be the same cold form this card was
+                    written to avoid. */}
                 <ol
                   className="mt-6 flex flex-col gap-3 text-[13.5px] leading-[1.55]"
                   style={{ color: "var(--cl-body)" }}
                 >
-                  <Step n={1} label="Create an account — email and a password." />
-                  <Step n={2} label="Tell us who you are and who’s vouching for you." />
+                  <Step n={1} label="A member invites you, and vouches for you." />
+                  <Step n={2} label="You set a password and tell us who you are." />
                   <Step n={3} label="A person reads it, usually within a week." />
                 </ol>
-                {/* On /signup the form for step 1 is already on this screen, so
-                    a pill pointing at /signup would point at the page it is on.
-                    The steps stand alone there and the eye goes to the card
-                    beside them. */}
-                {pane === "signup" ? (
-                  <p
-                    className="mt-7 text-[12.5px]"
-                    style={{ color: "var(--cl-faint)" }}
-                  >
-                    Step one is the form beside this. Free, and it lets you look
-                    around while you wait.
-                  </p>
-                ) : (
-                  <>
-                    <Link href="/signup" className="cl-pill mt-7">
-                      Create an account
-                    </Link>
-                    <p
-                      className="mt-4 text-[12.5px]"
-                      style={{ color: "var(--cl-faint)" }}
-                    >
-                      Free, and it lets you look around while you wait.
-                    </p>
-                  </>
-                )}
+                {/* Where the "Create an account" pill used to be. It is a
+                    sentence and not a control on purpose: the one thing a
+                    guest here might actually be able to do is find the
+                    invitation already sitting in their inbox, and there is no
+                    route we could point a pill at that would help them do it
+                    — the claim link is tokenised and only they have it. */}
+                <p
+                  className="mt-7 text-[12.5px] leading-[1.55]"
+                  style={{ color: "var(--cl-faint)" }}
+                >
+                  Already invited? Your invitation is in your email — open the
+                  link in it to claim your place.
+                </p>
               </>
             )}
           </section>
@@ -251,12 +246,7 @@ export default async function ClAccess({
                     </Link>
                   </>
                 ) : (
-                  <>
-                    Not a member yet?{" "}
-                    <Link href="/signup" style={{ color: "var(--cl-ink)" }}>
-                      Create an account
-                    </Link>
-                  </>
+                  <>Manhattanite is invitation only.</>
                 )}
               </div>
             )}

@@ -449,8 +449,7 @@ export default async function ClassifiedsDetailPage({
               className="mt-4 text-[12px] leading-[1.55]"
               style={{ color: "var(--cl-faint)" }}
             >
-              Read by a person before it went live. Report anything off and
-              we&rsquo;ll take it down.
+              Read by a person before it went live.
             </p>
           </aside>
         </div>

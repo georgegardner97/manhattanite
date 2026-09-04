@@ -237,8 +237,12 @@ function EmptyState({ q }: { q: ReturnType<typeof parseQuery> }) {
   );
 }
 
-// Guests see the create-account prompt where the rest of the network would be.
-// Same wall as /listings, restated in this system's furniture.
+// Guests see the invitation-only wall where the rest of the network would be.
+// Same wall as /listings, restated in this system's furniture. It stopped
+// offering an account on 2026-09-04, when the tiers were scrapped: there is no
+// longer an account a stranger can create, so the wall explains instead of
+// selling. Sign in stays, because an invited person who has already claimed a
+// place arrives here signed out sooner or later.
 function TeaserWall({ searched }: { searched: boolean }) {
   return (
     <div
@@ -247,12 +251,12 @@ function TeaserWall({ searched }: { searched: boolean }) {
     >
       <p className="max-w-[34ch] text-[19px] leading-[1.3]">
         {searched
-          ? "You’re searching a handful of recent listings. Create an account to search the whole network."
-          : "This is a glimpse. Create an account to see every listing in the network."}
+          ? "You’re searching a handful of recent listings. The rest of the network is for members."
+          : "This is a glimpse. The rest of the network is for members, and a member has to bring you in."}
       </p>
       <div className="mt-5">
-        <Link href="/signup" className="cl-pill">
-          Create an account
+        <Link href="/login" className="cl-pill">
+          Sign in
         </Link>
       </div>
     </div>

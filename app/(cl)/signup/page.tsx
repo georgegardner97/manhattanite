@@ -1,19 +1,25 @@
-// /signup — create an account. Screen 09, sign-up pane.
+// /signup — kept as a redirect, not deleted.
 //
-// The one route where screen 09 could not be promoted as drawn: the design's
-// guest card links to /signup, so rendering the unchanged screen here would
-// point that link at the page it is already on. The right-hand card carries the
-// real create-account form instead, and the numbered steps beside it stay put.
+// THE SELF-SERVE DOOR IS CLOSED (George, 2026-09-04). The tiers are scrapped:
+// you are a member brought in by someone else, or you are not. There is no
+// longer an account a stranger can create for themselves, so this route no
+// longer renders a form. The only account-creating path in the product is
+// ClJoinForm on /join/[token], which calls supabase.auth.signUp directly and
+// does not touch this route — closing this door does not touch the invite
+// chain.
+//
+// IT REDIRECTS RATHER THAN 404s, because the address is in the wild: the
+// waitlist-era emails, the design system's own links, bookmarks, and anything
+// sent before today. Those people should land on the screen that explains the
+// new shape rather than on an error. /apply is that screen — one door, one
+// explanation, in this system's furniture.
+//
+// ClAccess still carries its `pane="signup"` branch. It is unreachable while
+// this redirect stands, and it is left in place deliberately so reopening the
+// door is one file, not a rebuild.
 
-import type { Metadata } from "next";
-import ClAccess from "@/app/components/cl/ClAccess";
-
-export const dynamic = "force-dynamic"; // session state varies per request.
-
-export const metadata: Metadata = {
-  title: "Create an account · Manhattanite",
-};
+import { redirect } from "next/navigation";
 
 export default function SignupPage() {
-  return <ClAccess pane="signup" />;
+  redirect("/apply");
 }

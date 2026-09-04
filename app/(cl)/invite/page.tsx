@@ -52,12 +52,26 @@ export default async function ClassifiedsInvitePage() {
         <h1 className="text-[clamp(22px,2.4vw,30px)] font-medium tracking-[-0.02em]">
           Bring someone in.
         </h1>
+        {/* REWRITTEN 2026-09-04 for the invitation-only direction, then again
+            the same day once the rule behind it existed. George settled the
+            shared-liability question that afternoon: if someone breaks the
+            terms, they and the members who vouched for them are assessed the
+            same way. That is now written into /terms, which is why this copy
+            is allowed to say it — earlier in the day it deliberately stopped
+            short, because three separate pieces of copy this week were found
+            promising mechanisms that had never been built. The wording is
+            ASSESSED, not removed: the rule is that a voucher's judgment gets
+            looked at, not that they are automatically expelled. Do not
+            sharpen it into an automatic consequence without changing the
+            Terms first. */}
         <p
           className="mt-3 max-w-[52ch] text-[13.5px] leading-[1.6]"
           style={{ color: "var(--cl-muted)" }}
         >
-          Invite someone you&rsquo;d vouch for. They join through you, and
-          you&rsquo;re named as the member who vouched for them.
+          There is no other way in. Invite someone you&rsquo;d vouch for out
+          loud &mdash; your name stays beside theirs for as long as they&rsquo;re
+          here, and if they break the terms, your own membership is looked at
+          the same way.
         </p>
 
         <div className="mt-8">

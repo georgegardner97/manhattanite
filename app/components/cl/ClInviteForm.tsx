@@ -23,7 +23,7 @@ export default function ClInviteForm() {
       {state.sentTo && (
         <div className="cl-note mb-6">
           Invitation sent to <strong className="font-medium">{state.sentTo}</strong>.
-          They&rsquo;ll arrive vouched for by you. Invite someone else below.
+          They arrive vouched for by you. Invite someone else below.
         </div>
       )}
 
@@ -80,8 +80,10 @@ export default function ClInviteForm() {
             the introduction: your name is attached to theirs, publicly, and
             that is the whole mechanic. */}
         <p className="mt-4 text-[12.5px]" style={{ color: "var(--cl-faint)" }}>
-          You&rsquo;ll be named as the member who vouched for them. We still read
-          every new member by hand.
+          You&rsquo;ll be named as the member who vouched for them, on their
+          profile and beside every listing they post &mdash; and if they break
+          the terms, your membership is assessed alongside theirs. A person
+          reads every new member by hand, so it takes a few days.
         </p>
       </form>
     </div>

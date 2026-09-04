@@ -135,6 +135,11 @@ export default async function ClassifiedsSettingsPage() {
           <a href="#saved" className="cl-rail-row">
             Saved
           </a>
+          {account?.is_member && (
+            <a href="#invite" className="cl-rail-row">
+              Invite
+            </a>
+          )}
           <a href="#vouching" className="cl-rail-row">
             Vouching
           </a>
@@ -190,7 +195,7 @@ export default async function ClassifiedsSettingsPage() {
             >
               Leaving for good? There&rsquo;s no self-serve delete yet.{" "}
               <a
-                href="mailto:hello@manhattanite.com"
+                href="mailto:info@manhattanite.com"
                 className="underline underline-offset-2"
               >
                 Email us
@@ -254,6 +259,45 @@ export default async function ClassifiedsSettingsPage() {
               View saved listings
             </Link>
           </div>
+
+          {/* ---------- Invite ----------
+              THE ONLY WAY INTO /invite. The route has worked since the invite
+              slice; nothing in the product linked to it, so the only way a
+              member could bring someone in was to type the address. That made
+              the growth loop unreachable by the people it is for — the fourth
+              instance of the orphaned-route pattern (/admin, /search,
+              /listings/mine, now this).
+
+              It lands here rather than in AppHeader because the header's nav
+              is deliberately two items and the slot Saved vacated was left
+              vacant on purpose. /profile is the member's own screen and
+              already carries every other member-only door. Whether inviting
+              earns a place in the header is George's call, not a side effect
+              of adding the first link.
+
+              Members only: RLS (invites_insert_own) refuses a Tier-1 insert
+              and the page itself redirects them to /profile, so offering the
+              button to an account holder would be a door into a wall. */}
+          {account?.is_member && (
+            <>
+              <div id="invite" className="cl-grouplabel mt-9 mb-3.5">
+                Bring someone in
+              </div>
+              <p
+                className="max-w-[52ch] text-[13.5px] leading-[1.6]"
+                style={{ color: "var(--cl-muted)" }}
+              >
+                Invite someone you&rsquo;d vouch for. They get a link from you,
+                join through it, and you&rsquo;re named as the member who
+                vouched for them.
+              </p>
+              <div className="mt-4">
+                <Link href="/invite" className="cl-pill">
+                  Invite someone
+                </Link>
+              </div>
+            </>
+          )}
 
           {/* ---------- Vouching ---------- */}
           <div id="vouching" className="cl-grouplabel mt-9 mb-3.5">

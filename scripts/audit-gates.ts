@@ -285,18 +285,45 @@ async function main() {
   await check("guest", "/profile", null, { redirect: "/login" });
   await check("guest", "/profile/edit", null, { redirect: "/profile" });
 
+  // THE SELF-SERVE DOOR IS CLOSED (2026-09-04). /signup no longer renders a
+  // form; it redirects, because the address is in the wild and those people
+  // should meet the explanation rather than a 404. Asserted for the same reason
+  // the footer link is: this is a route whose ONLY remaining job is to send
+  // someone somewhere, and a route like that regresses silently — ClAccess
+  // still carries its unreachable `pane="signup"` branch, so a stray link or an
+  // accidental un-redirect would quietly reopen self-serve signup and nothing
+  // else in the suite would notice.
+  await check("guest", "/signup", null, { redirect: "/apply" });
+
+  // And the screen behind it says so. A guest on /apply must meet the
+  // invitation-only card and must NOT be offered an account to create — the
+  // exact copy that went false the moment the tiers were scrapped.
+  await check("guest", "/apply", null, {
+    status: 200,
+    contains: "Invitation only",
+    notContains: 'href="/signup"',
+  });
+
   // THE LANDING IS THE DOOR (v4, 2026-08-28). "/" was stripped to the wordmark,
-  // the line and the sign-in; the only way into the network is now a quiet
-  // "Request access" link in the footer. That link is the single entry point a
-  // non-member has — lesson 8's shape exactly — so it is asserted, not trusted.
-  // The listings must NOT come back by accident either: the six cards were
-  // removed on purpose, and a stray re-render of them here would put a teaser
-  // (and, one regression later, a byline) back on the front door.
+  // the line and the sign-in; the only way into the network is a quiet link in
+  // the footer. That link is the single entry point a non-member has — lesson
+  // 8's shape exactly — so it is asserted, not trusted. The listings must NOT
+  // come back by accident either: the six cards were removed on purpose, and a
+  // stray re-render of them here would put a teaser (and, one regression later,
+  // a byline) back on the front door.
+  //
+  // RETARGETED 2026-09-04, NOT RELAXED. The footer link was "Request access" →
+  // /login until the tiers were scrapped; it is "How to join" → /apply now,
+  // because with no self-serve account there is no access to request and /apply
+  // is the screen that explains the shape. The assertion follows the door. It
+  // must keep naming whatever the single entry point currently is — the whole
+  // point is that a front door with no way through it fails loudly here rather
+  // than being discovered by a stranger.
   await check("guest", "/", null, {
     status: 200,
     contains: "A private marketplace for New York.",
   });
-  await check("guest", "/", null, { status: 200, contains: 'href="/login"' });
+  await check("guest", "/", null, { status: 200, contains: 'href="/apply"' });
 
   if (otherUnpublished) {
     // A guest on a listing outside the teaser gets the WALL, not a 404 — Slice

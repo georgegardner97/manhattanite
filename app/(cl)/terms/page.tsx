@@ -2,7 +2,7 @@
 //
 // Grounded in COMPANY/legal-and-policy.md: the platform-is-not-a-party
 // principle, sponsorship-is-a-vouch-not-a-guarantee, fair-housing /
-// non-discriminatory listing standards, the two-tier eligibility model, account
+// non-discriminatory listing standards, the invitation-only eligibility model, account
 // termination, IP, and New York governing law.
 //
 // IMPORTANT: this is a working draft, NOT reviewed by counsel. Per the legal
@@ -27,7 +27,13 @@ export default function ClassifiedsTermsPage() {
     <ClDocument
       eyebrow="Terms of use"
       title="The agreement."
-      updated="August 26, 2026"
+      // BUMPED 2026-09-04 with the clauses themselves. Two substantive changes
+      // landed that day — the eligibility model became invitation only, and
+      // vouching gained a shared-assessment standard — and a "last updated"
+      // still reading August, while the rule governing a member's own exposure
+      // had changed, would be the most misleading stale string on the site.
+      // If you edit a clause, move this date in the same commit.
+      updated="September 4, 2026"
       notice={
         <>
           This is an early version of our terms, written in plain English while
@@ -46,8 +52,8 @@ export default function ClassifiedsTermsPage() {
 
       <h2>Who can use Manhattanite</h2>
       <p>
-        There are two ways to be here. An <strong>account</strong> is free and
-        open to anyone with an email address — it lets you browse the network.
+        Manhattanite is invitation only. A member invites you and vouches for
+        you; there is no way to create an account for yourself.
       </p>
       {/* Two things about this paragraph. It is split from the one above for
           rhythm — and the sentence is built so the <strong> falls MID-LINE.
@@ -57,19 +63,32 @@ export default function ClassifiedsTermsPage() {
           out again. Wording that keeps the tag off the line start is the fix
           that survives a formatter. */}
       <p>
-        The second way is <strong>membership</strong>: by application and manual
-        approval, and it&rsquo;s what lets you post listings, contact other
-        members, and bring people in. You must be at least 18 years old to hold
-        either.
+        Once you accept an invitation you tell us who you are, and a person
+        approves it by hand. While we are reading it you can look around;{" "}
+        <strong>membership</strong> is what lets you post listings, contact
+        other members, and bring people in yourself. You must be at least 18
+        years old.
       </p>
 
       <h2>Membership and vouching</h2>
       <p>
-        Members are brought in by other members who vouch for them. Vouching is a
-        social act of trust, not a legal guarantee: a member who vouches for
-        someone is not responsible for, and does not warrant, the conduct of
-        the people they bring in. We may approve, decline, or revoke membership at our
-        discretion to protect the network.
+        Members are brought in by other members who vouch for them, and a vouch
+        carries weight in both directions. If a member breaks these terms, the
+        members who vouched for them are assessed in the same way &mdash; under
+        the same standard, at the same time, by the same people. Their judgment
+        is part of what we look at.
+      </p>
+      <p>
+        It goes one step and stops. We look at the people who vouched for the
+        member in question, and not at whoever vouched for those people in
+        turn.
+      </p>
+      <p>
+        That is a membership standard, not a legal one. Vouching for someone
+        does not make you responsible for what they do, and it is not a
+        guarantee or warranty of their conduct or their dealings with anyone
+        else. We may approve, decline, or revoke membership at our discretion to
+        protect the network.
       </p>
 
       <h2>Listing standards</h2>
