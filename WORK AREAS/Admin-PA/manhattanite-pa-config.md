@@ -64,7 +64,7 @@ Surface in the EOD if relevant:
 
 These are George's standing instructions for "anticipate aggressively." The PA acts on these without being asked.
 
-**Daily (in the 7am briefing):**
+**Daily (in the 8am briefing):**
 - Time-blocked schedule merging tasks.md + both calendars + filtered Danbro
 - Top 3 priorities (80/20 lens)
 - Anything overdue
@@ -129,7 +129,7 @@ The captain's log rotates monthly. Start a new `YYYY-MM-captains-log.md` file on
 
 | Task | When | What it does |
 |---|---|---|
-| `pa-morning-briefing` | Daily 7am | Reads Admin-PA + Manhattanite project memory + both calendars + Outlook headlines + Todoist + yesterday's `daily/[yesterday].md`. Outputs the structured briefing per the prompt and writes today's Plan to `daily/[today].md`. |
+| `pa-morning-briefing` | Daily 8am | Reads Admin-PA + Manhattanite project memory + both calendars + Outlook headlines + Todoist + yesterday's `daily/[yesterday].md`. Outputs the structured briefing per the prompt and writes today's Plan to `daily/[today].md`. |
 | `evening-summary` | Daily 8pm | Reads today's Plan from `daily/[today].md`, runs plan-vs-reality comparison, writes Wrap + Tomorrow's setup + optional Reflection to the same file. Surfaces single most important thing for tomorrow. |
 | `monthly-system-review` | 1st of month, 9am | Cowork's own system health report. |
 

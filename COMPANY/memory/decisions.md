@@ -243,3 +243,37 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 - **NEVER "LIKEMINDED", OR ANYTHING ABOUT THE TYPE OF PERSON.** (2026-09-02) The standard Manhattanite advertises is about conduct. With apartments in the listing mix, describing the membership by type is a fair-housing exposure in a way describing it by behaviour is not. Applies to spoken pitches as much as to site copy.
 - **DON'T PITCH JOBS OR SERVICES.** (2026-09-02) Apartments and furniture are what is live; the three-pillar framing is still under test. The pitch says "things worth passing on" and the verbs get added when the categories exist.
 - **Comparator on the record: Radio H-P** (radio-hp.co.uk, Nigel Hadden-Paton, Companies House 11923265). Login wall only, no public marketing. ~8,000 members in 2019. **Two nominations plus written testimonials, founder reviews each personally** — stricter than Manhattanite's single voucher. Flagged to George 2026-09-02; not opened as a decision.
+
+## 2026-09-04 — The tiers are scrapped: invitation only, approval stays
+
+**George:** *"I want to scrap the tiered thing for now. You are either a full member brought in by someone else or you are not. No in-between."* Asked whether an invitation alone makes someone a member, he kept his own approval: **invited → set a password → tell us who you are → George approves → member.**
+
+**This reverses the two-tier access model decided 2026-06-09**, which had been the core mechanic since the MVP spec: Tier 1 (free account, browse everything, act on nothing) as the on-ramp, Tier 2 (member) as the trust gate, with the wall at the ACTION layer rather than the VIEWING layer. The action-layer wall survives; the on-ramp does not.
+
+**THE DATABASE DOES NOT MOVE, AND THAT IS THE POINT.** `accounts.is_member` was always a boolean and every RLS policy already keys off it. "Tier 1" was never a database state — it was the fact that anyone could manufacture an `is_member = false` account from the front page and then live there indefinitely. Scrapping the tiers closes that door; it does not migrate anything. An invited-but-unapproved person is still `is_member = false`, which is now the only way that state is reachable, and it is a queue rather than a destination.
+
+**What it costs, stated plainly:** the on-ramp is gone. The 2026-06-09 reasoning was that account holders see the value and members capture it — a stranger could look around and want in. From now a stranger sees the six-listing guest teaser and nothing else, and the only conversion path runs through a member. That is a smaller funnel and a stronger story, and it matches what the comparators actually do (Radio H-P is a pure login wall; joining needs nomination by two members).
+
+**Reversible on purpose.** `ClAccess` keeps its `pane="signup"` branch, unreachable, and `/signup` redirects rather than 404s, so reopening the door is one file.
+
+**A CONTRADICTION THIS SURFACED, UNRESOLVED AND GEORGE'S TO SETTLE.** `/terms` says a member who vouches for someone **"is not responsible for, and does not warrant, the conduct of"** the person they vouched for. The finalised spoken pitch says **"if you behave badly, they go too."** Those are opposite claims about the same mechanic, one of them on a legal page. The shared-liability rule — already a wave-one blocker — has to be written in a way that either reconciles them or changes the Terms.
+
+## 2026-09-04, later — Shared assessment: a vouch is reviewed alongside the person it was for
+
+**George, settling the wave-one blocker that had been open since the pitch was finalised on 2 September:** *"If someone violates the community terms then they and their sponsors are assessed in the same way."*
+
+**THE WORD THAT MATTERS IS ASSESSED, NOT REMOVED, and the copy follows it exactly.** The rule is that a voucher's judgment is looked at under the same standard, at the same time, by the same person — not that they are automatically expelled. That is both the more defensible position and the more accurate one: expulsion-by-association would punish a member for something they did not do, and would make every vouch a liability rather than a considered act.
+
+**Written into `/terms` as two paragraphs, deliberately split**, because they are two different claims and merging them was the old clause's mistake:
+1. **The membership standard.** "If a member breaks these terms, the members who vouched for them are assessed in the same way — under the same standard, at the same time, by the same people. Their judgment is part of what we look at."
+2. **The legal position, unchanged and still needed.** Vouching does not make you responsible for what someone else does and is not a warranty of their conduct or their dealings.
+
+**This replaces the clause that said a voucher "is not responsible for, and does not warrant, the conduct of the people they bring in"** — which read as a blanket disclaimer and flatly contradicted the pitch. The legal half survives; the implication that a vouch carries no consequence does not.
+
+**IT UNBLOCKS THE COPY.** `/invite` and the invite form now state the rule, having deliberately stopped short of it earlier the same day. The standing test held: three separate pieces of copy this week were found promising mechanisms that had never been built, so nothing was allowed to claim this until the rule existed.
+
+**Two things this does NOT settle, and both are George's:**
+- **Whether it cascades — DECIDED the same day (George): it does not.** *"It doesn't cascade. It's only one step of sponsorship that is looked at."* If A vouched for B and B vouched for C, and C breaks the terms, B is assessed and A is not. **This is now stated OUT LOUD in `/terms` rather than left to the plain reading** — an unstated limit on a rule with consequences is the kind of thing a member discovers at the worst possible moment, and the sentence costs nothing. It is also what keeps a vouch worth making: an unbounded chain would mean every member's standing depends on people they have never met, which is a reason not to vouch for anybody.
+- **The pitch says something stronger than the Terms do.** The spoken line is "if you behave badly, they go too"; the rule is that they are assessed. Either the pitch softens to match, or the gap is accepted knowingly. **Recommend the pitch moves to "the person who vouched for you gets looked at the same way"** — it is barely less punchy and it is the thing that is actually true.
+
+*Written by Cowork in plain English, not by a lawyer. The Terms already sit on the deferred attorney-review list; this clause joins it.*

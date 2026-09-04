@@ -6,6 +6,82 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-04, later still · The vouching rule exists, and the Terms stop contradicting the pitch (Cowork)
+
+**George, closing the blocker raised an hour earlier: "If someone violates the community terms then they and their sponsors are assessed in the same way."**
+
+**THE WORD IS ASSESSED, NOT REMOVED, and every piece of copy follows it exactly.** A voucher's judgment gets reviewed under the same standard at the same time; they are not automatically expelled. Both more defensible and more accurate than the spoken pitch's "you're both out" — expulsion-by-association punishes a member for something they did not do, and turns every vouch into a liability rather than a considered act.
+
+**`/terms` now carries it as TWO paragraphs, and the split is the point.** The old clause merged a membership question with a legal one and got both wrong: "a member who vouches for someone is not responsible for, and does not warrant, the conduct of the people they bring in" read as a blanket disclaimer and flatly contradicted the pitch on the company's own legal page. Now the membership standard is stated first, and the legal position — vouching is not a warranty and does not make you responsible for what someone else does — stands separately and unchanged.
+
+**IT UNBLOCKED THE COPY THAT HAD BEEN HELD BACK THE SAME MORNING.** `/invite` reads "if they break the terms, your own membership is looked at the same way", and the form footnote says the membership is assessed alongside theirs. The standing test held all day: three separate pieces of copy this week were found promising mechanisms that had never been built, and nothing was allowed to claim this one until the rule existed. **The file comments say so, so nobody sharpens it into an automatic consequence later without changing the Terms first.**
+
+**The cascade question was settled within the hour — George: "It doesn't cascade. It's only one step of sponsorship that is looked at."** `/terms` now says it in its own paragraph rather than leaving it to the plain reading: we look at the people who vouched for the member in question, and not at whoever vouched for those people in turn. **An unstated limit on a rule with consequences is the kind of thing a member finds out at the worst possible moment**, and an unbounded chain would make every member's standing depend on people they have never met — which is a reason not to vouch for anybody. **One thing it does not settle:** the spoken pitch is now stronger than the written rule — recommended the pitch move to "the person who vouched for you gets looked at the same way", which is barely less punchy and is the thing that is true. **`COMPANY/trust-and-moderation.md` still has no procedure for running an assessment**, which the Terms now promise.
+
+**Written in plain English by Cowork, not by a lawyer.** The Terms already sit on the deferred attorney-review list; this clause joins it. `tsc` clean outside `_to_delete/`, eslint 4 — baseline.
+
+---
+
+## 2026-09-04, later · Invitation only — the tiers come out, and the route audit comes back clean (Cowork)
+
+**Three instructions: scrap the tiered model, rewrite the invite copy to match, and scan for any other page you cannot reach through the product. Twelve files changed. `tsc` clean outside `_to_delete/`, eslint 4 — baseline, unmoved. Handoff: `Manhattanite_Invitation-Only_Claude-Code-Prompt_v1.md`.**
+
+**THE TIER REMOVAL NEEDED NO MIGRATION, AND THAT IS THE HEADLINE.** `is_member` was always a boolean; every RLS policy already keys off it. Tier 1 was never a database state — it was the fact that anyone could manufacture an `is_member = false` account from the front page and then live there. **So scrapping the tiers is closing a door, not migrating a model.** Decision and its cost recorded in `decisions.md`; George kept his own approval step, so an invited person is still `is_member = false` until he approves — a queue, not a tier.
+
+**The self-serve door is closed in five places:** `/signup` redirects to `/apply` (redirect, not 404 — the address is in waitlist-era emails and bookmarks); ClAccess's guest card is now "Invitation only" with the three steps rewritten and no create-account pill; the sign-in footer says "Manhattanite is invitation only" instead of offering signup; the guest teaser wall stops selling an account; and "Request access" is relabelled "How to join" on both the members-only wall and the landing footer, because there is no access to request. **`ClJoinForm` calls `supabase.auth.signUp` directly and never touched `/signup`, so the invite chain is untouched by any of it.** ClAccess keeps its unreachable `pane="signup"` branch on purpose: reopening the door is one file.
+
+**`/terms` was making a promise that goes false on deploy** — "An account is free and open to anyone with an email address" — and has been rewritten to the invitation-only shape, including the honest bit: while an application is being read you can look around, and membership is what lets you act.
+
+**AND IT SURFACED A CONTRADICTION WORTH MORE THAN THE EDIT. `/terms` says a voucher "is not responsible for, and does not warrant, the conduct of" the person they vouched for. The finalised pitch says "if you behave badly, they go too."** Opposite claims about the same mechanic, one of them on a legal page. The shared-liability rule was already a wave-one blocker; it now has to either reconcile with the Terms or change them. **Raised, not resolved — George's.**
+
+**The invite copy was rewritten to the new direction and DELIBERATELY STOPS SHORT of the shared-liability line.** "There is no other way in. Invite someone you'd vouch for out loud — your name stays beside theirs for as long as they're here, and how they behave here reflects on you." The "you're both out" sentence goes in the day the rule exists and not before: that would have been the third piece of copy this week promising a mechanism that was not built.
+
+**THE ROUTE AUDIT CAME BACK CLEAN, WHICH IS NEW.** Every route was enumerated and matched against every internal `href`, template href and `redirect()` target in the app. **Nothing is accidentally orphaned any more.** The admin console's five screens are all reachable through `ClAdminShell`'s tabs (the grep only sees two of them because the rest live in a `TABS` array — worth knowing before anyone "fixes" it again). Everything else unreached is unreached on purpose and documents itself in its own header: `/thank-you` (old links only, and it says so), `/reset-password`, `/join/[token]` and `/sponsor-request/[token]` (all arrive from email), `/auth/callback` and `/auth/sign-out` (a callback and a POST), `/profile/edit` (a redirect), `/search` (a 308). **The one real gap is unchanged and low: `/listings/[id]/contact` has no `href` anywhere — contact is the modal — so its own comment claiming "It is linked directly" is still stale, and with JavaScript off there is no path to contact a lister.**
+
+**Stale after this, and NOT rewritten:** `COMPANY/mvp-spec.md`, `product-vision.md` and `strategy-blueprint.md` all still describe the two-tier model as the core mechanic. The reversal is in `decisions.md` and here; the strategy documents need a pass of their own.
+
+---
+
+## 2026-09-04 · Three copy calls, and the growth loop finally has a door (Cowork)
+
+**George, on the walk's findings: take the report copy down altogether, get rid of the no-scams line, and the address is info@. All three done on disk. Then: "how can someone actually invite a person? We need to make that extremely easy right now" — which turned out to be the real finding of the day.**
+
+**NOTHING IN THE PRODUCT LINKED TO `/invite`. The only way a member could bring someone in was to type the address.** The route has worked since the invite slice; the page's own header comment records the orphan state and calls it deliberate, pending a growth-loop decision. Defensible for a site nobody can reach, indefensible three days before wave one, when bringing people in IS the product. **Fourth instance of the orphaned-route pattern** after /admin, /search and /listings/mine — and the most expensive one, because the others stranded a screen while this one stranded the mechanism the whole company runs on.
+
+**The door lands on `/profile`, members only** — a "Bring someone in" section with a filled pill, plus an Invite row in the page's rail. Gated on `is_member` because RLS refuses a Tier-1 insert and `/invite` redirects them away: offering an account holder the button would be a door into a wall. **AppHeader was deliberately left alone** — its nav is two items and the slot Saved vacated was kept vacant on purpose, so whether inviting earns a header slot is George's call rather than a side effect of adding the first link.
+
+**The three copy calls:**
+- **The report promise is gone from every listing page.** "Read by a person before it went live" stays, because it is true; "Report anything off and we'll take it down" goes, because there is no report control. George chose removing the sentence over building the feature. **The gap stays on the inventory — the product still has no way to report a listing.**
+- **"There are no scams, no spam, and no strangers" is out of the invitation email**, HTML and plain text both. An absolute guarantee in the first sentence a stranger reads, and off the finalised pitch, which sells the consequence rather than a claim of purity.
+- **The address is info@manhattanite.com.** Closes an item open since the recut, and it was being framed against the wrong pair: every transactional email had been sending from `applications@manhattanite.com`, an address nobody had decided on. The one stray `hello@` — the account-closure link on /profile — went with it, so info@ is now the single address in Terms, Privacy, the email footer, the reviewer inbox and every from-line. **Watch on deploy: the reviewer ping is now info@ to info@.**
+
+**Verified as far as Cowork can:** `tsc --noEmit` clean outside `_to_delete/`, **eslint 4 across `app lib scripts` — the baseline, unmoved.** `next build`, `audit:gates` and the push all need Claude Code. **Flagged in the prompt:** `_to_delete/exercise-outcome.ts` (a puppeteer scratch file) sits inside tsconfig's include, which excludes only `node_modules`, so it is in the type-check graph and may fail the build; the fix is excluding `_to_delete`, not deleting it.
+
+**Handoff:** `WORK AREAS/Product/mvp-build-project/outputs/Manhattanite_Wave-One-Copy-and-Invite-Entry_Claude-Code-Prompt_v1.md`.
+
+---
+
+## 2026-09-04 · The invitation path, walked as far as a machine can walk it (Cowork)
+
+**The Week 1 must-hit, attempted on the third day it was named. Every screen in the chain was driven against production in a real browser. Two links in it cannot be pulled by Claude — signing in as George and creating an account are both off-limits — so the walk stops at the "Claim your spot" button, which is a five-minute job for George and now the ONLY untested step.**
+
+**THE SCREEN NOBODY HAD EVER SEEN WORKS.** `/join/[token]` was driven with a real pending invite: it reads "George Gardner brought you in.", the email is pre-filled and read-only, and — the thing actually at risk — **the Turnstile widget renders and is live.** The missing-CAPTCHA bug fixed blind in Slice 3a is genuinely fixed on the deployed build. A mistyped token gives "This invitation isn't available." and gives nothing away about which failure it was. Submit stays disabled until the password and the CAPTCHA are both satisfied, which is correct.
+
+**A pending invite row was created directly (service role) to get a token, and DELETED afterwards — prod is back to one invite row, Emma's, accepted.** No account was created and no email was sent, so `sendInviteEmail` and `signUp` remain unexercised.
+
+**FOUR THINGS THE WALK FOUND, none of them in the invite chain itself:**
+
+1. **The board a wave-one invitee lands on is one listing, three months old, with no photograph.** `/listings` reads "1 listing" over a large grey placeholder block. **All three production listings have `images: []`** — the seed deletion took the photographs with it and the survivors never had any. The First-Five-Offerings work is no longer the difference between a good launch and a better one; it is the difference between a network and an empty grey box.
+2. **Every listing page promises a report control that does not exist.** The trust line under the contact button reads "Report anything off and we'll take it down." There is no way to report a listing — it is on the decision inventory as a known gap. Same shape as the edit-screen "goes back through review" copy George fixed on 31 Aug: the product promising a mechanism it does not have, on the screen where trust is the point.
+3. **The invitation email says "there are no scams, no spam, and no strangers."** An absolute guarantee, in the first sentence a stranger ever reads, about the one thing a marketplace cannot promise. It is also out of step with the finalised pitch, which sells the CONSEQUENCE (you're both out) rather than a claim of purity. Recommend rewriting on the shared-liability line before any invitation goes out.
+4. **The hello@ vs info@ decision is being framed against the wrong pair.** Every transactional email — invitation, application, welcome — sends today from `applications@manhattanite.com`. That is the address a wave-one invitee will actually reply to.
+
+**Minor, not blocking:** the header offers a logged-out visitor "Post a listing" on `/join` itself, competing with "Claim your spot" on the product's most important first screen; and `/join` inherits the generic landing page title, so the browser tab of an invitation reads "A better marketplace for Manhattan residents" rather than anything about being invited.
+
+**What is left of the must-hit, and it is George's:** sign in, `/invite`, invite a plus-alias of his own address, open the email, set a password, apply. That exercises the member form, the real Resend send, `signUp` behind Turnstile, `accept_invite` and the sponsor attaching. Approval afterwards runs on his Mac (`npm run approve -- <id>`) — the script imports across files, so Cowork's node cannot run it.
+
+---
+
 ## 2026-09-02 · The takedown outcome is built, verified in a real browser, and pushed (Claude Code)
 
 **The app side of the handoff below is done and on `main`.** `0031` turned out to be **already applied to production** — probed before any code was written, exactly as the prompt required: the column selects, and a deliberate bogus write is rejected with `23514 listings_outcome_check`. The migration file was **untracked in git** until now and went in with the code commit.

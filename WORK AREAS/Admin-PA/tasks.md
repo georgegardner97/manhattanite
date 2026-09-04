@@ -11,7 +11,27 @@ Format per task:
 
 - [ ] **WEEK 1 OF THE RECUT (by Sun 6 Sep) — launch prep.** Five things, in this order: test the invitation path end to end on a personal address; confirm `Test - Ignore` is off the site; secure the first two or three real offerings (Cole / Cody / mover / shop perk); write the community guidelines; decide hello@ vs info@. Plan: `Product/mvp-build-project/outputs/Manhattanite_MVP-Timeline_v3.md`. *(Source: timeline recut, added 2026-08-31, area: Product / Launch)*
 
-- [ ] **WAVE-ONE BLOCKER: write down what happens to the people a removed member vouched for.** The finalised pitch says "if you break the rules, you're both out" — the product has no such rule, and the decision inventory records the gap. It is a two-line policy and it is now the strongest sentence in the pitch, so make it true rather than soften it. Needed before the first invitation on Mon 7 Sep. Related and still open from the same list: no probation before a new member can vouch, and no cap on how many one member may vouch for — neither blocks the pitch. *(Source: pitch finalisation session, added 2026-09-02, area: Product / Trust)*
+- [x] **WAVE-ONE BLOCKER: what happens to the people a removed member vouched for — DECIDED 2026-09-04 (George).** "If someone violates the community terms then they and their sponsors are assessed in the same way." Written into `/terms` as a membership standard, with the legal disclaimer kept separate; `/invite` and the invite form now state it. **Assessed, not automatically removed — do not sharpen the copy without changing the Terms.** *(Source: pitch finalisation session, added 2026-09-02, closed 2026-09-04, area: Product / Trust)*
+
+- [ ] **One loose end on the vouching rule.** The spoken pitch says "they go too", the written rule says "assessed" — soften the pitch to match, or accept the gap knowingly. **The cascade question is CLOSED 2026-09-04 (George): it does not cascade, one step only, and `/terms` says so out loud.** Also still open from the same list: no probation before a new member can vouch, and no cap on how many one member may vouch for. *(Source: 2026-09-04 session, added 2026-09-04, area: Product / Trust)*
+
+- [ ] **Put the vouching rule into `COMPANY/trust-and-moderation.md`.** The Terms now promise a shared assessment; the operational doc has no procedure for running one. Short: what triggers it, who is looked at, what the outcomes are. *(Source: 2026-09-04 session, added 2026-09-04, area: Product / Trust)*
+
+- [ ] **WAVE-ONE BLOCKER: the board is one photoless listing.** Verified against prod 2026-09-04 — `/listings` reads "1 listing" over a grey placeholder, and all three listings have no images at all. The First-Five-Offerings work now decides what the first ten people see. *(Source: invitation-path walk, added 2026-09-04, area: GTM / Seed)*
+
+- [x] **The report-copy promise — CLOSED 2026-09-04.** George's call: take the copy down altogether rather than build the feature. The sentence is off the listing page (uncommitted, needs Claude Code to ship). **The gap itself stays open on the decision inventory: there is still no way to report a listing.** *(Source: invitation-path walk, added 2026-09-04, closed 2026-09-04, area: Product / Trust)*
+
+- [x] **The invitation email's "no scams, no spam, no strangers" line — REMOVED 2026-09-04**, on George's instruction, from both the HTML and plain-text bodies. Uncommitted; ships with the copy batch. *(Source: invitation-path walk, added 2026-09-04, closed 2026-09-04, area: GTM / Copy)*
+
+- [x] **The sending address is info@manhattanite.com — DECIDED 2026-09-04 (George).** Closes the hello@ vs info@ item open since the timeline recut. Every transactional email was sending from `applications@`; that and the one stray `hello@` on the profile page are both changed to info@. Uncommitted. *(Source: George, added 2026-08-31, closed 2026-09-04, area: Product / Launch)*
+
+- [ ] **Ship the invitation-only batch.** Twelve files on disk: the tiers out, the invite copy rewritten, the /invite entry point, the wave-one copy fixes, and Terms corrected. Typechecked, lint at baseline. Ready-to-run prompt: `Product/mvp-build-project/outputs/Manhattanite_Invitation-Only_Claude-Code-Prompt_v1.md`. **[Claude Code]** *(Source: 2026-09-04 session, added 2026-09-04, area: Product)*
+
+- [ ] **Reconcile the Terms with the pitch on shared liability.** `/terms` says a voucher "is not responsible for, and does not warrant, the conduct of" the person they vouched for. The pitch says "if you behave badly, they go too." One of those has to change, and one of them is a legal page. Folds into the wave-one vouching-rule blocker. *(Source: 2026-09-04 session, added 2026-09-04, area: Legal / Trust)*
+
+- [ ] **Update the strategy docs for invitation-only.** `mvp-spec.md`, `product-vision.md` and `strategy-blueprint.md` all still describe the two-tier model as the core mechanic. The decision is logged; the documents are stale. *(Source: 2026-09-04 session, added 2026-09-04, area: Strategy)*
+
+- [ ] **Finish the invitation walk — the two steps only George can do.** Sign in, `/invite`, invite a plus-alias of your own address, open the email, set a password, apply. Everything either side of those two clicks is verified against prod: `/join` renders, Turnstile is live, bad tokens fail cleanly. Approval runs on the Mac (`npm run approve -- <id>`). *(Source: invitation-path walk, added 2026-09-04, area: Product / Launch)*
 
 - [ ] **Wire error reporting before the first wave** — nothing is capturing production errors, so a broken screen reaches you via a member rather than the system. **[Claude Code]** *(Source: timeline recut, added 2026-08-31, area: Product / Hardening)*
 

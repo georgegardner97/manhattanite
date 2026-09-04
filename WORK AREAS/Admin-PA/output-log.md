@@ -44,3 +44,11 @@ Append-only. Most recent at the bottom.
 - 2026-09-02 · Manhattanite_One-Line-Pitch_v2.md · Growth/founding-member-acquisition-project/outputs — the finalised pitch: spoken (short + long) and written descriptions, rules of use, retired lines
 - 2026-09-02 · Founding-Members_Pitch-Cards_v2.md · Growth/founding-member-acquisition-project/outputs — new spine, 12 angle lines rebuilt on shared liability, sponsor removed, Raya variant retired
 - 2026-09-02 · Founding-Members_Pitch-Cards_v2.pdf · Growth/founding-member-acquisition-project/outputs — printable practice sheet (generator: generators/generate_pitch_cards_pdf.py, updated and re-run)
+- 2026-09-02 · Manhattanite_Pitch-Variants_v1.md · Growth/founding-member-acquisition-project/outputs — the working pitch sheet: spoken variants by scenario and by person, written variants, and answers to the questions that come back
+- 2026-09-02 · Manhattanite_Pitch-Variants_v1.pdf · Growth/founding-member-acquisition-project/outputs — printable version (generator: generators/generate_pitch_variants_pdf.py)
+- 2026-09-02 · Manhattanite_Pitch-Variants_v2.md · Growth/founding-member-acquisition-project/outputs — the variants sheet rebuilt on the LONG spoken pitch; supersedes v1
+- 2026-09-02 · Manhattanite_Pitch-Variants_v2.pdf · Growth/founding-member-acquisition-project/outputs — printable long-form version (generator: generators/generate_pitch_variants_pdf.py, now emits v2)
+- 2026-09-02 · `Welcome-Panel_Mockup_v1.html` — design-foundation-project/outputs. Browse-page welcome panel (option 2), two states, for the seed-listing deletion before wave one.
+- 2026-09-02 · `prod-snapshot_2026-09-02_pre-unseed.json` — mvp-build-project/outputs/backups. Pre-deletion snapshot of every seed listing, member and junk row removed from prod (gitignored: contains real emails).
+- 2026-09-02 · `supabase/migrations/0031_listing_outcome.sql` — the takedown-outcome column. Needs running in the Supabase SQL editor.
+- 2026-09-02 · `Manhattanite_Listing-Outcome_Claude-Code-Prompt_v1.md` — mvp-build-project/outputs. App-side build brief for 0031.

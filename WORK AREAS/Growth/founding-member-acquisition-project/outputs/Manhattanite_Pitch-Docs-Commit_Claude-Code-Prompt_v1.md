@@ -13,13 +13,18 @@ Cowork wrote these files directly to disk but cannot push (the device bridge has
 ```
 Commit and push today's documentation work in the manhattanite repo. Docs only — there are no code changes in this batch, so if you find any, stop and tell me rather than sweeping them in.
 
-Today's session finalised the founding-member pitch. Nine files changed, all documentation:
+Today's session finalised the founding-member pitch. Fourteen files changed, all documentation:
 
 New:
 - WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_One-Line-Pitch_v2.md
 - WORK AREAS/Growth/founding-member-acquisition-project/outputs/Founding-Members_Pitch-Cards_v2.md
 - WORK AREAS/Growth/founding-member-acquisition-project/outputs/Founding-Members_Pitch-Cards_v2.pdf
 - WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Pitch-Docs-Commit_Claude-Code-Prompt_v1.md
+- WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Pitch-Variants_v1.md
+- WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Pitch-Variants_v1.pdf
+- WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Pitch-Variants_v2.md
+- WORK AREAS/Growth/founding-member-acquisition-project/outputs/Manhattanite_Pitch-Variants_v2.pdf
+- WORK AREAS/Growth/founding-member-acquisition-project/generators/generate_pitch_variants_pdf.py
 
 Modified:
 - WORK AREAS/Growth/founding-member-acquisition-project/generators/generate_pitch_cards_pdf.py
@@ -55,6 +60,12 @@ Steps:
    Craigslist is now recorded as the comparison others make, never the
    self-description — established from what Radio H-P and Gens de
    Confiance actually say about themselves.
+
+   Also adds the variants sheet and its generator, in two passes: v1 off
+   the short line, then v2 rebuilt off the long one, which makes the long
+   version the base and the short line the escape hatch. v2 is organised
+   around five named beats and adds a drop-back panel for the rooms where
+   the long pitch is the wrong answer.
 
    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 

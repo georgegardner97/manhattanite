@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manhattanite — Welcome panel mockup v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cl-ground:#e9e5de; --cl-surface:#fbfaf9; --cl-white:#fff;
+    --cl-black:#0f0f0f; --cl-ink:#141414; --cl-body:#3d3a36;
+    --cl-muted:#6e6a65; --cl-label:#7c766d; --cl-faint:#9a948b; --cl-disabled:#a8a29a;
+    --cl-border-panel:#dfd9d0; --cl-border-control:#e7e2da; --cl-border-ghost:#e2dcd3; --cl-hairline:#ede8e1;
+    --cl-fill-active:#f1ece5; --cl-fill-skeleton:#efeae3; --cl-fill-note:#f4f0ea; --cl-fill-avatar:#e5dfd6;
+    --cl-red:#8c2d2d; --cl-tag-vouch-bg:#ede4d4; --cl-tag-vouch-fg:#7a4a18;
+    --cl-r-media:10px; --cl-r-card:12px; --cl-r-panel:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--cl-ground);
+    font-family:"Instrument Sans",system-ui,sans-serif; color:var(--cl-ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1560px;margin:0 auto;padding:44px 28px 90px}
+
+  /* ---- mockup chrome (NOT part of the design) ---- */
+  .mock-head{max-width:820px;margin:0 auto 46px;text-align:center}
+  .mock-head h1{font-family:"Newsreader",Georgia,serif;font-weight:400;font-size:34px;margin:0 0 10px;letter-spacing:-.01em}
+  .mock-head p{margin:0;font-size:14px;line-height:1.6;color:var(--cl-body)}
+  .art-label{
+    display:flex;align-items:baseline;gap:12px;margin:0 0 14px;
+    font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cl-label)
+  }
+  .art-label span{letter-spacing:normal;text-transform:none;font-size:13px;color:var(--cl-muted)}
+  .artboard{
+    background:var(--cl-surface);border:1px solid var(--cl-border-panel);
+    border-radius:var(--cl-r-panel);overflow:hidden;margin-bottom:56px
+  }
+
+  /* ---- header ---- */
+  .hdr{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    padding:20px 32px;border-bottom:1px solid var(--cl-hairline)
+  }
+  .wordmark{font-family:"Newsreader",Georgia,serif;font-size:20px;letter-spacing:-.01em}
+  .nav{display:flex;gap:24px;font-size:13.5px;color:var(--cl-muted);margin-left:34px}
+  .nav .on{color:var(--cl-ink)}
+  .hdr-left{display:flex;align-items:baseline}
+  .pill{
+    display:inline-block;background:var(--cl-black);color:var(--cl-surface);
+    padding:12px 22px;border-radius:999px;font-size:13.5px;font-weight:500;line-height:1;
+    text-align:center;cursor:pointer;border:0;font-family:inherit
+  }
+  .pill-sm{padding:9px 18px;font-size:13px}
+  .ghost{
+    display:inline-block;border:1px solid var(--cl-border-ghost);background:transparent;
+    padding:11px 21px;border-radius:999px;font-size:13.5px;line-height:1;text-align:center;
+    cursor:pointer;color:var(--cl-ink);font-family:inherit
+  }
+  .ghost-sm{padding:8px 16px;font-size:13px}
+
+  /* ---- browse layout ---- */
+  .browse{display:grid;grid-template-columns:184px minmax(0,1fr);gap:44px;padding:30px 32px 46px}
+  .grouplabel{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cl-faint);margin-bottom:12px}
+  .rail-row{
+    display:block;padding:8px 11px;border-radius:8px;font-size:13.5px;color:var(--cl-body);
+    text-decoration:none;margin-bottom:2px
+  }
+  .rail-row.on{background:var(--cl-fill-active);color:var(--cl-ink)}
+  .searchbox{
+    width:100%;border:1px solid var(--cl-border-control);background:var(--cl-white);
+    border-radius:9px;padding:12px 14px;font-size:13.5px;color:var(--cl-disabled);
+    font-family:inherit;margin-bottom:18px
+  }
+  .countline{
+    border-bottom:1px solid var(--cl-hairline);padding-bottom:16px;font-size:13px;color:var(--cl-muted)
+  }
+
+  /* ---- THE PANEL ---- */
+  .welcome{
+    border:1px solid var(--cl-border-control);background:var(--cl-white);
+    border-radius:var(--cl-r-panel);padding:30px 32px 28px;margin-bottom:26px;position:relative
+  }
+  .welcome .eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cl-label)}
+  .welcome h2{
+    font-family:"Newsreader",Georgia,serif;font-weight:400;font-size:29px;line-height:1.15;
+    letter-spacing:-.01em;margin:12px 0 0;max-width:22ch
+  }
+  .welcome .lede{
+    margin:12px 0 0;max-width:56ch;font-size:14.5px;line-height:1.6;color:var(--cl-body)
+  }
+  .cols{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:34px;
+    margin-top:28px;padding-top:26px;border-top:1px solid var(--cl-hairline)
+  }
+  .col h3{
+    font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cl-faint);
+    font-weight:500;margin:0 0 10px
+  }
+  .col p{margin:0;font-size:13.5px;line-height:1.62;color:var(--cl-body)}
+  .col a{color:var(--cl-ink);text-decoration:none;border-bottom:1px solid var(--cl-border-ghost)}
+  .actions{display:flex;align-items:center;gap:14px;margin-top:28px}
+  .dismiss{
+    position:absolute;top:26px;right:28px;background:none;border:0;cursor:pointer;
+    font-family:inherit;font-size:13px;color:var(--cl-faint)
+  }
+
+  /* ---- slim variant ---- */
+  .welcome-slim{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    border:1px solid var(--cl-border-control);background:var(--cl-white);
+    border-radius:var(--cl-r-media);padding:14px 18px;margin-bottom:26px;font-size:13.5px;color:var(--cl-body)
+  }
+  .welcome-slim .l{display:flex;align-items:center;gap:12px}
+  .welcome-slim a{color:var(--cl-ink);text-decoration:none;border-bottom:1px solid var(--cl-border-ghost)}
+
+  /* ---- empty state ---- */
+  .empty{
+    margin-top:26px;border:1px solid var(--cl-hairline);border-radius:12px;
+    padding:44px 28px;text-align:center
+  }
+  .empty .t{font-size:17px}
+  .empty p{margin:10px auto 0;max-width:340px;font-size:13.5px;line-height:1.55;color:var(--cl-muted)}
+
+  /* ---- cards (variant B) ---- */
+  .grid{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:28px}
+  .card .media{
+    aspect-ratio:4/3;border-radius:var(--cl-r-media);background:var(--cl-fill-skeleton);
+    border:1px solid var(--cl-hairline)
+  }
+  .card .kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cl-faint);margin-top:12px}
+  .card .title{font-size:15px;margin-top:6px;line-height:1.35}
+  .card .price{font-size:14px;margin-top:5px;color:var(--cl-ink)}
+  .card .meta{display:flex;gap:6px;margin-top:8px;font-size:12.5px;color:var(--cl-muted)}
+  .card .meta .by{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .card .meta .when{flex-shrink:0}
+
+  /* ---- notes ---- */
+  .notes{max-width:820px;margin:0 auto;padding:30px 30px 34px;background:var(--cl-surface);
+    border:1px solid var(--cl-border-panel);border-radius:var(--cl-r-panel)}
+  .notes h2{font-family:"Newsreader",Georgia,serif;font-weight:400;font-size:22px;margin:0 0 16px}
+  .notes ol{margin:0;padding-left:20px}
+  .notes li{font-size:14px;line-height:1.65;color:var(--cl-body);margin-bottom:12px}
+  .notes strong{color:var(--cl-ink)}
+  .flag{
+    margin-top:20px;border:1px solid #e3cfcb;background:#fbf3f1;border-radius:var(--cl-r-media);
+    padding:14px 16px;font-size:13.5px;line-height:1.6;color:#8c2d2d
+  }
+  @media (max-width:1000px){
+    .browse{grid-template-columns:1fr;gap:26px;padding:24px 20px 36px}
+    .cols{grid-template-columns:1fr;gap:22px}
+    .welcome h2{font-size:25px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mock-head">
+    <h1>The welcome panel, above the grid</h1>
+    <p>Option 2 from the conversation: not a card in the grid, a page element above it. Two states — what a new member meets on their first sign-in, and what the same screen looks like once real listings exist. Rendered in the live Classifieds tokens, so the colours, type and furniture are the real ones.</p>
+  </div>
+
+  <!-- ============ ARTBOARD A ============ -->
+  <div class="art-label">A · First sign-in <span>— seed listings deleted, nothing posted yet</span></div>
+  <div class="artboard">
+
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="wordmark">Manhattanite</div>
+        <nav class="nav"><span class="on">Browse</span><span>Profile</span></nav>
+      </div>
+      <button class="pill">Post a listing</button>
+    </div>
+
+    <div class="browse">
+      <aside>
+        <div class="grouplabel">Category</div>
+        <a class="rail-row on" href="#">Everything</a>
+        <a class="rail-row" href="#">Apartments</a>
+        <a class="rail-row" href="#">Furniture</a>
+        <a class="rail-row" href="#">Services</a>
+        <a class="rail-row" href="#">Everything else</a>
+      </aside>
+
+      <div>
+        <div class="searchbox">Search listings</div>
+        <div class="countline">No listings yet</div>
+
+        <div class="welcome">
+          <button class="dismiss">Hide</button>
+          <div class="eyebrow">Welcome</div>
+          <h2>You're one of the first ten people here.</h2>
+          <p class="lede">The board is empty because nobody has listed anything yet. That's the honest state of a network this young — what ends up here is whatever the ten of us decide to put up.</p>
+
+          <div class="cols">
+            <div class="col">
+              <h3>How it works</h3>
+              <p>List a thing the way you'd tell a friend about it. An apartment, a table, a plumber worth having. Every listing is read by a person before it goes live, so give it a few hours.</p>
+            </div>
+            <div class="col">
+              <h3>Who's here</h3>
+              <p>Nobody arrives on their own. A member vouched for you, and their name sits beside yours on your profile. It stays there.</p>
+            </div>
+            <div class="col">
+              <h3>House rules</h3>
+              <p>Be who you say you are. Describe things accurately, price them honestly, and deal like you'll run into the other person again. You probably will. <a href="#">Read the rules</a></p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="pill">Post the first listing</button>
+            <button class="ghost">Read the rules</button>
+          </div>
+        </div>
+
+        <div class="empty">
+          <div class="t">No listings yet</div>
+          <p>The network is small on purpose. If you know someone with the perfect apartment or piece, bring them in.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ARTBOARD B ============ -->
+  <div class="art-label">B · A week later <span>— real listings exist, panel has collapsed to one line</span></div>
+  <div class="artboard">
+
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="wordmark">Manhattanite</div>
+        <nav class="nav"><span class="on">Browse</span><span>Profile</span></nav>
+      </div>
+      <button class="pill">Post a listing</button>
+    </div>
+
+    <div class="browse">
+      <aside>
+        <div class="grouplabel">Category</div>
+        <a class="rail-row on" href="#">Everything</a>
+        <a class="rail-row" href="#">Apartments</a>
+        <a class="rail-row" href="#">Furniture</a>
+        <a class="rail-row" href="#">Services</a>
+        <a class="rail-row" href="#">Everything else</a>
+      </aside>
+
+      <div>
+        <div class="searchbox">Search listings</div>
+        <div class="countline">4 listings</div>
+
+        <div class="welcome-slim">
+          <div class="l">
+            <span>New here? <a href="#">How it works</a> and <a href="#">the house rules</a>.</span>
+          </div>
+          <button class="ghost ghost-sm">Hide</button>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="media"></div>
+            <div class="kicker">West Village</div>
+            <div class="title">One bedroom on Bank Street, June sublet</div>
+            <div class="price">$3,400 / month</div>
+            <div class="meta"><span class="by">Listed by Claire · vouched for by Dan</span><span class="when">· 2 days ago</span></div>
+          </div>
+          <div class="card">
+            <div class="media"></div>
+            <div class="kicker">Furniture</div>
+            <div class="title">Walnut dining table, seats six</div>
+            <div class="price">$220</div>
+            <div class="meta"><span class="by">Listed by George Gardner</span><span class="when">· 4 days ago</span></div>
+          </div>
+          <div class="card">
+            <div class="media"></div>
+            <div class="kicker">Services</div>
+            <div class="title">The electrician I've used for nine years</div>
+            <div class="meta"><span class="by">Listed by Emma · vouched for by George</span><span class="when">· 5 days ago</span></div>
+          </div>
+          <div class="card">
+            <div class="media"></div>
+            <div class="kicker">Everything else</div>
+            <div class="title">Two tickets, Carnegie Hall, 14 Sept</div>
+            <div class="price">$90</div>
+            <div class="meta"><span class="by">Listed by Lila · vouched for by Dan</span><span class="when">· 6 days ago</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NOTES ============ -->
+  <div class="notes">
+    <h2>Six decisions baked into this</h2>
+    <ol>
+      <li><strong>It sits above the grid, not in it.</strong> A welcome tile shaped like a listing reads as a placeholder or a bug before it reads as a welcome. This is unmistakably page furniture.</li>
+      <li><strong>The empty state stays underneath it.</strong> That panel already exists in the code and already says the right thing. The welcome explains the network; the empty state explains the grid. Two different jobs, so two elements.</li>
+      <li><strong>It admits the board is empty.</strong> "Nobody has listed anything yet" is the line. A private network that pretends to be busy on day one loses the only thing it's selling.</li>
+      <li><strong>Three columns, not a wall.</strong> How it works, who's here, house rules — one short paragraph each. The full rules live on their own page and this links twice to them.</li>
+      <li><strong>It collapses rather than disappears.</strong> Artboard B: once listings exist it becomes one line that a member can hide for good. New members joining in October still meet the full version, because the trigger is "you haven't posted yet", not "the site is new".</li>
+      <li><strong>One primary action.</strong> "Post the first listing." A welcome that doesn't ask for anything is a poster.</li>
+    </ol>
+
+    <div class="flag">
+      <strong>One line is deliberately missing.</strong> The pitch says "if you break the rules, they go too" — and the product still has no rule for what happens to people a removed member vouched for. So the "Who's here" column says their name stays beside yours, which is true today, and stops there. Write the shared-liability rule and that column gets its strongest sentence back.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

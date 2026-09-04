@@ -55,12 +55,12 @@ One-paragraph audit trail at the bottom: what sources the EOD read, anything not
 
 ## How the two scheduled tasks use this folder
 
-**pa-morning-briefing (07:00)**
+**pa-morning-briefing (08:00)**
 1. Reads YESTERDAY's file — specifically the Wrap, Tomorrow's-setup, and Reflection sections.
 2. Uses anything George flagged "do differently tomorrow" or that was in "Tomorrow's setup" to inform today's plan.
 3. If yesterday's "Tomorrow's setup" sketched today, treats that as the source of truth — refreshing times against the live calendar pull but preserving structural choices, top 3, and heads-up.
 4. Writes TODAY's Plan section to `daily/[today].md`.
-5. Also appends `**07:00** — Morning briefing ran.` to today's captain's log.
+5. Also appends `**08:00** — Morning briefing ran.` to today's captain's log.
 
 **evening-summary (20:00)**
 1. Reads TODAY's file — specifically the Plan section that was written this morning.
@@ -72,7 +72,7 @@ One-paragraph audit trail at the bottom: what sources the EOD read, anything not
 
 Standing pattern (ported from Life PA):
 
-> When George walks through tomorrow's plan in chat the night before, write it to `daily/[tomorrow].md` as a `## Plan (drafted in chat HH:MM)` section immediately. The morning brief picks it up at 07:00, refreshes times against the live calendar, preserves George's structural choices, and only rebuilds from scratch if no draft exists.
+> When George walks through tomorrow's plan in chat the night before, write it to `daily/[tomorrow].md` as a `## Plan (drafted in chat HH:MM)` section immediately. The morning brief picks it up at 08:00, refreshes times against the live calendar, preserves George's structural choices, and only rebuilds from scratch if no draft exists.
 
 ## Why this exists
 

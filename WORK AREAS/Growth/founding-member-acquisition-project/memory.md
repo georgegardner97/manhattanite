@@ -181,3 +181,25 @@ The pitch now says "you're both out", and there is no rule for what happens to t
 Category: Next steps
 
 Say the spoken line out loud a few times before the first coffee. Write the cascade-removal rule. Then the invitation email itself, which the written description is now the body of.
+
+### 2026-09-02 — Pitch variants sheet delivered
+
+Category: Progress
+
+`outputs/Manhattanite_Pitch-Variants_v1.md` + `.pdf` (generator: `generators/generate_pitch_variants_pdf.py`). Four parts: seven spoken variants **by scenario** (passing question, full version, across a counter, phone/voice note, being introduced, text/DM, and a park-it line for when it isn't the moment), six **by person** at opener level, four **written** variants (invitation, WhatsApp, already-heard-from-a-friend, second degree), and quick answers to the ten questions that actually come back.
+
+Deliberately shallower than the pitch cards on the person axis — the cards own the twelve angle lines, this sheet owns the opener and the room. Said so on the sheet so the two don't compete.
+
+The Part 4 answers are the genuinely new material: "who else is on it" is answered with *"I'll ask them before I start using their names"*, and "is it just Manhattan" with *"Manhattan first. I'd rather it were dense than big"* — honest, given geography is still undecided beyond the name.
+
+### 2026-09-02 — Variants sheet rebuilt on the long pitch (v2)
+
+Category: Decision
+
+George: base the variants on the longer spoken pitch, not the short one. **That effectively re-picks the default — the long version is now the base and the short line is the escape hatch.** Written into the sheet rather than left implicit.
+
+`outputs/Manhattanite_Pitch-Variants_v2.md` + `.pdf`. Five long-form scenarios (coffee/dinner, phone or voice note, straight after their own bad story, handed over by a primed friend, walking or in a car), six long-form person variants, five written variants including a new long one for someone who asked you to send something, and the ten questions that come back. v1 stays on disk; the generator now emits v2.
+
+**Two additions that carry weight beyond formatting.** The sheet is now organised around **five named beats** (define, mechanism, consequence, picture, close) so the thing being memorised is the structure rather than the sentences — the long version is too long to hold word for word. And a **"when to drop back to the short line"** panel: the long version in the wrong room reads as needing something from the listener, so the short line is the right answer when they asked to be polite, when one of you is standing, when it's noisy, or when it's the fourth time that day.
+
+**Best line in the set**, from the after-their-bad-story version: *"nobody could do to you what that guy did, because they'd be taking whoever vouched for them down too."* Attaches the mechanism to the thing that just happened to them, which is the only version that argues without sounding like a pitch.
