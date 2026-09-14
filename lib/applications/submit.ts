@@ -7,8 +7,9 @@
 //   - name + neighborhood are written back to the accounts row (so the byline
 //     name gets set as a side effect of applying — closes the Slice 2 "name not
 //     collected" gap for real members);
-//   - occupation, the paragraph, and the sponsor reference live only on the
-//     new applications row.
+//   - the paragraph and the LinkedIn link are written to accounts too (bio,
+//     linkedin_url — 2026-09-08), so joining builds the member profile;
+//   - occupation and the sponsor reference live only on the applications row.
 //
 // Airtable is gone (Supabase is the source of truth). Resend stays as a
 // best-effort heads-up to the reviewer (info@manhattanite.com). The applicant's
@@ -40,6 +41,9 @@ const MAX_NEIGHBORHOOD = 60;
 const MAX_OCCUPATION = 120;
 const MAX_ABOUT = 1500;
 const MAX_SPONSOR_REF = 200;
+// Matches lib/profile/update.ts. A longer cap here would accept a link at the
+// door that /profile/edit then refuses to save back.
+const MAX_LINKEDIN = 200;
 
 // Pull a string from FormData, trim, and treat empty as null.
 function pluck(formData: FormData, key: string): string | null {
@@ -86,6 +90,7 @@ export async function submitApplication(
   const occupation = pluck(formData, "occupation");
   const about = pluck(formData, "about");
   const sponsorReference = pluck(formData, "sponsor_reference");
+  const linkedinRaw = pluck(formData, "linkedin_url");
 
   // Name is required at apply time — you're vouching for a real person, and the
   // byline convention (decisions.md, 2026-06-04) wants a real name. They can
@@ -129,13 +134,52 @@ export async function submitApplication(
     };
   }
 
+  // LinkedIn is optional, and it is checked HERE rather than only at render
+  // time. /members/[id] already refuses to link anything that is not a
+  // linkedin.com host — a profile field is not a place to hand another member
+  // an arbitrary outbound link on our say-so — but a value that silently never
+  // renders is worse than one refused at the door, because the person who
+  // typed it believes it is on their profile. Same rule, said out loud.
+  let linkedinUrl: string | null = null;
+  if (linkedinRaw) {
+    if (linkedinRaw.length > MAX_LINKEDIN) {
+      return { error: `Keep the LinkedIn link to ${MAX_LINKEDIN} characters or fewer.` };
+    }
+    const withScheme = /^https?:\/\//i.test(linkedinRaw)
+      ? linkedinRaw
+      : `https://${linkedinRaw}`;
+    let host = "";
+    try {
+      host = new URL(withScheme).hostname.toLowerCase();
+    } catch {
+      return { error: "That LinkedIn link doesn't look right. Paste the whole address." };
+    }
+    if (host !== "linkedin.com" && !host.endsWith(".linkedin.com")) {
+      return { error: "That needs to be a linkedin.com address, or leave it blank." };
+    }
+    linkedinUrl = withScheme;
+  }
+
   // ---- 1. Write name + neighborhood back to the accounts row. ----
   // RLS "accounts: update own row" allows this; the protect_account_columns
   // trigger (0001) ignores name/neighborhood (they're not protected columns).
   // This is the byline-name side effect — applying sets the member's real name.
+  // WHAT THIS WRITES IS THE POINT OF THE 2026-09-08 CHANGE. It used to write
+  // name + neighborhood only, so the paragraph a person wrote about themselves
+  // lived on the applications row and nowhere a member could ever read it: an
+  // approved member arrived on the network as a name and an email. bio and
+  // linkedin_url are the columns /members/[id] reads (0026), so filling in this
+  // form is now what builds the profile. All four are unprotected columns —
+  // the protect_account_columns trigger (0001) guards is_member, role and
+  // sponsor_id, not these — and "accounts: update own row" is the policy.
   const { error: profileError } = await supabase
     .from("accounts")
-    .update({ name, neighborhood })
+    .update({
+      name,
+      neighborhood,
+      bio: about,
+      ...(linkedinUrl ? { linkedin_url: linkedinUrl } : {}),
+    })
     .eq("id", user.id);
 
   if (profileError) {

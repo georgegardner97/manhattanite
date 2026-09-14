@@ -365,14 +365,38 @@ export function renderInviteEmail({
   const joinUrl = `https://manhattanite.com/join/${token}`;
   const cta = { label: "Accept your invitation", href: joinUrl };
 
+  // COPY REWRITTEN 2026-09-08 (George, on reading the live email during the
+  // invitation walk). Three faults in the version it replaces:
+  //   1. It described the mechanism as a FEATURE — "everyone is brought in by
+  //      someone who already belongs" — when the finalised pitch (2026-09-02)
+  //      turned deliberately on describing it as a CONSEQUENCE. That swap is
+  //      the whole reason the pitch works; the first email a stranger reads
+  //      was the one place still using the old framing.
+  //   2. It never said what Manhattanite IS. "A private marketplace" could be
+  //      anything. Apartments and furniture are named now — and only those,
+  //      per the pitch's own rule: never promise a category that isn't live.
+  //   3. "X is your way in" was the third use of the inviter's name in three
+  //      lines and carried no information.
+  //
+  // THE CONSEQUENCE LINE IS "LOOKED AT", NOT "REMOVED", and that is not
+  // softening. The spoken pitch says "you're both out"; /terms says the people
+  // who vouched for you are ASSESSED the same way (George, 2026-09-04). This
+  // email is written copy, so it matches the Terms and not the pitch —
+  // promising an automatic expulsion the rules don't perform is how a trust
+  // product loses trust. If the Terms ever change, change this in the same
+  // commit.
   const bodyHtml =
     p(greeting) +
     p(
-      `<strong>${esc(inviterName)}</strong> would like to bring you into Manhattanite — a private marketplace for New Yorkers, where everyone is brought in by someone who already belongs.`
+      `<strong>${esc(inviterName)}</strong> has invited you to Manhattanite, an invitation-only listings site for New Yorkers. Apartments, furniture, things worth passing on.`
     ) +
-    p(`${esc(inviterName)} is your way in.`, {
-      last: true,
-    });
+    p(
+      `The difference is who's on it. Nobody joins without a member vouching for them, and a vouch isn't free: if you break the rules, the member who brought you in gets looked at too.`
+    ) +
+    p(
+      `${esc(inviterName)} has vouched for you. Their name sits beside yours for as long as you're here.`,
+      { last: true }
+    );
 
   return {
     subject: `${inviterName} invited you to Manhattanite`,
@@ -380,8 +404,9 @@ export function renderInviteEmail({
     text: textLayout({
       lines: [
         inviteeName ? `Hi ${inviteeName},` : "Hi,",
-        `${inviterName} would like to bring you into Manhattanite — a private marketplace for New Yorkers, where everyone is brought in by someone who already belongs.`,
-        `${inviterName} is your way in.`,
+        `${inviterName} has invited you to Manhattanite, an invitation-only listings site for New Yorkers. Apartments, furniture, things worth passing on.`,
+        `The difference is who's on it. Nobody joins without a member vouching for them, and a vouch isn't free: if you break the rules, the member who brought you in gets looked at too.`,
+        `${inviterName} has vouched for you. Their name sits beside yours for as long as you're here.`,
       ],
       cta,
     }),

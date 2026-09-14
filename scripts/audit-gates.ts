@@ -390,7 +390,11 @@ async function main() {
     contains: "you need a member account",
     notContains: "Introduce yourself",
   });
-  await check("t1", "/apply", T, { status: 200, contains: "Request access" });
+  // RETARGETED 2026-09-08, NOT RELAXED. "Request access" became "Finish your
+  // profile" when the form became the joining profile — every Tier 1 account
+  // now arrives through an invitation, so there is no access left to request.
+  // Still asserts the same thing: a signed-in non-member on /apply meets the form.
+  await check("t1", "/apply", T, { status: 200, contains: "Finish your profile" });
   // Signed in, member or not, "/" is not your page — see the MEMBER block.
   await check("t1", "/", T, { redirect: "/listings" });
 

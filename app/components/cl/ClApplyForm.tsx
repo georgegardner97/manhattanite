@@ -1,6 +1,22 @@
 "use client";
 
-// Screen 09's request-access form, wired to the real application pipeline.
+// The joining profile — what a newly invited person fills in, wired to the
+// real application pipeline.
+//
+// IT WAS A "REQUEST ACCESS" FORM UNTIL 2026-09-08, and the rename is the
+// change. George walked the invitation path that evening and landed here
+// minutes after being vouched for, on a form that asked him to request access
+// and to name who was vouching for him. The form was a survivor of the
+// self-serve world that closed on 4 September: it made sense when a stranger
+// could make an account and ask to be let in, and made none once an invitation
+// was the only door.
+//
+// WHAT IT COLLECTS DID NOT CHANGE MUCH; WHERE IT LANDS DID. Name, neighborhood,
+// occupation and the paragraph were always here — but the paragraph lived only
+// on the applications row, so an approved member arrived on the network as a
+// name and an email and nothing else. The action now writes the paragraph to
+// accounts.bio and the link to accounts.linkedin_url, which are the columns
+// /members/[id] actually reads. Filling this in IS building the profile.
 //
 // Same submitApplication the live /apply calls, same fields, same anti-spam
 // pair (a honeypot the eye can't see plus a dwell-time floor). Nothing here is
@@ -101,17 +117,40 @@ export default function ClApplyForm({
           />
         </div>
 
+        {/* THE "WHO'S VOUCHING FOR YOU" FIELD WAS HERE AND IS GONE (George,
+            2026-09-08). It asked a person who had been vouched for four
+            minutes earlier to name the person who vouched for them. Worse, it
+            was decorative on the only path that now exists: the sponsor is
+            derived server-side from the invite (inviter_for_me) and never from
+            what is typed here, so an invited person's answer was read by
+            nothing.
+
+            WHAT WENT DORMANT WITH IT: sponsor_reference fed request_sponsorship
+            (0025) and the /sponsor-request/[token] screen. Both are intact and
+            neither is reachable now — the action's block is guarded on a value
+            that is always null. That is the fourth screen in this product to
+            lose its only entry point, so it is written down rather than
+            discovered later (CLAUDE.md note 8). Restoring the field restores
+            the flow; nothing was deleted. */}
+
         <div>
-          <label htmlFor="cl-sponsor" className="cl-fieldlabel">
-            Who&rsquo;s vouching for you
+          <label htmlFor="cl-linkedin" className="cl-fieldlabel">
+            LinkedIn
           </label>
           <input
-            id="cl-sponsor"
-            name="sponsor_reference"
+            id="cl-linkedin"
+            name="linkedin_url"
+            // text, NOT url: type="url" makes the browser refuse anything
+            // without a scheme — including the placeholder's own
+            // "linkedin.com/in/…" — with a native tooltip, before the action
+            // can add the https:// or say what is wrong in our own words.
             type="text"
+            inputMode="url"
+            autoComplete="url"
+            spellCheck={false}
             disabled={isPending}
             className="cl-input"
-            placeholder="Member's name, or leave blank"
+            placeholder="linkedin.com/in/… (optional)"
           />
         </div>
 
@@ -126,7 +165,7 @@ export default function ClApplyForm({
             disabled={isPending}
             className="cl-textarea"
             style={{ minHeight: "96px" }}
-            placeholder="In your own words."
+            placeholder="In your own words. Other members will read this."
           />
         </div>
       </div>
@@ -142,11 +181,12 @@ export default function ClApplyForm({
         disabled={isPending}
         className={isPending ? "cl-pill-disabled mt-6" : "cl-pill mt-6"}
       >
-        {isPending ? "Sending…" : "Send request"}
+        {isPending ? "Saving…" : "Finish and send"}
       </button>
 
       <p className="mt-4 text-[12.5px]" style={{ color: "var(--cl-faint)" }}>
-        Read by a person, usually within a week.
+        A person reads every profile. You&rsquo;ll get an email when
+        you&rsquo;re confirmed.
       </p>
     </form>
   );

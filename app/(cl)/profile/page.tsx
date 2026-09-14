@@ -188,21 +188,6 @@ export default async function ClassifiedsSettingsPage() {
                 Sign out
               </button>
             </form>
-            <p
-              id="leaving"
-              className="mt-4 max-w-[52ch] text-[13px] leading-[1.6]"
-              style={{ color: "var(--cl-faint)" }}
-            >
-              Leaving for good? There&rsquo;s no self-serve delete yet.{" "}
-              <a
-                href="mailto:info@manhattanite.com"
-                className="underline underline-offset-2"
-              >
-                Email us
-              </a>{" "}
-              and a person will remove your account and your listings &mdash;
-              usually the same day.
-            </p>
           </div>
 
           {/* ---------- My listings ----------
@@ -319,6 +304,39 @@ export default async function ClassifiedsSettingsPage() {
               <ConnectionList people={vouchedBy} primaryLabel="brought you in" />
             </>
           )}
+
+          {/* ---------- Closing your account ----------
+              MOVED HERE 2026-09-08 (George: "get rid of the copy underneath
+              sign out and just put that somewhere tucked at the bottom
+              neatly"). It sat directly under the Sign out button, where a
+              paragraph about deletion was the loudest thing on a page that is
+              mostly about being a member.
+
+              STILL LOAD-BEARING COPY, which is why it moved rather than went.
+              /terms says "You can close your account at any time" and /privacy
+              says "When you ask us to delete your account, we delete…" — this
+              email route is the thing that makes both sentences true. Deleting
+              it would leave the policy overclaiming, the same error corrected
+              on /privacy on 26 Aug. It keeps id="leaving", so an old
+              /profile#leaving link still lands on the text it described. */}
+          <p
+            id="leaving"
+            className="mt-12 border-t pt-6 max-w-[52ch] text-[12.5px] leading-[1.6]"
+            style={{
+              borderColor: "var(--cl-hairline)",
+              color: "var(--cl-faint)",
+            }}
+          >
+            Leaving for good? There&rsquo;s no self-serve delete yet.{" "}
+            <a
+              href="mailto:info@manhattanite.com"
+              className="underline underline-offset-2"
+            >
+              Email us
+            </a>{" "}
+            and a person will remove your account and your listings &mdash;
+            usually the same day.
+          </p>
         </div>
       </main>
     </>

@@ -18,8 +18,9 @@
 //                      send them to: the card explains the shape and stops,
 //                      rather than collecting a name and an email into a form
 //                      that has nowhere to post them.
-//   account (Tier 1) → the real application form.
-//   applied already  → we have it; here is what happens next.
+//   account (Tier 1) → the joining profile form (was "request access" until
+//                      2026-09-08 — see the Head below).
+//   applied already  → your membership is being reviewed; you'll get an email.
 //   member           → you're in. Nothing to ask for.
 //
 // THE RIGHT CARD IS THE `pane` PROP. It carried sign-in on /login and /apply and
@@ -101,7 +102,7 @@ export default async function ClAccess({
 
       <main className="mx-auto w-full max-w-[1100px] px-[clamp(16px,2.4vw,28px)] pt-[clamp(24px,3vw,40px)] pb-[clamp(32px,4vw,56px)]">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-[clamp(20px,2.4vw,32px)]">
-          {/* ---------- Request access ---------- */}
+          {/* ---------- Finish your profile (was "Request access") ---------- */}
           {/* id="request": ClGate's secondary button deep-links straight to
               this card, which matters on a narrow screen where the two panels
               stack and the request card is the one below the fold. */}
@@ -117,16 +118,23 @@ export default async function ClAccess({
               />
             ) : hasPendingApplication ? (
               <Settled
-                title="We have your request"
-                note="A person reads every one, usually within a week. You’ll hear back by email."
+                title="Your membership is being reviewed"
+                note="A person reads every profile. You’ll get an email as soon as you’re confirmed — usually within a week. You can look around in the meantime."
                 href="/listings"
                 cta="Look around meanwhile"
               />
             ) : user ? (
               <>
+                {/* NOT "REQUEST ACCESS" ANY MORE (George, 2026-09-08). Every
+                    person who reaches this state now arrived through an
+                    invitation, so they have already been vouched for — asking
+                    them to request access described the old self-serve door
+                    that closed on 4 September, and reads as a second hurdle
+                    where there is only one. What they are doing here is
+                    building the profile other members will read. */}
                 <Head
-                  title="Request access"
-                  note="A member has to vouch for you."
+                  title="Finish your profile"
+                  note="You’ve been vouched for. Tell us who you are, and a person will confirm you."
                 />
                 <div className="mt-[26px]">
                   <ClApplyForm
