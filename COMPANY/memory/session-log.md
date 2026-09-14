@@ -6,6 +6,44 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-14 · The joining profile verified, two faults fixed, pushed (Claude Code)
+
+**Cowork's 8 September changes shipped as `f96f078`, with two fixes the diff alone would not have shown.**
+
+**1. The LinkedIn box refused its own placeholder.** It was `type="url"`, and a browser will not submit a URL without `https://` — so typing `linkedin.com/in/…`, the exact shape the placeholder shows, produced a browser tooltip and the server's normalisation and friendly errors never ran. Now `type="text"` with `inputMode="url"`. **Third instance of "a form control that renders but the action never sees what the person typed".**
+
+**2. The length caps disagreed.** Joining allowed 300 characters, `/profile/edit` refuses over 200, so a link accepted at the door could not be saved back. Both are 200 now.
+
+**Also:** `audit:gates` pinned "Request access" for a Tier 1 account on `/apply` and would have failed; retargeted to "Finish your profile", not deleted.
+
+**Verified by driving the real form in Chrome** as the `+slice2` Tier 1 fixture: `bio` and `linkedin_url` land on `accounts` (scheme added), `sponsor_reference` is null, blank LinkedIn still saves, and five refusals (wrong host, a `linkedin.com.evil.example` lookalike, a space in the address, a bare `https://`, over 200 characters) each return their inline error and write nothing. `next build` clean, `tsc` clean, eslint 4 (baseline), **`audit:gates` 0 failures, `audit:rls` 67/67**, prod unchanged. `/profile` checked at 390px and desktop: the closure paragraph is the last thing on the page. The two successful test submissions sent real confirmation and reviewer emails to the fixture alias and info@.
+
+**"Seed members still present: 0" in every teardown is expected** — they were deleted on 2 September — not a harness wiping them.
+
+---
+
+## 2026-09-08 · The invitation path was finally walked, and it changed four things (Cowork)
+
+**George sent a real invitation to a plus-alias of his own Gmail and claimed it. It works.** The email arrived from info@ within a minute, `/join/[token]` accepted the password and the Turnstile check, and the account was created and signed in. **That closes Week 1's must-hit, open since 1 September and the named first priority on five separate days.** The two steps Claude could never test — the real Resend send and `signUp` behind the CAPTCHA — both pass on the deployed build.
+
+**The walk found nothing broken. Everything it found was about what happens AFTER the account exists**, which is the part no audit addresses and no schema check can see.
+
+**1. The invitation email described the mechanism as a feature.** "Everyone is brought in by someone who already belongs" is the framing the finalised pitch abandoned on 2 September, when the whole decision was to describe a CONSEQUENCE rather than a label. The first email a stranger ever reads was the last place still using the old shape. It also never said what the site is — "a private marketplace" could be anything — and used the inviter's name three times in three lines. Rewritten to lead with what it is, turn on who is on it, and close on the vouch. **The consequence line says "gets looked at too", not "removed": the spoken pitch says "you're both out", `/terms` says assessed, and written copy matches the Terms.**
+
+**2 and 3 were one change, not two.** George: get rid of the request access form, and prompt a new member to fill in a profile so they are more than a name and an email. The form is a survivor of the self-serve world that closed on 4 September — it asked a person who had been vouched for four minutes earlier to name who was vouching for them, and that field was decorative anyway, since the sponsor is derived server-side from the invite and never from the input. **So the form was repointed, not deleted:** "Request access" becomes "Finish your profile", the sponsor field becomes LinkedIn, and — the actual fix — `submitApplication` now writes the paragraph to `accounts.bio` and the link to `accounts.linkedin_url`.
+
+**THE BUG UNDERNEATH ASK 3 IS WORTH KEEPING.** The paragraph a person wrote about themselves lived only on the `applications` row. It was read once, by George, at approval, and then never again by anyone — so an approved member arrived on the network as a name and an email, and `/members/[id]` had nothing to show. That is the same failure as the 31 August member-profile 404, one layer up: **the product was collecting the right information and putting it somewhere no member could read it.** No migration was needed to fix it; both columns already existed and had since 0026.
+
+**George kept his approval step, asked directly.** Profile in, then "your membership is being reviewed", then the email on confirmation. Invitation does not equal membership. The recommendation had been the other way — he already vouched by inviting, and a queue of one adds a wait at the moment a person is keenest — and he overruled it; a person still reads every profile before anyone is let in.
+
+**4. The account-closure paragraph moved off the Sign out button** to the bottom of `/profile`, smaller and quieter. Not deleted: `/terms` and `/privacy` both promise that email route, so removing it would leave the policy overclaiming — the same error corrected on `/privacy` on 26 August. `id="leaving"` preserved.
+
+**A FLOW WENT DORMANT AND IS WRITTEN DOWN RATHER THAN DISCOVERED LATER.** Dropping `sponsor_reference` means `request_sponsorship` (0025) never fires and `/sponsor-request/[token]` has no way to be reached. Nothing was deleted; the block is guarded on a value that is now always null, so restoring the field restores the flow. **Fifth screen in this product to lose its only entry point.**
+
+**Verified as far as Cowork can:** `tsc --noEmit` clean outside `_to_delete/`, **eslint 4 across `app lib scripts` — the baseline, unmoved, none in the touched files.** `next build`, the audits and the push need Claude Code. **Handoff:** `Manhattanite_Joining-Profile-and-Invite-Copy_Claude-Code-Prompt_v1.md`.
+
+---
+
 ## 2026-09-04, later still · The vouching rule exists, and the Terms stop contradicting the pitch (Cowork)
 
 **George, closing the blocker raised an hour earlier: "If someone violates the community terms then they and their sponsors are assessed in the same way."**

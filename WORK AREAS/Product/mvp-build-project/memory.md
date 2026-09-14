@@ -4,6 +4,18 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-14 · Joining profile + invitation copy — verified, pushed
+
+**Shipped `f96f078`:** the invite email rewrite, "Request access" → "Finish your profile", LinkedIn in place of the sponsor field, `bio` + `linkedin_url` written to `accounts` on submit, and the closure paragraph moved to the foot of `/profile`.
+
+**Fixed on the way:** the LinkedIn input was `type="url"`, which blocked the placeholder's own scheme-less format in the browser; the length cap was 300 against `/profile/edit`'s 200. Both corrected. `audit:gates`' Tier 1 `/apply` assertion retargeted to the new heading.
+
+**Verified on the real form** (puppeteer-core + Chrome, `+slice2` Tier 1 fixture): rows land on `accounts`, blank LinkedIn saves, five refusals write nothing. Build, tsc, lint baseline, `audit:gates` 0, `audit:rls` 67/67.
+
+**Still dormant, by design:** `request_sponsorship` (0025) and `/sponsor-request/[token]` have no entry point now that the sponsor field is gone. Restoring the field restores the flow.
+
+---
+
 ## 2026-09-02 · Why a listing came down — built, verified, pushed
 
 **George's ask, in his words:** *"it would be useful for when a listing is taken down for there to be a choice — was this listing fulfilled? So that we have data on what was working and what wasn't."*

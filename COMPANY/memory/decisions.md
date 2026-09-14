@@ -277,3 +277,15 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 - **The pitch says something stronger than the Terms do.** The spoken line is "if you behave badly, they go too"; the rule is that they are assessed. Either the pitch softens to match, or the gap is accepted knowingly. **Recommend the pitch moves to "the person who vouched for you gets looked at the same way"** — it is barely less punchy and it is the thing that is actually true.
 
 *Written by Cowork in plain English, not by a lawyer. The Terms already sit on the deferred attorney-review list; this clause joins it.*
+
+## 2026-09-08 — An invitation does not equal membership, and joining builds a profile
+
+**George, asked directly during the invitation walk.** Accepting an invitation creates the account and nothing more. The invited person fills in a joining profile, is told their membership is being reviewed, and receives an email when it is confirmed. **The recommendation was the opposite** — the inviter has already vouched, so a review queue of one adds a wait at the moment the person is keenest — and it was overruled: a person reads every profile before anyone is let into the network. Revisit when members other than George start inviting.
+
+**The "Request access" form is retired as a concept, not as code.** It was written for the self-serve world that closed on 4 September and asked a freshly vouched-for person to name who vouched for them. Same fields, new frame: "Finish your profile". The sponsor-reference field is replaced by LinkedIn.
+
+**What a joining profile writes, and why it is a fix rather than a feature.** `bio` and `linkedin_url` now land on the `accounts` row alongside `name` and `neighborhood`. The paragraph previously lived only on the `applications` row — read once by the reviewer and never again by any member — so an approved member arrived on the network as a name and an email. No migration: both columns have existed since 0026.
+
+**Invitation email copy: consequence, not feature.** The live copy used the framing the finalised pitch abandoned on 2 September. Rewritten. **It says the member who brought you in "gets looked at too", never "is removed"** — the spoken pitch's "you're both out" is stronger than the written rule, and `/terms` says assessed. Written copy matches the Terms. Change both together or neither.
+
+**Dormant, deliberately:** `request_sponsorship` (0025) and `/sponsor-request/[token]` are unreachable while the sponsor-reference field is gone. Nothing deleted; restoring the field restores the flow.
