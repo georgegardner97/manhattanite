@@ -61,10 +61,24 @@ const TABS: { label: string; href: string; match: (p: string) => boolean }[] = [
 // a prefix now rather than a lookup. The already-a-member branch of that screen
 // loses the bar too, which is fine: its card offers Browse and Invite itself.
 //
+// /apply AND /login ARE THE THIRD AND FOURTH (2026-09-15). George: nothing is
+// visible or accessible until a member is approved. Both routes render ClAccess,
+// which is where a signed-in non-member now waits, and this bar cannot tell a
+// non-member from a member without a database read it has no business making
+// in a client component. So the rule is by route: these are door screens, and
+// door screens carry no product navigation for anyone. A member who lands on
+// /apply is told they are in and given Browse listings on the card itself.
+//
 // (It was also once the preview's contents page, before the landing moved from
 // "/design/landing" to "/".)
 function isNavless(pathname: string): boolean {
-  return pathname === "/" || pathname.startsWith("/join/");
+  return (
+    pathname === "/" ||
+    pathname === "/apply" ||
+    pathname === "/login" ||
+    pathname === "/thank-you" ||
+    pathname.startsWith("/join/")
+  );
 }
 
 export default function MobileTabBar() {

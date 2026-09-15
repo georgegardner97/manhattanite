@@ -64,8 +64,8 @@ export default function ClassifiedsTermsPage() {
           that survives a formatter. */}
       <p>
         Once you accept an invitation you tell us who you are, and a person
-        approves it by hand. While we are reading it you can look around;{" "}
-        <strong>membership</strong> is what lets you post listings, contact
+        approves it by hand. Until then there is nothing to see;{" "}
+        <strong>membership</strong> is what lets you see listings, post them, contact
         other members, and bring people in yourself. You must be at least 18
         years old.
       </p>

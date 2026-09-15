@@ -38,9 +38,28 @@
 //
 // NO REDIRECTS FOR THE SETTLED STATES, deliberately. The editorial /apply sent a
 // member to /profile and a signed-in visitor to /login saw the form again. Both
-// are answered here on the page instead: a member reads "you're a member", a
-// signed-in visitor reads "you're signed in". Nothing is gated differently —
-// these are the same four outcomes, said out loud rather than bounced.
+// are answered here on the page instead: a member reads "you're a member", and
+// a non-member reads their profile form or the review card.
+//
+// SIGNED IN, THIS IS ONE CARD AND NOTHING ELSE (George, 2026-09-15: "get rid of
+// the right panel that allows them to browse once they've logged in. Its
+// confusing. They shouldn't be able to see anything until their account has
+// been approved. It ads the mystery."). REVERSES the look-around affordance.
+// The right-hand panel used to say "You're signed in" and offer Browse listings
+// beside Sign out, and the pending card offered "Look around meanwhile"; both
+// were considered choices and both are withdrawn. A signed-in non-member is now
+// sent here from every product route (lib/cl/member-gate.ts), so this screen is
+// the whole of what they can see: the card, no product navigation in the header
+// (`bare` for anyone who is not a member), and the waiting card deliberately
+// ends on nothing. The right panel survives only for a logged-out visitor,
+// where it is the sign-in form and the point of the screen.
+//
+// SIGN OUT MOVED INTO THE CARD, IT DID NOT GO. That panel was the only exit a
+// non-member had, and stranding someone signed in with no way out is worse than
+// the confusion being fixed. It is the quiet last line of the card: the address
+// they are signed in as, and a POST form (see SignedInAs). The address is the
+// viewer's own and only ever rendered to their own session; this route is
+// dynamic and nothing in its metadata carries it.
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -96,16 +115,27 @@ export default async function ClAccess({
     }
   }
 
+  // One card when signed in, so it must not stretch to the two-card width: 560
+  // reads as a deliberate single column rather than a half-empty grid.
+  const single = Boolean(user);
+
   return (
     <>
-      <AppHeader active="none" />
+      <AppHeader active="none" bare={!isMember} />
 
-      <main className="mx-auto w-full max-w-[1100px] px-[clamp(16px,2.4vw,28px)] pt-[clamp(24px,3vw,40px)] pb-[clamp(32px,4vw,56px)]">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-[clamp(20px,2.4vw,32px)]">
-          {/* ---------- Finish your profile (was "Request access") ---------- */}
-          {/* id="request": ClGate's secondary button deep-links straight to
-              this card, which matters on a narrow screen where the two panels
-              stack and the request card is the one below the fold. */}
+      <main
+        className={`mx-auto w-full ${single ? "max-w-[560px]" : "max-w-[1100px]"} px-[clamp(16px,2.4vw,28px)] pt-[clamp(24px,3vw,40px)] pb-[clamp(32px,4vw,56px)]`}
+      >
+        <div
+          className={
+            single
+              ? "flex flex-col"
+              : "grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-[clamp(20px,2.4vw,32px)]"
+          }
+        >
+          {/* ---------- The way in: profile, review, or invitation only ---------- */}
+          {/* id="request" is kept for any old /apply#request link; nothing in
+              the product points at it any more. */}
           <section id="request" className="cl-panel p-[clamp(24px,3vw,44px)]">
             <Wordmark className="text-[18px] leading-none" />
 
@@ -117,11 +147,14 @@ export default async function ClAccess({
                 cta="Browse listings"
               />
             ) : hasPendingApplication ? (
+              // ENDS ON NOTHING, ON PURPOSE (George, 2026-09-15). There was a
+              // last sentence inviting a look around and a "Look around
+              // meanwhile" button; both went. A card that says you are being
+              // reviewed, with no onward control, is the intended effect —
+              // George's word for it is mystery.
               <Settled
                 title="Your membership is being reviewed"
-                note="A person reads every profile. You’ll get an email as soon as you’re confirmed — usually within a week. You can look around in the meantime."
-                href="/listings"
-                cta="Look around meanwhile"
+                note="A person reads every profile. You’ll get an email as soon as you’re confirmed — usually within a week."
               />
             ) : user ? (
               <>
@@ -179,38 +212,19 @@ export default async function ClAccess({
                 </p>
               </>
             )}
+
+            {user && <SignedInAs email={user.email ?? null} />}
           </section>
 
-          {/* ---------- Sign in / Create an account ---------- */}
+          {/* ---------- Sign in / Create an account ----------
+              Logged-out visitors only. Signed in, there is no second panel:
+              see the header note. */}
+          {!user && (
           <section className="cl-panel flex flex-col p-[clamp(24px,3vw,44px)]">
             <Wordmark className="text-[18px] leading-none" />
 
             <div className="flex flex-1 flex-col justify-center">
-              {user ? (
-                <div className="py-8">
-                  <div className="text-[clamp(21px,2.2vw,27px)] font-medium tracking-[-0.02em]">
-                    You&rsquo;re signed in
-                  </div>
-                  <p
-                    className="mt-2.5 text-[13.5px] leading-[1.55]"
-                    style={{ color: "var(--cl-muted)" }}
-                  >
-                    Signed in as {user.email}.
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-2.5">
-                    <Link href="/listings" className="cl-pill">
-                      Browse listings
-                    </Link>
-                    {/* A POST route, so this is a form and not a link — a
-                        prefetched or crawled GET would sign people out. */}
-                    <form action="/auth/sign-out" method="post">
-                      <button type="submit" className="cl-ghost">
-                        Sign out
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              ) : pane === "signup" ? (
+              {pane === "signup" ? (
                 <>
                   <h2 className="mt-[26px] text-[clamp(21px,2.2vw,27px)] font-medium tracking-[-0.02em]">
                     Create an account
@@ -238,27 +252,26 @@ export default async function ClAccess({
               )}
             </div>
 
-            {!user && (
-              <div
-                className="mt-[18px] border-t pt-[18px] text-[12.5px]"
-                style={{
-                  borderColor: "var(--cl-hairline)",
-                  color: "var(--cl-muted)",
-                }}
-              >
-                {pane === "signup" ? (
-                  <>
-                    Already have an account?{" "}
-                    <Link href="/login" style={{ color: "var(--cl-ink)" }}>
-                      Sign in
-                    </Link>
-                  </>
-                ) : (
-                  <>Manhattanite is invitation only.</>
-                )}
-              </div>
-            )}
+            <div
+              className="mt-[18px] border-t pt-[18px] text-[12.5px]"
+              style={{
+                borderColor: "var(--cl-hairline)",
+                color: "var(--cl-muted)",
+              }}
+            >
+              {pane === "signup" ? (
+                <>
+                  Already have an account?{" "}
+                  <Link href="/login" style={{ color: "var(--cl-ink)" }}>
+                    Sign in
+                  </Link>
+                </>
+              ) : (
+                <>Manhattanite is invitation only.</>
+              )}
+            </div>
           </section>
+          )}
         </div>
       </main>
     </>
@@ -292,7 +305,9 @@ function Step({ n, label }: { n: number; label: string }) {
   );
 }
 
-// The two states where there is nothing to fill in.
+// The two states where there is nothing to fill in. The onward control is
+// optional because only one of them has anywhere to go: a member is sent to
+// the listings, and someone under review is sent nowhere.
 function Settled({
   title,
   note,
@@ -301,15 +316,40 @@ function Settled({
 }: {
   title: string;
   note: string;
-  href: string;
-  cta: string;
+  href?: string;
+  cta?: string;
 }) {
   return (
     <>
       <Head title={title} note={note} />
-      <Link href={href} className="cl-pill mt-7">
-        {cta}
-      </Link>
+      {href && cta && (
+        <Link href={href} className="cl-pill mt-7">
+          {cta}
+        </Link>
+      )}
     </>
+  );
+}
+
+// The only exit a signed-in non-member has, so it stays — quietly, as the last
+// line of the one card. A POST route, so this is a form and not a link: a
+// prefetched or crawled GET would sign people out.
+function SignedInAs({ email }: { email: string | null }) {
+  return (
+    <div
+      className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-5 text-[12.5px]"
+      style={{ borderColor: "var(--cl-hairline)", color: "var(--cl-faint)" }}
+    >
+      {email && <span className="min-w-0 break-all">Signed in as {email}</span>}
+      <form action="/auth/sign-out" method="post">
+        <button
+          type="submit"
+          className="underline underline-offset-2"
+          style={{ color: "var(--cl-muted)" }}
+        >
+          Sign out
+        </button>
+      </form>
+    </div>
   );
 }

@@ -37,6 +37,8 @@ import {
   guestReachable,
   memberNames,
   sessionCookie,
+  setTier1Application,
+  TIER1_NAME,
   type GateIds,
 } from "./screen-fixtures";
 
@@ -171,9 +173,16 @@ function visibleText(body: string): string {
 async function checkNoNames(
   label: string,
   url: string,
-  names: string[]
+  names: string[],
+  // Added 2026-09-15 so the same check can hold a signed-in non-member to the
+  // guest standard. Defaults keep every existing call a guest call.
+  cookie: string | null = null,
+  who = "guest"
 ): Promise<void> {
-  const res = await fetch(`${BASE}${url}`, { redirect: "manual", headers: {} });
+  const res = await fetch(`${BASE}${url}`, {
+    redirect: "manual",
+    headers: cookie ? { cookie } : {},
+  });
   const raw = await res.text();
   const text = visibleText(raw);
   const decodedRaw = decodeEntities(raw);
@@ -191,7 +200,7 @@ async function checkNoNames(
   const ok = found.length === 0;
   if (!ok) fails++;
   console.log(
-    `  ${ok ? "✓" : "✗ NAME LEAK"} [guest] ${url} — ${
+    `  ${ok ? "✓" : "✗ NAME LEAK"} [${who}] ${url} — ${
       ok ? "no member name in the response" : `found ${[...new Set(found)].join(", ")}`
     }`
   );
@@ -401,26 +410,69 @@ async function main() {
     });
   }
 
-  console.log("\n── TIER 1 (account, not a member) ──");
-  await check("t1", "/listings/new", T, { status: 200, contains: "Members post" });
-  await check("t1", "/listings/mine", T, { status: 200, contains: "Members post" });
-  await check("t1", `/listings/${published}/edit`, T, {
-    status: 200,
-    contains: "Members only",
-  });
-  await check("t1", `/listings/${published}/contact`, T, {
-    status: 200,
-    // Verbatim voice-and-copy.md gate, and NO compose box behind it.
-    contains: "you need a member account",
-    notContains: "Introduce yourself",
-  });
+  console.log("\n── TIER 1 (signed in, not a member) ──");
+  // NOTHING IS VISIBLE UNTIL APPROVED (George, 2026-09-15). RETARGETED, NOT
+  // RELAXED. Until today this block asserted the wall each product route showed
+  // a signed-in non-member: "Members post" on /listings/new and /listings/mine,
+  // "Members only" on edit, the contact gate, and "/" redirecting to /listings.
+  // George reversed the look-around model, so such an account now sees nothing
+  // of the product and every product route sends it to /apply before reading
+  // anything. The walls were a weaker answer to the same question: they still
+  // carried the product header, and browse and detail showed the listings
+  // themselves, names included (probed on production the same day). No case
+  // was dropped — each old URL is still here, now with /listings, a listing,
+  // a member page, /saved, /profile and /invite beside it.
+  const T1_PRODUCT = [
+    "/",
+    "/listings",
+    "/listings?type=furniture",
+    `/listings/${published}`,
+    `/listings/${published}/edit`,
+    `/listings/${published}/contact`,
+    "/listings/new",
+    "/listings/mine",
+    "/saved",
+    "/profile",
+    "/invite",
+    ...(reachable.memberId ? [`/members/${reachable.memberId}`] : []),
+  ];
+  for (const url of T1_PRODUCT) {
+    await check("t1", url, T, { redirect: "/apply" });
+  }
+
   // RETARGETED 2026-09-08, NOT RELAXED. "Request access" became "Finish your
   // profile" when the form became the joining profile — every Tier 1 account
   // now arrives through an invitation, so there is no access left to request.
   // Still asserts the same thing: a signed-in non-member on /apply meets the form.
   await check("t1", "/apply", T, { status: 200, contains: "Finish your profile" });
-  // Signed in, member or not, "/" is not your page — see the MEMBER block.
-  await check("t1", "/", T, { redirect: "/listings" });
+
+  // /apply IS NOW ALL A NON-MEMBER CAN SEE, SO IT MUST NOT BE A WAY BACK IN
+  // (2026-09-15). Held in BOTH states a non-member ever sees — the joining form
+  // and the review card, which is where "Look around meanwhile" used to be. In
+  // each: no link to browse, post or profile (header, card or phone tab bar);
+  // a working sign-out form, because removing the right panel removed the only
+  // exit this account had; and no member name. The viewer's own name is
+  // excluded from the name check because the joining form prefills it.
+  const notMine = new Set([TIER1_NAME, ...TIER1_NAME.split(/\s+/)]);
+  const othersNames = names.filter((n) => !notMine.has(n));
+  const holdApply = async (state: string) => {
+    for (const href of ['href="/listings"', 'href="/listings/new"', 'href="/profile"']) {
+      await check("t1", "/apply", T, { status: 200, notContains: href });
+    }
+    await check("t1", "/apply", T, { status: 200, contains: 'action="/auth/sign-out"' });
+    await checkNoNames(`apply, ${state}`, "/apply", othersNames, T, "t1");
+  };
+  await holdApply("joining form");
+  await setTier1Application(true);
+  try {
+    await check("t1", "/apply", T, {
+      status: 200,
+      contains: "Your membership is being reviewed",
+    });
+    await holdApply("under review");
+  } finally {
+    await setTier1Application(false);
+  }
 
   console.log("\n── MEMBER ──");
   // A SIGNED-IN VISITOR NEVER SEES THE LANDING (2026-08-28). Landing v4 is a
@@ -429,6 +481,12 @@ async function main() {
   // for BOTH signed-in principals because the gate is "has a session", not "is
   // a member" — a Tier 1 account is equally not a stranger at the door.
   await check("m", "/", M, { redirect: "/listings" });
+  // A member is untouched by the 2026-09-15 gate. Reaching /apply, they are in,
+  // and the card still sends them to the listings.
+  await check("m", "/apply", M, { status: 200, contains: 'href="/listings"' });
+  // status 200 already requires no redirect (see check()), so this is the whole
+  // assertion: the gate lets a member through.
+  await check("m", "/listings", M, { status: 200 });
   await check("m", "/listings/mine", M, { status: 200, contains: "What you" });
   await check("m", "/listings/new", M, { status: 200, contains: "Category" });
   await check("m", `/listings/${published}/edit`, M, {

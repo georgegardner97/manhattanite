@@ -31,6 +31,8 @@ const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const SYNTH_PREFIX = "george.gardner480+slice2";
 export const MEMBER_EMAIL = `${SYNTH_PREFIX}-member@googlemail.com`;
 export const TIER1_EMAIL = `${SYNTH_PREFIX}-tier1@googlemail.com`;
+/** Exported so the name-leak check can exclude the viewer's own prefilled name. */
+export const TIER1_NAME = "Tobias Renn";
 const PW = "Manhattanite-Screen-Fixtures-2026-1!";
 
 const admin = createClient(URL_BASE, SERVICE, {
@@ -132,12 +134,15 @@ export async function up(): Promise<void> {
   await admin
     .from("accounts")
     .update({
-      name: "Tobias Renn",
+      name: TIER1_NAME,
       neighborhood: "Chelsea",
       is_member: false,
       role: "account",
     })
     .eq("id", tier1.id);
+  // Starts with no application, so /apply shows the joining form. The waiting
+  // state is switched on explicitly by setTier1Application.
+  await admin.from("applications").delete().eq("account_id", tier1.id);
 
   // Idempotent: clear any previous fixture rows first.
   await admin.from("listings").delete().eq("author_id", member.id);
@@ -199,6 +204,26 @@ export async function sessionCookie(
       "base64-" +
       Buffer.from(JSON.stringify(data.session!), "utf8").toString("base64url"),
   };
+}
+
+/**
+ * Puts the Tier-1 fixture into (or out of) the waiting state — a pending
+ * application — so /apply can be asserted in both of the states a non-member
+ * ever sees: the joining form, and the review card.
+ */
+export async function setTier1Application(pending: boolean): Promise<void> {
+  const tier1 = await findUser(TIER1_EMAIL);
+  if (!tier1) throw new Error("no tier1 fixture — run `up` first");
+  await admin.from("applications").delete().eq("account_id", tier1.id);
+  if (pending) {
+    const { error } = await admin.from("applications").insert({
+      account_id: tier1.id,
+      occupation: "Fixture occupation",
+      about: "Fixture application for the gate audit. Not a real person.",
+      neighborhood: "Chelsea",
+    });
+    if (error) throw error;
+  }
 }
 
 export type GateIds = {

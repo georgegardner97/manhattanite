@@ -11,11 +11,16 @@ import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/app/components/cl/AppHeader";
 import ClGate from "@/app/components/cl/ClGate";
 import ClPostForm from "@/app/components/cl/ClPostForm";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
 export default async function ClassifiedsPostPage() {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   const supabase = await createClient();
 
   const {

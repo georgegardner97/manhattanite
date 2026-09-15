@@ -34,7 +34,7 @@ export const metadata = {
 export default function ClassifiedsThankYouPage() {
   return (
     <>
-      <AppHeader active="none" />
+      <AppHeader bare />
 
       <ClAuthCard
         title="Thank you — it’s in."
@@ -48,17 +48,16 @@ export default function ClassifiedsThankYouPage() {
           </>
         }
       >
-        {/* One quiet thing worth knowing, and one thing to do meanwhile. A
-            waiting screen with no exit is a dead end, and the listings are the
-            best argument the network has for being worth the wait. */}
+        {/* NO "LOOK AROUND MEANWHILE" (George, 2026-09-15: nothing is
+            visible or accessible until a member is approved). This used to end
+            on a button to the listings, on the argument that a waiting screen
+            with no exit is a dead end. That argument was withdrawn by name: the
+            wait is meant to end on nothing. The header is bare for the same
+            reason; every link it carried now sends a non-member to /apply. */}
         <p className="cl-inset">
           A member vouching for you moves it along. If you know one, ask them to
           send a note.
         </p>
-
-        <Link href="/listings" className="cl-pill mt-5 w-full text-center">
-          Look around meanwhile
-        </Link>
       </ClAuthCard>
     </>
   );

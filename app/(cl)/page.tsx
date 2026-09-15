@@ -70,6 +70,7 @@ import { redirect } from "next/navigation";
 import Wordmark from "@/app/components/Wordmark";
 import ClSignIn from "@/app/components/cl/ClSignIn";
 import { createClient } from "@/lib/supabase/server";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 
 // Per-request, for two reasons now: the signed-in redirect above has to see the
 // session, and the footer's copyright year is read at request time rather than
@@ -78,6 +79,10 @@ import { createClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export default async function ClassifiedsLandingPage() {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   // Read, don't trust: the proxy refreshed the token, getUser() validates it.
   // Anyone holding a real session is sent to the product; everyone else — every
   // logged-out visitor, which is nearly all of this page's traffic — falls

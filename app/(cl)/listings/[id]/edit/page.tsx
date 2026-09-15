@@ -34,6 +34,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import AppHeader from "@/app/components/cl/AppHeader";
 import ClGate from "@/app/components/cl/ClGate";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 import ClPostForm, {
   type ClPostFormInitial,
 } from "@/app/components/cl/ClPostForm";
@@ -68,6 +69,10 @@ export default async function EditListingPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   const { id } = await params;
   const supabase = await createClient();
 

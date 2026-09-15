@@ -8,10 +8,15 @@
 import AppHeader from "@/app/components/cl/AppHeader";
 import SavedGrid from "@/app/components/cl/SavedGrid";
 import { readPermittedListings, toClCards } from "@/lib/cl/listings-read";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
 export default async function ClassifiedsSavedPage() {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   const gated = await readPermittedListings();
 
   // Every permitted row is signed, not just the saved ones — the server has no

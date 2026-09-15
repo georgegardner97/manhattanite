@@ -41,6 +41,7 @@ import SaveButton from "@/app/components/cl/SaveButton";
 import ClContactModal from "@/app/components/cl/ClContactModal";
 import ClGallery from "@/app/components/cl/ClGallery";
 import ClGate from "@/app/components/cl/ClGate";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
 
@@ -105,6 +106,10 @@ export default async function ClassifiedsDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   const { id } = await params;
   const supabase = await createClient();
 

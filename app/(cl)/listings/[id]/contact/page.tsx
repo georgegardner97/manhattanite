@@ -26,6 +26,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/app/components/cl/AppHeader";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 import ClContactBody from "@/app/components/cl/ClContactBody";
 
 export const dynamic = "force-dynamic"; // session state varies per request.
@@ -42,6 +43,10 @@ export default async function ContactPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   const { id } = await params;
   const supabase = await createClient();
 

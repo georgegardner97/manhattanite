@@ -31,6 +31,7 @@ import {
   toClCards,
 } from "@/lib/cl/listings-read";
 import { neighborhoodOf } from "@/lib/listings/card";
+import { keepNonMembersOut } from "@/lib/cl/member-gate";
 import {
   BROWSE_PATH,
   activeChips,
@@ -49,6 +50,10 @@ export default async function ClassifiedsBrowsePage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Signed in but not a member: sent to /apply before anything is read.
+  // Nothing is visible until approved (George, 2026-09-15; lib/cl/member-gate.ts).
+  await keepNonMembersOut();
+
   const q = parseQuery(await searchParams); // Next 16: searchParams is async.
 
   const gated = await readPermittedListings();
