@@ -113,20 +113,37 @@ async function createSynthMember(
   return { id: data.user.id, email };
 }
 
-// A signed-in member client — anon key + password session, so every query in
-// the tests below runs under the member's own RLS context.
+// A signed-in member client, so every query in the tests below runs under the
+// member's own RLS context.
+//
+// NOT signInWithPassword ANY MORE (2026-09-15). Prod Auth gates the password
+// path behind Turnstile, so this harness had been dying at sign-in with
+// "captcha protection: request disallowed" — and because die() exits without
+// reaching the finally, it left its synthetic members AND a PUBLISHED test
+// listing live on the production board. Sessions are minted the way
+// scripts/audit-rls.ts mints them: admin.generateLink (service role, no
+// captcha) → verifyOtp on the anon client. Same authenticated JWT, same RLS
+// context as a UI login.
 async function signIn(
   url: string,
   anonKey: string,
   email: string
 ): Promise<SupabaseClient> {
+  const admin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data, error: linkErr } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email,
+  });
+  const tokenHash = data?.properties?.hashed_token;
+  if (linkErr || !tokenHash) {
+    die(`Could not mint a session for ${email}: ${linkErr?.message ?? "no token_hash"}`);
+  }
   const client = createClient(url, anonKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
-  const { error } = await client.auth.signInWithPassword({
-    email,
-    password: SYNTH_PASSWORD,
-  });
+  const { error } = await client.auth.verifyOtp({ type: "magiclink", token_hash: tokenHash });
   if (error) die(`Could not sign in as ${email}: ${error.message}`);
   return client;
 }

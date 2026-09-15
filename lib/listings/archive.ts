@@ -17,7 +17,8 @@
 //
 // Two RLS facts shape this file:
 //   1. No .select() after the update — we don't need the row back; the
-//      revalidate + re-render is the confirmation. (Migration 0016 added
+//      redirect to /listings/mine, where the row reappears under Archived, is
+//      the confirmation. (Migration 0016 added
 //      listings_read_own, so the owner CAN now read their own archived row;
 //      the bare update is simply the minimal write.)
 //   2. There is deliberately no unarchive action yet. The owner can now read
@@ -112,7 +113,14 @@ export async function archiveListing(
   // public page for another minute.
   updateTag("listings");
 
-  // No redirect: the caller (the My Listings row) re-renders and the listing
-  // is simply gone — that's the confirmation.
-  return { error: null };
+  // REDIRECT TO /listings/mine (George, 2026-09-15). This used to return and
+  // rely on the caller re-rendering, which was a confirmation when the control
+  // sat on the My Listings row. It moved to the edit screen, where a successful
+  // takedown left the member on an edit form whose only remaining button was
+  // "Confirm changes" — so it read as not having worked. /listings/mine shows
+  // the listing land under Archived, which is the confirmation and a truer one
+  // than a toast: it says the listing still exists, not that it was deleted.
+  // redirect() throws, so it stays last, after every write and revalidation,
+  // and outside any try. Error paths above still return { error }.
+  redirect("/listings/mine");
 }

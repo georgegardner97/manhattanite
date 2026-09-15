@@ -129,6 +129,14 @@ export default function ClRemoveListing({
                 ))}
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-4">
+                {/* KEPT ON PURPOSE after the 2026-09-15 redirect, read on the
+                    real screen. The redirect to /listings/mine confirms AFTER
+                    the click; this line is the only thing BEFORE it that says a
+                    click acts. The four rows are deliberately not red and not
+                    pills, and "Changed my mind" can read as cancel — without
+                    this sentence nothing on the panel says picking a reason is
+                    the takedown. It was not compensation for the missing
+                    confirmation, so the confirmation does not retire it. */}
                 <span className="text-[12.5px]" style={{ color: "var(--cl-faint)" }}>
                   {isPending ? "Taking it down…" : "Whichever you pick takes it down."}
                 </span>
