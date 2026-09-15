@@ -289,3 +289,11 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 **Invitation email copy: consequence, not feature.** The live copy used the framing the finalised pitch abandoned on 2 September. Rewritten. **It says the member who brought you in "gets looked at too", never "is removed"** — the spoken pitch's "you're both out" is stronger than the written rule, and `/terms` says assessed. Written copy matches the Terms. Change both together or neither.
 
 **Dormant, deliberately:** `request_sponsorship` (0025) and `/sponsor-request/[token]` are unreachable while the sponsor-reference field is gone. Nothing deleted; restoring the field restores the flow.
+
+## 2026-09-15 — A takedown ends on your listings, under Archived
+
+**George: picking a reason should just take the listing down.** It already did; nothing said so, and the member was left on an edit form showing only "Confirm changes". `archiveListing` now redirects to `/listings/mine`, where the listing appears under Archived. **Chosen over a toast because it shows the listing still exists**, which is true (archiving is a soft delete), where a "removed" message would imply deletion.
+
+**"Whichever you pick takes it down." stays.** Read on the real screen before deciding. It tells the member, before they click, that a reason row is the takedown; the redirect only confirms afterwards. The rows are deliberately not styled as destructive, and "Changed my mind" can read as cancel.
+
+**Held, still George's call:** whether a member may withdraw a draft a moderator returned. Today the 0017 trigger refuses it and the control still renders.

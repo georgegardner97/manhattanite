@@ -6,6 +6,40 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-15 · A takedown now ends on your listings, and a broken test was leaving rows live (Claude Code)
+
+**FIRST, AND NOT CAUSED BY THIS WORK: there are no published listings on manhattanite.com.** Probed: all three production rows are archived (Ceccotti table, East Village spare room, West Village one-bed), with 5 accounts and 2 members. Anyone invited right now meets an empty board.
+
+**Shipped `1f4337f`.** `archiveListing` redirects to `/listings/mine` after the write, the three revalidations and `updateTag("listings")`, so the member watches the listing land under Archived. Error paths still return `{ error }`. **Correction to the brief:** the Remove control on the `/listings/mine` card (`ClListingActions`) still exists and calls the same action; from there the redirect just reloads the page you are on. It sends no outcome, as before.
+
+**"Whichever you pick takes it down." STAYS**, read on the real screen at 1280 and 390. The redirect confirms after the click; that line is the only thing before it saying a reason row acts. The rows are deliberately not red, and "Changed my mind" can read as cancel. Commented in `ClRemoveListing` so it is not cut blind.
+
+**THE SERIOUS FIND: `test:edit-archive` had been silently broken, and running it put a test listing on the live board.** Its password sign-in hits prod Auth's captcha; `die()` exits before the `finally`, so it left two `+eatest` members and a **published** "Edit-archive test listing (original)" in production, the only published listing on the site. Removed within minutes, founder rows confirmed untouched. The harness now mints sessions with `generateLink` → `verifyOtp`, as `audit-rls` does, and runs all green. `test-multi-sponsor`, `test-admin-console` and `test-listing-moderation` probably still use the password path and are unchecked.
+
+**Verified:** `next build` 0, `tsc` clean, **eslint 4, unmoved — the brief's "baseline 5" is stale, it has been 4 since at least 14 Sep**, `test:edit-archive` green, `audit:gates` 0 failures including both takedown-form checks. Real Chrome as a member: a published fixture taken down with "Sorted, but not through Manhattanite" landed on `/listings/mine` under Archived with `outcome = found_elsewhere`; a pending fixture with "Yes, take it down" did the same with `outcome = null`. Fixtures torn down.
+
+**Still held, not touched: a member cannot take down a `draft` listing** (0017 trigger, `42501`). The control still renders on a returned draft. George's decision.
+
+---
+
+## 2026-09-15 · The takedown works and never says so, and the board is empty (Cowork)
+
+**George: "make it so when you select a reason it just takes it down, rather than taking you back to the listing edit page to then 'confirm changes'." Diagnosed, not a broken write. Fix specified and handed to Claude Code.**
+
+**THE TAKEDOWN ALREADY WORKS. Production proves it: the Ceccotti walnut dining table is archived with `outcome = 'found_elsewhere'`, written by George pressing one of the four buttons.** The row, the outcome and the revalidation all land. What never happens is a redirect.
+
+**The cause is a comment that stopped being true.** `archiveListing` ends with `return { error: null }` under the note "No redirect: the caller (the My Listings row) re-renders and the listing is simply gone". That was written when the control lived on the My Listings row. **`ClRemoveListing` is now rendered by `ClPostForm` on the EDIT screen**, so a successful archive leaves the member on an edit form whose only remaining control is "Confirm changes". Pressing it is harmless because `update.ts` deliberately excludes `status` from its write set, but that is luck rather than design, and the member is told nothing either way.
+
+**Fix specified: redirect to `/listings/mine` after the revalidations.** Chosen because that page already renders archived rows under their own "Archived" heading (`ClArchivedRow`), so the member watches the listing move rather than vanish. That is a truer confirmation than a toast, because a soft delete should look like filing, not deleting. Prompt: `WORK AREAS/Product/mvp-build-project/outputs/Manhattanite_Takedown-Redirect_Claude-Code-Prompt_v1.md`.
+
+**GENERAL RULE THIS EARNS, AND IT IS THE SECOND TIME IN A FORTNIGHT: a comment describing where a component is mounted decays the moment the component moves.** The nested-form incident was the same failure (a comment said "must not be nested" while the nested version shipped for a fortnight) and was fixed by `scripts/test-edit-archive.ts`, a test rather than a sentence. This one has no guard either. Worth considering whether the redirect gets one.
+
+**FLAGGED TO GEORGE AS THE HEADLINE, ABOVE HIS OWN QUESTION: manhattanite.com HAS NO PUBLISHED LISTINGS.** All three production rows are archived, including the Ceccotti table George took down while testing this. **Invitations have gone out: five accounts, two members.** Anyone arriving now meets an empty board. Not caused by any of this work; it is content, and it is George's.
+
+**Still open, deliberately: a member cannot take down a `draft` listing at all** (the 0017 trigger answers 42501 with or without an outcome), and the control still renders on a returned draft, so a member can pick a reason and get a generic error. Held since 2 Sep because whether withdrawing a moderator-returned draft should be allowed is a product call.
+
+---
+
 ## 2026-09-14 · The joining profile verified, two faults fixed, pushed (Claude Code)
 
 **Cowork's 8 September changes shipped as `f96f078`, with two fixes the diff alone would not have shown.**

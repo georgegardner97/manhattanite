@@ -11,6 +11,18 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-09-15 (takedown redirect shipped; the board is empty)
+
+**THE PUBLIC BOARD HAS NO LISTINGS.** All three production rows are archived, while invitations are out (5 accounts, 2 members). This is the most important fact about the product today and is a content problem, not a code one.
+
+**Taking a listing down now lands you on `/listings/mine`**, where it shows under Archived (`1f4337f`). The four reason buttons and the pending single button both redirect; the outcome is still written in the same statement as the status.
+
+**Prod test harnesses can leave live rows behind if they crash.** `test:edit-archive` did on 15 Sep: a captcha-blocked sign-in skipped its cleanup and left a published test listing on the live site. Fixed and cleaned up. Other `test:*` scripts that still sign in by password will fail the same way; after any FATAL, check for the harness's `+prefix` accounts and listings first.
+
+**Lint baseline is 4 errors, not 5.** **Still open:** a member cannot take down a draft listing.
+
+---
+
 ## Quick state addendum — 2026-09-02 (the takedown outcome is BUILT, verified and pushed)
 
 **`0031_listing_outcome.sql` was ALREADY APPLIED to prod before the app code was written — probed, not assumed.** The column selects and the check constraint rejects a bogus value (`23514`). The migration file itself was untracked in git until this commit; it is in now.

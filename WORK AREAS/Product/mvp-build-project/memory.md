@@ -4,6 +4,20 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-15 · Takedown redirects to /listings/mine — verified, pushed
+
+**Board first:** no published listings in production (3 archived, 5 accounts, 2 members).
+
+**Shipped `1f4337f`:** `archiveListing` ends in `redirect("/listings/mine")` after every write and revalidation. The edit-screen takedown used to leave the member on a form showing only "Confirm changes". "Whichever you pick takes it down." kept after reading it on the real screen. `ClListingActions` on `/listings/mine` uses the same action, so it just reloads.
+
+**Harness fix:** `test:edit-archive` switched to `generateLink` → `verifyOtp`. Its captcha failure had left a published test listing on the live board; removed.
+
+**Verified:** build, tsc, eslint 4 (unmoved), `test:edit-archive` green, `audit:gates` 0. Browser as a member: reason button → `/listings/mine`, under Archived, `outcome = found_elsewhere`; pending → same, `outcome = null`.
+
+**Open:** draft takedown blocked by the 0017 trigger (George's call). Check the other `test:*` harnesses for password sign-in.
+
+---
+
 ## 2026-09-14 · Joining profile + invitation copy — verified, pushed
 
 **Shipped `f96f078`:** the invite email rewrite, "Request access" → "Finish your profile", LinkedIn in place of the sponsor field, `bio` + `linkedin_url` written to `accounts` on submit, and the closure paragraph moved to the foot of `/profile`.

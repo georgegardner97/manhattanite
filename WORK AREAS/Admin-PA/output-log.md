@@ -52,3 +52,4 @@ Append-only. Most recent at the bottom.
 - 2026-09-02 · `prod-snapshot_2026-09-02_pre-unseed.json` — mvp-build-project/outputs/backups. Pre-deletion snapshot of every seed listing, member and junk row removed from prod (gitignored: contains real emails).
 - 2026-09-02 · `supabase/migrations/0031_listing_outcome.sql` — the takedown-outcome column. Needs running in the Supabase SQL editor.
 - 2026-09-02 · `Manhattanite_Listing-Outcome_Claude-Code-Prompt_v1.md` — mvp-build-project/outputs. App-side build brief for 0031.
+- 2026-09-15 · `Manhattanite_Takedown-Redirect_Claude-Code-Prompt_v1.md` — mvp-build-project/outputs. Fix brief for the missing redirect after a takedown.
