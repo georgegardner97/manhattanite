@@ -6,6 +6,24 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-15, later · The invitation screen loses its locked doors, and a returned draft can come down (Claude Code)
+
+**Three changes from the pre-wave-one walk. Built and verified; committed, NOT pushed, and `0032` is NOT applied** — George runs it in the SQL editor.
+
+**1. `/join/[token]` offers no product navigation to a non-member.** `AppHeader` gained a `bare` prop (wordmark only, unlinked, no nav, no Admin, no pill); the logged-out, logged-in-non-member and invalid-link branches use it. `MobileTabBar`'s rule became a prefix test (`/` or `/join/…`), because a Set of exact paths could never match a dynamic segment — which is why it was missed. The already-a-member branch keeps the full header; it loses the phone tab bar too, because that rule is by route, and its card already offers Browse and Invite.
+
+**2. The tab reads "You've been invited · Manhattanite", noindex, nofollow.** A static `metadata` export rather than `generateMetadata`: the brief asked for a fixed string with no lookup, and a static export is the plain way to say that. It names nobody; verified in all four branches.
+
+**3. The returned-draft takedown.** `0032_member_archive_draft.sql` widens the member take-down branch of the 0017 trigger to include `draft`; everything else in the function is byte-identical, and the Verify block includes the `draft → published` negative. **Proposed, not applied.** In `ClRemoveListing`: only a published listing is asked why; a draft collapses to one muted "Take this listing down instead", and opens onto the same red confirm. **One deliberate departure from the brief:** the draft confirm sentence does not say "comes off the network", because a returned draft never went live — it reads "It won't go live, and it stays in your records under Archived. You can't resubmit it — post a new one instead."
+
+**Guards added, none weakened.** `audit:gates` now asserts the invitation screen carries no `/listings`, `/profile` or `/listings/new` link, the invitation title, and `noindex`; and the nested-form check now covers the draft edit page, since that branch was restructured. **Correction to the brief:** the nested-form guard is `checkNotInForm()` in `audit:gates`, not `test:edit-archive` (which tests the database policy).
+
+**Verified:** `next build` 0, `tsc` clean, eslint 4 (unmoved), `audit:gates` 0 failures, `audit:rls` 67/67 with prod unchanged. Real Chrome at 1280 and 375 in all four invitation branches, created from a real `invites` row. Draft screen driven as a member: quiet control, no label, no paragraph, no survey, red confirm. **Pressing "Yes, take it down" before 0032 is still refused and the row stays `draft`** — that is the expected pre-migration result, and the same press is the positive test once George has run it.
+
+**Worth knowing:** a Cowork copy pass (em dashes to full stops and colons, "by hand" removed) was running through the working tree during this session and reached about 40 files across `app/` and `lib/`, including lines in `join/[token]/page.tsx` and `ClRemoveListing.tsx`. It was still in progress, so none of it is in these commits: the two mixed files were committed as this change alone and Cowork's lines remain uncommitted. **`audit:gates` should be re-run once that pass lands**, since several of its assertions pin exact copy.
+
+---
+
 ## 2026-09-15 · A takedown now ends on your listings, and a broken test was leaving rows live (Claude Code)
 
 **FIRST, AND NOT CAUSED BY THIS WORK: there are no published listings on manhattanite.com.** Probed: all three production rows are archived (Ceccotti table, East Village spare room, West Village one-bed), with 5 accounts and 2 members. Anyone invited right now meets an empty board.

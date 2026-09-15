@@ -11,6 +11,16 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-09-15, later (invitation screen + draft takedown: committed, not pushed; 0032 NOT applied)
+
+**Migration `0032_member_archive_draft.sql` is written and NOT applied.** George runs it in the Supabase SQL editor; the file's Verify block has the check. Until then a member still cannot take down a returned draft — the new quiet control opens a confirm that ends in the generic error.
+
+**Committed locally, not pushed:** the invitation screen with no product navigation for non-members, its "You've been invited · Manhattanite" noindex tab, and the quiet draft takedown. Nothing here is live on manhattanite.com until a push.
+
+**An uncommitted Cowork copy pass is sitting in the working tree** (em dashes out, "by hand" out, about 40 files in `app/` and `lib/`). It was still in progress, so it is not part of these commits. Re-run `audit:gates` when it lands: several assertions pin exact copy.
+
+---
+
 ## Quick state addendum — 2026-09-15 (takedown redirect shipped; the board is empty)
 
 **THE PUBLIC BOARD HAS NO LISTINGS.** All three production rows are archived, while invitations are out (5 accounts, 2 members). This is the most important fact about the product today and is a content problem, not a code one.

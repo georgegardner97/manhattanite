@@ -296,4 +296,12 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 
 **"Whichever you pick takes it down." stays.** Read on the real screen before deciding. It tells the member, before they click, that a reason row is the takedown; the redirect only confirms afterwards. The rows are deliberately not styled as destructive, and "Changed my mind" can read as cancel.
 
-**Held, still George's call:** whether a member may withdraw a draft a moderator returned. Today the 0017 trigger refuses it and the control still renders.
+**Held, still George's call:** whether a member may withdraw a draft a moderator returned. Today the 0017 trigger refuses it and the control still renders. *(Decided later the same day — see below.)*
+
+## 2026-09-15, later — A member may take down a returned draft, quietly
+
+**George: "They should have the option to take it down but it shouldn't be front and centre."** A member whose listing a moderator returned may withdraw it instead of fixing it. Migration `0032` widens the 0017 trigger to allow `draft → archived` for the owner; `→ published` stays refused for every member, and no RLS policy moves.
+
+**Quiet to open, plain to confirm.** On a draft the screen's job is to fix what the moderator asked for and send it back, so the take-down is one muted text link below the save, with no heading and no red. Once opened it is the same destructive confirm as everywhere else. **No "why" question on a draft**: it never went live, so it cannot have found anyone, and `outcome` stays null — the same rule as a pending listing. Only a published listing is asked.
+
+**The invitation screen carries no product navigation for a non-member** (same day). Every link in the header and the phone tab bar was a locked door for someone who had never signed in. Its browser tab is a fixed "You've been invited · Manhattanite", noindex, and never names the inviter: the one-time token lets the page body name them, but not the tab, the share card or a crawler.

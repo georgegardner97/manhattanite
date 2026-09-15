@@ -4,6 +4,18 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-15, later · Invitation screen nav + tab title, and the quiet draft takedown — committed, not pushed
+
+**Built:** `AppHeader` `bare` prop, used by three `/join/[token]` branches; `MobileTabBar` hides on `/` and `/join/…`; static noindex metadata on the invitation page; `ClRemoveListing` asks why only for published listings and collapses to a muted "Take this listing down instead" on a draft; migration `0032` widens the trigger to `draft → archived`.
+
+**Blocker:** `0032` is **not applied**. George runs it in the SQL editor, then the draft takedown is re-driven as a member (the same press that is refused today).
+
+**Verified:** build, tsc, eslint 4, `audit:gates` 0 (new invitation and draft-form assertions), `audit:rls` 67/67, real Chrome at 1280 and 375 across all four invitation branches and the draft screen.
+
+**Next:** George applies 0032 → re-drive the draft takedown → push.
+
+---
+
 ## 2026-09-15 · Takedown redirects to /listings/mine — verified, pushed
 
 **Board first:** no published listings in production (3 archived, 5 accounts, 2 members).
