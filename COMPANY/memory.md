@@ -11,6 +11,18 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-09-15, last (nothing until approved: committed, not pushed; 0032 AND 0033 NOT applied)
+
+**A signed-in account that is not a member sees nothing of the product.** Every product page sends it to `/apply`, which shows only the profile form or the review card and a quiet Sign out. Members are untouched. This overturns the June "an account sees everything, acts on nothing" model.
+
+**Two migrations are waiting for George in the SQL editor:** `0032` (a member may take down a returned draft) and `0033` (a member profile is readable by members only). Each file's Verify block has the check.
+
+**Three code commits are local and unpushed.** Nothing from today's invitation screen, draft takedown or this gate is on manhattanite.com yet.
+
+**The open question:** the six-listing guest teaser is now the only thing visible to anyone who is not a member.
+
+---
+
 ## Quick state addendum — 2026-09-15, later (invitation screen + draft takedown: committed, not pushed; 0032 NOT applied)
 
 **Migration `0032_member_archive_draft.sql` is written and NOT applied.** George runs it in the Supabase SQL editor; the file's Verify block has the check. Until then a member still cannot take down a returned draft — the new quiet control opens a confirm that ends in the generic error.

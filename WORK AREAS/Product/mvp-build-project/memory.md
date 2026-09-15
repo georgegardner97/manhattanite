@@ -4,6 +4,18 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-15, last · Nothing until approved — committed, not pushed
+
+**Built:** `keepNonMembersOut()` in `lib/cl/member-gate.ts`, first line of eleven product pages; `/apply` signed in is one card with a bare header, no look-around, and a quiet Sign out; no tab bar on `/apply`, `/login`, `/thank-you`; `/thank-you` and `/terms` copy corrected; migration `0033` makes `get_member_profile` members-only.
+
+**Probed first:** a signed-in non-member could see browse, listings, member pages and `/saved` with names, and read any member profile from the database.
+
+**Verified:** build, tsc, eslint 4, `audit:gates` 0 (Tier 1 retargeted to redirects, `/apply` held in both states), `audit:rls` 67/67, Chrome at 1280 and 375 as non-member, member and guest.
+
+**Blockers:** George runs `0032` and `0033`; then push. **Open:** the guest teaser. **Tidy-up later:** dead `ClGate` walls in new/mine/edit/contact; `CLAUDE.md` note 13.
+
+---
+
 ## 2026-09-15, later · Invitation screen nav + tab title, and the quiet draft takedown — committed, not pushed
 
 **Built:** `AppHeader` `bare` prop, used by three `/join/[token]` branches; `MobileTabBar` hides on `/` and `/join/…`; static noindex metadata on the invitation page; `ClRemoveListing` asks why only for published listings and collapses to a muted "Take this listing down instead" on a draft; migration `0032` widens the trigger to `draft → archived`.

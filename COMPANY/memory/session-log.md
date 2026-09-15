@@ -6,6 +6,52 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-15, last · Nothing is visible or accessible until a member is approved (Claude Code)
+
+**George's reversal, built and verified. Committed, NOT pushed; migration `0033` is written and NOT applied.**
+
+**THE TRUTH BEFORE THE CHANGE, probed on production data with a real signed-in non-member session.** The app gave that account everything: `/listings`, a listing page, a member page and `/saved` all rendered with member names, and `/profile` and `/apply` both carried Browse, Profile and Post. The database gave it every published listing with its byline (the same rows `0010` gives an anonymous visitor), its own `accounts` row only, no sponsorships, and **any member's full profile through `get_member_profile`**. That last one is the only read a non-member session could reach that a guest cannot, so it is what `0033` closes. Listings are not closed at the database: while the guest teaser policy exists, an unapproved account could sign out and read the same rows.
+
+**One gate, called eleven times.** `lib/cl/member-gate.ts` holds the rule; every product page calls `keepNonMembersOut()` as its first line (`/`, `/listings`, `/listings/[id]`, `/members/[id]`, `/saved`, `/listings/new`, `/listings/mine`, edit, contact, `/profile`, `/invite`). **The honest answer to "prefer one gate over eight" is that these routes share nothing that can hold it:** Next 16 says `proxy.ts` must never query the database, and the `(cl)` layout also wraps `/apply` and is not re-run between the pages under it. `/search` is a 308 to `/listings` and is covered there. Cost: a signed-in page view pays one auth check and one own-row read; a guest pays nothing.
+
+**`/apply` for anyone signed in is one card.** The right panel is gone, the header is bare for anyone not a member, the waiting card ends on nothing, and Sign out is the card's quiet last line ("Signed in as … · Sign out", a POST form). A member still gets "You're a member" and Browse listings.
+
+**Beyond the brief, and why.** `/profile`, `/saved` and `/invite` are gated too, because the rule is "only the profile form, the review card, and sign out". `/thank-you` lost its own "Look around meanwhile" button. `/terms` said "While we are reading it you can look around"; it now says "Until then there is nothing to see". **One change a logged-out visitor will notice:** `/apply` and `/login` lose the header nav and the phone tab bar for guests too, because the tab bar is a client component that cannot tell a guest from a non-member. The guest teaser itself is untouched.
+
+**`audit:gates` was retargeted, nothing deleted.** The Tier 1 block used to assert the walls ("Members post", "Members only", the contact gate, `/` → `/listings`); every one of those URLs now asserts a redirect to `/apply`, alongside six more. `/apply` is asserted in both non-member states (joining form, under review): no link to `/listings`, `/listings/new` or `/profile`, a sign-out form, and no member name. A member still reaches `/listings` and `/apply`'s Browse listings. All eleven pinned copy strings still pass with the no-dashes pass in the working tree.
+
+**Verified:** `next build` 0, `tsc` clean, eslint 4 (unmoved), `audit:gates` 0 failures, `audit:rls` 67/67 with prod unchanged. Chrome at 1280 and 375 as a non-member in both states, a member, and a guest: typing nine product URLs lands a non-member on `/apply` with no member name; pressing Sign out signs them out; the address on the sign-out line is their own; a logged-out fetch of `/apply` contains no address except the sign-in placeholder `you@example.com`.
+
+**Left in place, now dead for non-members:** the `ClGate` walls inside `/listings/new`, `/listings/mine`, edit and contact. The gate runs first, and guests are sent to `/login` before those walls, so nothing renders them. Removing them is tidy-up, not this change. **Stale doc:** `CLAUDE.md` note 13 still says a signed-in non-member on `/` goes to `/listings`; it goes to `/apply`. `CLAUDE.md` has Cowork's uncommitted edits in it, so it was not touched.
+
+**THE NEXT QUESTION, FOR GEORGE:** a logged-out visitor can still read the six newest published listings on `/listings`. If nothing is visible until approved, the guest teaser is the last thing still visible to someone who is not. Deciding that also decides whether the listings read policy can be closed at the database.
+
+---
+
+## 2026-09-15, latest · No dashes anywhere a person can read, and "by hand" is gone (Cowork)
+
+**George, standing rule: "Get rid of any '-' across all copy and any part of the website. I dont like them and I dont want to see any."** Plus: drop the "by hand" phrasing wherever it appears.
+
+**What was actually there.** 92 candidate lines across 36 files, of which about 60 were real copy and the rest were the codebase's own prose comments. Separately, 222 distinct hyphenated tokens, but only ten of those were English words in a sentence: as-is, database-level, fair-housing, invitation-based, invitation-only, logged-out, members-only, re-apply, record-keeping, short-lived. **Everything else with a hyphen was a CSS class, a Tailwind utility, an HTML attribute, a font file name or a web address**, and those were left alone because renaming them breaks the site and nobody reads them.
+
+**Every dash was rewritten, not swapped.** A full stop, a comma, a colon or brackets, chosen per sentence. Page titles took the middot the product already used on `/login` ("Sign in · Manhattanite"), so titles are now "Privacy Policy · Manhattanite", "Terms of Use · Manhattanite", "Thank you · Manhattanite", and the root title "Manhattanite · A better marketplace for Manhattan residents". Two lone em dashes that were doing a job rather than punctuating got real words: the reviewer ping's "Brought in by: —" is "Not given", and the admin members table's empty vouch cell is "None". The plain-text email footer rule became "· · ·".
+
+**Files touched: 39.** Every public page (landing metadata, terms, privacy, thank-you, join, profile, invite, sponsor-request, listings/mine, reset flows), every form and error string in `lib/` (listing create and edit, contact, profile, applications, auth errors), all five admin screens, and all of `lib/applications/emails.ts` — so the invitation, welcome, reviewer ping, published, returned and vouch-request emails are all clean.
+
+**"By hand" removed from five places** (thank-you, both join branches, terms, the invite form). The sentences still say a person reads it, because that is the point; "by hand" was the part George did not want. The sixth hit was a code comment and was left.
+
+**The rule is now in CLAUDE.md**, under Voice and copy conventions, with the exemption list spelled out — code identifiers, class names, attributes, file names, addresses and comments are not copy. Without that, the next copy pass reintroduces them.
+
+**Verified:** `tsc --noEmit` clean. eslint 4 errors, the baseline, in four files none of which this pass touched. Zero em dashes, en dashes, `&mdash;` or `&ndash;` remain outside code comments. **Checked against `audit:gates`, which pins exact copy in eleven places** — "Invitation only", "A private marketplace for New York.", "This invitation isn", "Members only", "Members post", "you need a member account", "Introduce yourself", "Edit your listing", "All listings", "The state of the network", and the invitation title — all eleven still exist verbatim, so the copy pass does not move the audit. `next build` and `audit:gates` itself cannot run from Cowork and still need a real run.
+
+**NOT COMMITTED.** Cowork cannot push. This sits in the working tree alongside Claude Code's invitation-screen and takedown work from the same day.
+
+**Two things for George, neither caused by this pass:**
+1. **`0032_member_archive_draft.sql` is written and NOT applied.** Until he runs it in the Supabase SQL editor, taking down a returned draft still fails.
+2. **The board is empty.** All three production listings are `archived`; there is nothing published. 5 accounts, 2 members, 4 invites, 0 contacts. Anyone invited today lands on nothing.
+
+---
+
 ## 2026-09-15, later · The invitation screen loses its locked doors, and a returned draft can come down (Claude Code)
 
 **Three changes from the pre-wave-one walk. Built and verified; committed, NOT pushed, and `0032` is NOT applied** — George runs it in the SQL editor.

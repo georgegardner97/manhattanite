@@ -6,6 +6,27 @@ Read this at the start of every Manhattanite conversation.
 
 ---
 
+
+## 2026-09-15 · Nothing is visible or accessible until a member is approved (REVERSES the look-around affordance)
+
+**George, after walking the real invitation flow on production:** "I think we should get rid of the right panel that allows them to browse once they've logged in. Its confusing. They shouldn't be able to see anything until their account has been approved. It ads the mystery. I know this goes against what I've said before. Nothing should be visible or accessible until they are approved."
+
+**He named the reversal himself.** The "you can look around in the meantime" affordance, and the signed-in panel on `/apply` offering Browse listings, were considered choices. They are withdrawn. An account with `is_member = false` now sees no listings, no member names and no counts; the only screens it reaches are the profile form, the review card, and sign out.
+
+**Members are untouched.** So is a logged-out stranger, for now: the six-row guest teaser predates this and stays until George decides on it separately. That is the obvious next question and is flagged, not settled.
+
+**Sign out has to survive the panel removal** — it was the only exit a non-member had.
+
+Handed to Claude Code as `Nothing-Until-Approved_Claude-Code-Prompt_v1.md`. **Built and verified the same day; committed, not pushed.** The overturned notes are the 2026-06-09 "Tier model refined to three viewing layers" entry under Product (an account "sees everything, full detail") and the look-around lines in `ClAccess`, `/thank-you` and `/terms`; read this entry in place of them.
+
+- **How it is held:** one helper, `lib/cl/member-gate.ts`, called first by every product page, because nothing shared can hold it (`proxy.ts` must not query the database; the layout also wraps `/apply`). `audit:gates` asserts a redirect to `/apply` from every product route and a `/apply` with no product link and no member name.
+- **Where the database stops:** a signed-in non-member could read any member's full profile through `get_member_profile`; migration `0033` (proposed, not applied) closes that. The published listings stay readable at the database, because the guest teaser policy returns the same rows to anyone.
+- **One consequence for guests:** `/apply` and `/login` carry no header nav or phone tab bar for a logged-out visitor either, since the tab bar cannot tell a guest from a non-member.
+
+**Same day, same walk:** the invitation email named only "Apartments, furniture", which George called too narrow against the four categories the product actually has (Apartments, Furniture, Services, Everything else). It now reads "Apartments and rooms, furniture, services worth recommending, and whatever else is worth passing on." The button changed from "Accept your invitation" to **"Accept invitation and create account"**, because accepting and creating the account are the same click and the old label only said half of it.
+
+---
+
 ## Product
 
 - **Categories at launch:** Apartments + Furniture. (2026-05-16)
