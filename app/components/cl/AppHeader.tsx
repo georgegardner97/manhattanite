@@ -39,6 +39,17 @@
 //      and the edit and contact routes. Every destination this header offers
 //      stays inside the system it is drawn in.
 //
+// `bare` RENDERS THE WORDMARK ALONE (2026-09-15) — no nav links, no Admin link,
+// no action pill, and the wordmark is not a link. It exists for screens
+// addressed to somebody who is not a member yet, where every one of those is a
+// locked door. Today that is /join/[token], which was offering a logged-out
+// invitee Browse, Profile and a filled "Post a listing" pill set directly
+// against its own "Claim your spot". A prop rather than a second header, so the
+// bar, the hairline, the widths and the mark stay one component. The wordmark
+// goes unlinked as well because its link is /listings: the same door by
+// another route, and a way off a one-time invitation onto a page that can do
+// nothing for the person holding it.
+//
 // THE ADMIN LINK IS A PROP, NOT A LOOKUP, AND THAT IS DELIBERATE. /admin was
 // reachable from exactly one place — AccountMenu, inside SiteNav, mounted only
 // in app/(ed)/layout.tsx. Once the migration merges, the only (ed) routes left
@@ -103,11 +114,37 @@ export default function AppHeader({
   admin = false,
   /** The content width of the page below, so the bar lines up with it. */
   width = "standard",
+  /** Wordmark only: no nav, no Admin, no action pill. For non-members. */
+  bare = false,
 }: {
   active?: ClNavKey;
   admin?: boolean;
   width?: ClHeaderWidth;
+  bare?: boolean;
 }) {
+  if (bare) {
+    return (
+      <header
+        className="border-b"
+        style={{
+          borderColor: "var(--cl-hairline)",
+          background: "var(--cl-surface)",
+        }}
+      >
+        <div
+          className={`mx-auto flex ${MAX_WIDTH[width]} items-center justify-between gap-6 px-[clamp(16px,2.4vw,28px)] py-3.5`}
+        >
+          {/* The pill-sized row height is kept by the py-3.5 plus the
+              wordmark's own line, so a bare bar and a full one sit at the same
+              height and the page below does not shift between them. */}
+          <span style={{ color: "var(--cl-ink)" }}>
+            <Wordmark className="text-[19px] leading-none" />
+          </span>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header
       className="border-b"

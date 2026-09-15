@@ -204,6 +204,8 @@ export async function sessionCookie(
 export type GateIds = {
   published: string | null;
   pending: string | null;
+  /** The member's own returned draft — the quiet take-down path. */
+  draft: string | null;
   otherPublished: string | null;
   otherUnpublished: string | null;
 };
@@ -228,6 +230,7 @@ export async function gateIds(): Promise<GateIds> {
   return {
     published: pick(mine, "published"),
     pending: pick(mine, "pending"),
+    draft: pick(mine, "draft"),
     otherPublished: pick(others, "published"),
     otherUnpublished:
       pick(others, "pending") ?? pick(others, "draft") ?? pick(others, "archived"),

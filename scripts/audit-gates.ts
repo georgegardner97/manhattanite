@@ -274,7 +274,7 @@ async function main() {
   const T = `${tier1.name}=${tier1.value}`;
   console.log("  fixtures up, sessions minted");
 
-  const { published, pending, otherPublished, otherUnpublished } = ids;
+  const { published, pending, draft, otherPublished, otherUnpublished } = ids;
   if (!published || !pending) throw new Error("fixture listings missing");
 
   console.log("\n── GUEST ──");
@@ -324,6 +324,30 @@ async function main() {
     contains: "A private marketplace for New York.",
   });
   await check("guest", "/", null, { status: 200, contains: 'href="/apply"' });
+
+  // THE INVITATION SCREEN OFFERS NO LOCKED DOORS (2026-09-15). /join/[token] is
+  // the first screen an invitee ever sees, and it was carrying Browse, Profile,
+  // "Post a listing" and — on a phone — a second copy of all three in the tab
+  // bar. A bogus token reaches the "not available" branch, which is addressed to
+  // a non-member like the claim form is, so it must render the bare header.
+  // Three hrefs, because each covers a different leak: /listings/new is the
+  // pill AND the tab bar's Post; /profile is the nav AND the tab bar's Profile;
+  // "/listings" with its closing quote is Browse and the linked wordmark.
+  // The title and noindex are asserted because a one-time invitation link is
+  // exactly the page that must never name anyone in its tab or reach an index.
+  const JOIN = "/join/not-a-real-invitation";
+  await check("guest", JOIN, null, {
+    status: 200,
+    contains: "This invitation isn",
+    notContains: 'href="/listings/new"',
+  });
+  await check("guest", JOIN, null, { status: 200, notContains: 'href="/profile"' });
+  await check("guest", JOIN, null, { status: 200, notContains: 'href="/listings"' });
+  await check("guest", JOIN, null, {
+    status: 200,
+    contains: "been invited · Manhattanite</title>",
+  });
+  await check("guest", JOIN, null, { status: 200, contains: "noindex" });
 
   if (otherUnpublished) {
     // A guest on a listing outside the teaser gets the WALL, not a 404 — Slice
@@ -477,6 +501,12 @@ async function main() {
   // same component and only one of them was ever looked at.
   await checkNotInForm("m", `/listings/${published}/edit`, M, "Take this listing down");
   await checkNotInForm("m", `/listings/${pending}/edit`, M, "Take this listing down");
+  // And the returned draft (2026-09-15), which renders the SAME component
+  // through a different, quiet branch ("Take this listing down instead"). A
+  // restructured branch is where a nesting regression would come back.
+  if (draft) {
+    await checkNotInForm("m", `/listings/${draft}/edit`, M, "Take this listing down");
+  }
 
   console.log("\n── MEMBER, SOMEONE ELSE'S LISTING ──");
   if (otherPublished) {

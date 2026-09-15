@@ -23,7 +23,23 @@
 // because it is the whole content of the invitation; the 2026-08-26 rule about
 // not naming members to logged-out visitors is about the PUBLIC pages, and a
 // one-time secret link from that member is not a public page.
+//
+// NO PRODUCT NAVIGATION FOR ANYONE WHO IS NOT YET A MEMBER (2026-09-15). Three
+// of the four branches render the header `bare` — wordmark only. The full
+// header offered a logged-out invitee Browse, Profile and a filled "Post a
+// listing" pill, every one a locked door, and the pill was the heaviest thing
+// on the screen, set directly against "Claim your spot". MobileTabBar drops its
+// bar on this route for the same reason. The already-a-member branch keeps the
+// normal header: that person is in, and every link in it goes somewhere.
+//
+// THE METADATA IS A FIXED STRING AND NAMES NOBODY. The page body may name the
+// inviter because the token is a one-time secret held by the invitee; the tab
+// title, the share card and anything a crawler can read are not held by the
+// invitee, so the 2026-08-26 rule applies to them in full. Fixed rather than
+// generateMetadata because there is nothing to look up and nothing should be.
+// noindex because a one-time link has no business in a search index.
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/app/components/cl/AppHeader";
@@ -32,6 +48,11 @@ import ClJoinForm from "@/app/components/cl/ClJoinForm";
 import { ClAcceptInvite } from "@/app/components/cl/ClInviteActions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "You’ve been invited · Manhattanite",
+  robots: { index: false, follow: false },
+};
 
 type InviteRow = {
   inviter_name: string | null;
@@ -56,7 +77,7 @@ export default async function ClassifiedsJoinPage({
   if (!invite || invite.status !== "pending") {
     return (
       <>
-        <AppHeader active="none" />
+        <AppHeader bare />
         <ClAuthCard
           title="This invitation isn’t available."
           note={
@@ -113,7 +134,7 @@ export default async function ClassifiedsJoinPage({
 
     return (
       <>
-        <AppHeader active="none" />
+        <AppHeader bare />
         <ClAuthCard
           title={`${inviter} brought you in.`}
           note={`Accept to be vouched for by ${inviter}. We’ll take you to finish your application, then confirm your place by hand.`}
@@ -128,7 +149,7 @@ export default async function ClassifiedsJoinPage({
   // account, the form explains how to sign in and reopen the link.
   return (
     <>
-      <AppHeader active="none" />
+      <AppHeader bare />
       <ClAuthCard
         title={`${inviter} brought you in.`}
         note={`Manhattanite is a private marketplace for New Yorkers. Set a password to claim your spot — ${inviter} vouched for you, and we’ll confirm your place by hand.`}

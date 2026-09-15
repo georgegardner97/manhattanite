@@ -60,10 +60,37 @@ export default function ClRemoveListing({
   const [state, formAction, isPending] = useActionState(archiveListing, INITIAL);
   const groupId = useId();
 
-  // A pending listing was never published, so it cannot have found anyone —
-  // it keeps the single button and writes no outcome. Same branch the copy
-  // above already turns on.
-  const asks = status !== "pending";
+  // ONLY A PUBLISHED LISTING IS ASKED WHY. The question is whether it found its
+  // person, and a listing nobody could see cannot have: a pending one has not
+  // gone live, and a draft is one a moderator returned before it did. Both
+  // keep the single button and write outcome NULL — a null 0031 already
+  // documents as meaningful, not missing.
+  const asks = status === "published";
+
+  // A RETURNED DRAFT GETS A QUIET WAY IN (George, 2026-09-15: "They should have
+  // the option to take it down but it shouldn't be front and centre"). On a
+  // draft the member's job on this screen is to fix what the moderator asked
+  // for and send it back, so the collapsed state is one muted text control —
+  // no group label, no paragraph, no red, no hairline section of its own.
+  // Opening it lands on the same plain, red confirm as everywhere else: quiet
+  // to open, plain to confirm. Needs 0032 — before it, the 0017 trigger refuses
+  // draft → archived and the member sees the generic error.
+  const quiet = status === "draft" && !confirming;
+
+  if (quiet) {
+    return (
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          className="cl-quiet text-[13px]"
+          style={{ color: "var(--cl-muted)" }}
+        >
+          Take this listing down instead
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -98,10 +125,23 @@ export default function ClRemoveListing({
             className="max-w-[52ch] text-[13px] leading-[1.6]"
             style={{ color: "var(--cl-muted)" }}
           >
-            Take it down? It comes off the network
-            {status === "pending" ? " and out of review" : ""}, and stays in your
-            records under Archived. You can&rsquo;t put it back yourself — post a
-            new one instead.
+            {/* THREE SENTENCES, ONE PER STATUS. A returned draft is not in the
+                queue and was never on the network, so neither older string was
+                true of it; and "put it back" would read as resubmitting, which
+                is exactly what it can no longer do. */}
+            {status === "draft" ? (
+              <>
+                Take it down? It won&rsquo;t go live, and it stays in your records
+                under Archived. You can&rsquo;t resubmit it — post a new one instead.
+              </>
+            ) : (
+              <>
+                Take it down? It comes off the network
+                {status === "pending" ? " and out of review" : ""}, and stays in your
+                records under Archived. You can&rsquo;t put it back yourself — post a
+                new one instead.
+              </>
+            )}
           </p>
 
           {asks ? (

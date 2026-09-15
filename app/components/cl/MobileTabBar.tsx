@@ -48,20 +48,29 @@ const TABS: { label: string; href: string; match: (p: string) => boolean }[] = [
   },
 ];
 
-// One route in this group is not a product screen and must not carry product
-// navigation: the landing. It is a public page addressed to someone who has
-// never signed in, and offering them Saved, Post and Profile is offering three
+// Two routes in this group are not product screens and must not carry product
+// navigation. The first is the landing: a public page addressed to someone who
+// has never signed in, and offering them Browse, Post and Profile is offering
 // doors that are locked.
 //
-// It was two routes before the migration — the preview's own contents page sat
-// here as well. The landing is now "/" rather than "/design/landing", so the
-// set is down to the one entry.
-const NAVLESS = new Set(["/"]);
+// THE SECOND IS /join/[token], FOR THE SAME REASON — SECOND INSTANCE (2026-09-15).
+// An invitee arrives from a friend's email having never seen the site, and this
+// bar put three locked doors under the one form they came to fill in; with the
+// header's own nav that was six. It was missed because the rule was written as
+// a Set of exact paths and the invitation is a dynamic segment, so the test is
+// a prefix now rather than a lookup. The already-a-member branch of that screen
+// loses the bar too, which is fine: its card offers Browse and Invite itself.
+//
+// (It was also once the preview's contents page, before the landing moved from
+// "/design/landing" to "/".)
+function isNavless(pathname: string): boolean {
+  return pathname === "/" || pathname.startsWith("/join/");
+}
 
 export default function MobileTabBar() {
   const pathname = usePathname();
 
-  if (NAVLESS.has(pathname)) return null;
+  if (isNavless(pathname)) return null;
 
   return (
     <nav
