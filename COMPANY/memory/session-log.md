@@ -6,6 +6,24 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-16 · The handwritten wordmark, and one font (Claude Code)
+
+**Built from `Manhattanite_Script-Wordmark-Swap_Claude-Code-Prompt_v3.md`. Committed, NOT pushed.**
+
+**What changed.** `Wordmark.tsx` now draws the script mark as inline SVG from the Claude Design handoff paths (checked byte for byte against `manhattanite-wordmark-ink.svg`), the full stop its own path. Every caller sizes it by height: header 34px (28px under 600px), cards and gates 32px, document footer 28px, landing `clamp(44px, 8vw, 96px)`. Favicon is `app/icon.svg` plus a generated `app/favicon.ico` (16, 32, 48) and a full bleed `app/apple-icon.png`; `app/icon.tsx` is deleted. The share card is the cream mark on #13241B with the landing's line under it. Emails use the new retina PNG at 180 by 27 and a sans stack; the Instrument Serif woff2 and both serif TTFs are deleted. `fonts.ts` and the `(cl)` layout load Instrument Sans only; `.cl-display` (the 404 numeral) is Instrument Sans at weight 300; the dead `.ed-root` and `@theme inline` font rules left `globals.css` (the file itself stays).
+
+**Fixed in the handoff pack.** Every SVG and both PNGs carried a C2PA content credentials block despite the README saying otherwise; nothing that ships carries one. The wrapper span was inline, so height classes did nothing; it is `inline-block align-top`. The full stop animation gets `transform-box: fill-box`. The pack's apple icon had transparent rounded corners, which iOS renders black, so it was regenerated square.
+
+**Two things found in Chrome.** At 375px the landing mark at the brief's 56px minimum was 375px wide, edge to edge, so the minimum is 44px. And the script is about twice as wide as the serif was: at 34px on a phone the header pushed "Post a listing" onto two lines, hence 28px below 600px.
+
+**Behaviour worth knowing, unchanged:** the header wordmark does not change color on hover. The `<Link>` carries an inline ink color that beats `.cl-root a:hover`; that was true of the serif mark too.
+
+**Verified:** `next build` clean, `tsc` clean, eslint 5 errors (same as baseline before the change), `audit:gates` 0 failures, `audit:rls` 67/67 with prod unchanged. Chrome at 1280 and 375 across landing, header signed in and out, sign in, `/apply`, a gate, Terms, the 404, plus the share card and two rendered emails: screenshots in `WORK AREAS/Product/design-foundation-project/outputs/script-wordmark-swap-screens/`. The only font file any page requests is Instrument Sans. **Not done as written:** a screenshot of the favicon in a real tab strip (the shell cannot record the screen); the 16px and 32px renders are in the folder instead.
+
+**The OG card needs a font file satori can read** (it cannot read woff2), so `assets/fonts/InstrumentSans-Regular.ttf` is committed, the static 400 instance from Google Fonts (OFL).
+
+---
+
 ## 2026-09-15, last · Nothing is visible or accessible until a member is approved (Claude Code)
 
 **George's reversal, built and verified. Committed, NOT pushed; migration `0033` is written and NOT applied.**

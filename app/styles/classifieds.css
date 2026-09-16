@@ -7,7 +7,8 @@
    DELIBERATELY SCOPED. Every token and class below is namespaced `cl-` and
    lives under `.cl-root`, which only the /design routes mount. It does not
    touch — and cannot leak into — the live editorial system in globals.css
-   (bone / ink / park, Instrument Serif + Inter, hairlines, square corners).
+   (bone / ink / park, hairlines, square corners). That system has since been
+   retired, and as of 2026-09-16 this one is set in Instrument Sans alone.
    The two systems are alternatives, not layers: this file exists so the new
    direction can be seen on a real screen with real listings before anything
    commits to it, and so it can be deleted in one `rm` if it doesn't survive.
@@ -76,9 +77,8 @@
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
-  /* globals.css tightens body tracking for Inter. Instrument Sans is already
-     set tighter by its own designer; inheriting the negative tracking on top
-     visibly crushes it at 13px. */
+  /* Instrument Sans is already set tight by its own designer; any negative
+     tracking inherited on top visibly crushes it at 13px. */
   letter-spacing: normal;
 }
 
@@ -98,12 +98,17 @@ body:has(.cl-root) {
    TYPE
    -------------------------------------------------------------------------- */
 
-/* Newsreader is reserved for the wordmark and display numerals. Everything
-   else — including the 34px listing titles — is Instrument Sans at 500. In
-   this system the serif is a signature, not a heading face. */
+/* ONE FACE (George, 2026-09-16). Instrument Sans sets everything on the site;
+   the handwritten wordmark is a drawing, not a font, and it is the only
+   expressive element. Newsreader and Instrument Serif are both gone.
+
+   `.cl-display` survives for the display numeral on the 404 alone. It used to
+   switch to Newsreader; it now stays in Instrument Sans and does its work with
+   size and a light weight instead, set slightly tight so a large numeral does
+   not read as loose body type. */
 .cl-display {
-  font-family: var(--font-newsreader), Georgia, serif;
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: -0.03em;
 }
 
 /* Screen eyebrow: "02 · BROWSE". */
@@ -852,9 +857,10 @@ details[open] > .cl-summary .cl-caret {
    The mark rises a few pixels and settles; the line and the button follow; the
    period arrives last, on its own, a beat after the letters.
 
-   The period is the gesture. It is the locked part of the mark (Concept D,
-   2026-07-21 — "the period is PART of the mark: never dropped"), so it is the
-   part worth landing separately: the name assembles, then punctuates itself.
+   The period is the gesture. It is the locked part of the mark (the full stop
+   is PART of the mark and is never dropped, a rule carried over from Concept D
+   into the handwritten mark of 2026-09-16), so it is the part worth landing
+   separately: the name assembles, then punctuates itself.
    Everything else here is a plain staggered fade-up, which is the register this
    brand can afford — Soho House and Le Labo do not animate their logos, they
    just let them arrive. Anything with more personality than this (letters
@@ -863,12 +869,11 @@ details[open] > .cl-summary .cl-caret {
    wear.
 
    CSS ONLY, NO JAVASCRIPT, AND NO FONT GATE. The obvious failure of an animated
-   wordmark is that it fades in wearing the fallback serif and then snaps to the
-   real one halfway through. The usual fix is to hold the animation until
-   document.fonts.ready — but next/font self-hosts and PRELOADS both faces, so
-   the mark is drawn in Instrument Serif on first paint and the gate buys
-   nothing. It would also mean the hero starts invisible and depends on JS to
-   ever appear, which is a bad trade for a marketing page.
+   wordmark is that it fades in wearing a fallback face and then snaps to the
+   real one halfway through. Since 2026-09-16 that cannot happen at all: the
+   mark is an inline SVG of outlined paths, so it is fully drawn on first paint
+   with no font involved. A gate on document.fonts.ready would buy nothing and
+   would make the hero depend on JS to ever appear.
 
    `animation-fill-mode: both` holds the from-state before the delay elapses,
    so nothing flashes at full opacity first.
@@ -910,10 +915,14 @@ details[open] > .cl-summary .cl-caret {
   animation-delay: 260ms;
 }
 
-/* inline-block so the span can be animated at all — transforms and opacity do
-   not apply to a purely inline box in the way this needs. */
+/* The full stop is an SVG <path> now (2026-09-16), not a span. cl-settle only
+   fades it, but should a transform ever be added to that keyframe, an SVG
+   element transforms around the svg's own origin by default, so the dot would
+   fly in from the corner of the mark. `transform-box: fill-box` measures the
+   origin from the dot itself, and `center` keeps any scale or nudge on it. */
 .cl-period {
-  display: inline-block;
+  transform-box: fill-box;
+  transform-origin: center;
   animation: cl-settle 620ms ease 520ms both;
 }
 
@@ -950,11 +959,10 @@ details[open] > .cl-summary .cl-caret {
       13.5px over a 66-character line it becomes a wall to be skipped, which for
       a legal document is a real failure and not a cosmetic one.
 
-   3. NO SERIF. Newsreader is reserved for the wordmark and display numerals in
-      this system (see TYPE, above), and a legal page is exactly the surface
-      that would tempt a house serif back in as "editorial". Instrument Sans at
-      a longer measure and a looser leading does the job without reopening a
-      settled type decision.
+   3. NO SERIF. The site is set in one face, Instrument Sans (see TYPE, above),
+      and a legal page is exactly the surface that would tempt a house serif
+      back in as "editorial". Instrument Sans at a longer measure and a looser
+      leading does the job without reopening a settled type decision.
    -------------------------------------------------------------------------- */
 
 .cl-doc {

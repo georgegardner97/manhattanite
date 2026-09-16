@@ -1,30 +1,45 @@
-// app/opengraph-image.tsx — the card that renders when a manhattanite.com link
+// app/opengraph-image.tsx: the card that renders when a manhattanite.com link
 // is shared (iMessage, Slack, X, Facebook, LinkedIn). 1200×630, generated at
 // build time by next/og.
 //
-// The composition is the wordmark on the park ground, exactly as the brand signs
-// its name: bone "Manhattanite." (~120px, Instrument Serif, roman with italic
-// "ite" and a roman period), and beneath it the tagline in letterspaced serif
-// caps, bone at 65%. The whole card is one typeface. Two font cuts are handed to
-// satori — Regular for "Manhattan", the period and the tagline, Italic for "ite"
-// — read from the committed TTFs in assets/fonts.
+// THE HANDWRITTEN MARK ON ITS OWN GROUND (George, 2026-09-16). Dark green
+// #13241B is the mark's ground, and this card, the favicon tile and the apple
+// touch icon are the only three places it is used; the site UI never paints
+// it. The cream wordmark sits centered, drawn from the same paths as
+// app/components/Wordmark.tsx so the two can never disagree, full stop
+// included. Beneath it, one quiet line: "A private marketplace for New York."
+// in Instrument Sans, small uppercase, wide tracking, cream at 60%. The wording
+// is the landing page's line, word for word, and should move with it.
 //
-// The period is the mark's, so it belongs here. The tagline below is running
-// copy and stays plain — no period.
+// Satori (next/og) cannot read woff2, so the one face it needs is the static
+// Instrument Sans Regular TTF committed in assets/fonts. No serif is loaded:
+// the mark is paths, not type.
 
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { LETTERS, PERIOD, VIEWBOX } from "@/app/components/Wordmark";
 
-export const alt = "Manhattanite — New York's trusted private marketplace";
+export const alt = "Manhattanite · A private marketplace for New York";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const CREAM = "#FAF6F0";
+// The viewBox is 660.9 by 98.6; the card sets the mark 720 wide.
+const MARK_WIDTH = 720;
+const MARK_HEIGHT = Math.round((MARK_WIDTH * 98.6) / 660.9);
+
 export default async function OpengraphImage() {
-  const [serifRegular, serifItalic] = await Promise.all([
-    readFile(join(process.cwd(), "assets/fonts/InstrumentSerif-Regular.ttf")),
-    readFile(join(process.cwd(), "assets/fonts/InstrumentSerif-Italic.ttf")),
-  ]);
+  const sans = await readFile(
+    join(process.cwd(), "assets/fonts/InstrumentSans-Regular.ttf"),
+  );
+
+  const stroke = {
+    stroke: CREAM,
+    strokeWidth: 1.2,
+    strokeLinejoin: "round",
+    strokeLinecap: "round",
+  } as const;
 
   return new ImageResponse(
     (
@@ -37,50 +52,35 @@ export default async function OpengraphImage() {
           alignItems: "center",
           justifyContent: "center",
           background: "#13241B",
-          fontFamily: "Instrument Serif",
+          fontFamily: "Instrument Sans",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            fontSize: 120,
-            lineHeight: 1,
-            color: "#F5F0E8",
-          }}
+        <svg
+          width={MARK_WIDTH}
+          height={MARK_HEIGHT}
+          viewBox={VIEWBOX}
+          fill={CREAM}
         >
-          <span>Manhattan</span>
-          <span style={{ fontStyle: "italic" }}>ite</span>
-          <span>.</span>
-        </div>
+          <path d={LETTERS} {...stroke} />
+          <path d={PERIOD} {...stroke} />
+        </svg>
         <div
           style={{
-            marginTop: 30,
-            fontSize: 25,
+            marginTop: 44,
+            fontSize: 22,
             letterSpacing: 6,
             textTransform: "uppercase",
-            color: "rgba(245, 240, 232, 0.65)",
+            color: "rgba(250, 246, 240, 0.6)",
           }}
         >
-          New York&apos;s trusted private marketplace
+          A private marketplace for New York.
         </div>
       </div>
     ),
     {
       ...size,
       fonts: [
-        {
-          name: "Instrument Serif",
-          data: serifRegular,
-          style: "normal",
-          weight: 400,
-        },
-        {
-          name: "Instrument Serif",
-          data: serifItalic,
-          style: "italic",
-          weight: 400,
-        },
+        { name: "Instrument Sans", data: sans, style: "normal", weight: 400 },
       ],
     },
   );

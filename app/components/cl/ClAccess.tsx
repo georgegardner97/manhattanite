@@ -137,7 +137,7 @@ export default async function ClAccess({
           {/* id="request" is kept for any old /apply#request link; nothing in
               the product points at it any more. */}
           <section id="request" className="cl-panel p-[clamp(24px,3vw,44px)]">
-            <Wordmark className="text-[18px] leading-none" />
+            <Wordmark className="h-[32px]" />
 
             {isMember ? (
               <Settled
@@ -221,7 +221,7 @@ export default async function ClAccess({
               see the header note. */}
           {!user && (
           <section className="cl-panel flex flex-col p-[clamp(24px,3vw,44px)]">
-            <Wordmark className="text-[18px] leading-none" />
+            <Wordmark className="h-[32px]" />
 
             <div className="flex flex-1 flex-col justify-center">
               {pane === "signup" ? (

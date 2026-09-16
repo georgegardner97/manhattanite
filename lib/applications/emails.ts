@@ -9,8 +9,11 @@
 // register, no generic transactional chrome.
 //
 // The HTML is deliberately email-client-safe: table-based layout, all styles
-// inline, no web fonts. Georgia for the wordmark + headlines (the serif email
-// clients actually allow), Arial/Helvetica for body. 600px max, bone card,
+// inline, no web fonts. The wordmark is a retina PNG of the handwritten mark;
+// headlines and quotes ask for Instrument Sans and fall back to Helvetica and
+// Arial (no client is sent the font, so most will use the fallback), and the
+// body is Arial/Helvetica. ONE FONT since 2026-09-16: the serif is gone here as
+// it is on the site. 600px max, bone card,
 // hairline rules, one boxed CTA. Dark text on the bone card survives Gmail's
 // dark-mode inversion better than anything white-on-dark would.
 //
@@ -32,7 +35,7 @@ const REVIEWER_TO = "info@manhattanite.com";
 
 // ---------------------------------------------------------------------------
 // Shared v12 layout. One set of bones for every send: wordmark header,
-// hairline, optional kicker + Georgia headline, Arial body, optional boxed
+// hairline, optional kicker + sans headline, Arial body, optional boxed
 // CTA (bulletproof table button), hairline footer with the tagline.
 // ---------------------------------------------------------------------------
 
@@ -44,12 +47,11 @@ const HAIR = "rgba(15,14,12,.16)";
 const BODY_COLOR = "#2c2a25";
 const FOOT_COLOR = "#8a857a";
 
-const SERIF = "Georgia,'Times New Roman',serif";
-// Headlines and quotes prefer the site's true serif where the client allows
-// it (Apple Mail honors @font-face; Gmail strips it and falls back to
-// Georgia). The woff2 + retina wordmark PNG live in public/email/ and are
-// served from prod — email clients can only load them over https.
-const SERIF_STACK = `'Instrument Serif',${SERIF}`;
+// Headlines and quotes name the site's one face first, for a reader who has it
+// installed, then fall back to the system sans. The retina wordmark PNG lives
+// in public/email/ and is served from prod, because email clients can only
+// load it over https.
+const SANS_STACK = "'Instrument Sans',Helvetica,Arial,sans-serif";
 const SANS = "Arial,Helvetica,sans-serif";
 const ASSET_HOST = "https://manhattanite.com";
 
@@ -71,9 +73,9 @@ function p(html: string, opts?: { muted?: boolean; last?: boolean }): string {
   return `<p style="margin:${margin};font-family:${SANS};font-size:${size};line-height:1.65;color:${color};">${html}</p>`;
 }
 
-// The serif left-hairline pull-quote (contact forward, moderation notes).
+// The left-hairline pull-quote (contact forward, moderation notes).
 function quote(html: string): string {
-  return `<div style="border-left:1px solid rgba(15,14,12,.3);padding:4px 0 4px 18px;margin:18px 0;font-family:${SERIF_STACK};font-size:16px;line-height:1.5;color:${BODY_COLOR};">${html}</div>`;
+  return `<div style="border-left:1px solid rgba(15,14,12,.3);padding:4px 0 4px 18px;margin:18px 0;font-family:${SANS_STACK};font-size:16px;line-height:1.5;color:${BODY_COLOR};">${html}</div>`;
 }
 
 type LayoutOptions = {
@@ -105,14 +107,6 @@ function layout({ kicker, headline, bodyHtml, cta }: LayoutOptions): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
-<style>
-  @font-face {
-    font-family: 'Instrument Serif';
-    font-style: normal;
-    font-weight: 400;
-    src: url('${ASSET_HOST}/email/instrument-serif-regular.woff2') format('woff2');
-  }
-</style>
 </head>
 <body style="margin:0;padding:0;background:#ffffff;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
@@ -122,7 +116,7 @@ function layout({ kicker, headline, bodyHtml, cta }: LayoutOptions): string {
           <tr>
             <td style="padding:44px 40px 40px;">
               <div style="text-align:center;padding-bottom:28px;">
-                <img src="${ASSET_HOST}/email/wordmark.png" width="180" height="28" alt="Manhattanite." style="display:inline-block;width:180px;height:28px;border:0;font-family:${SERIF};font-size:24px;color:${INK};" />
+                <img src="${ASSET_HOST}/email/wordmark.png" width="180" height="27" alt="Manhattanite." style="display:inline-block;width:180px;height:27px;border:0;font-family:${SANS_STACK};font-size:24px;color:${INK};" />
               </div>
               <div style="border-top:1px solid ${HAIR};line-height:1px;font-size:1px;">&nbsp;</div>
               ${
@@ -132,7 +126,7 @@ function layout({ kicker, headline, bodyHtml, cta }: LayoutOptions): string {
               }
               ${
                 headline
-                  ? `<h1 style="font-family:${SERIF_STACK};font-weight:normal;font-size:34px;text-align:center;line-height:1.15;margin:0 0 24px;color:${INK};">${headline}</h1>`
+                  ? `<h1 style="font-family:${SANS_STACK};font-weight:normal;font-size:34px;text-align:center;line-height:1.15;margin:0 0 24px;color:${INK};">${headline}</h1>`
                   : ""
               }
               <div style="max-width:420px;margin:0 auto;">

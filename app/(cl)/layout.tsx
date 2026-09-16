@@ -7,13 +7,10 @@
 //
 // Three things this layout owns:
 //
-//   1. THE FONTS. Newsreader for display, Instrument Sans for everything else.
-//      Plus Instrument Serif, which is here for one reason only: the WORDMARK
-//      is set in it and the wordmark appears in this system too. That is the
-//      locked brand decision (Concept D, 2026-07-21) reaffirmed 2026-08-18
-//      after seeing the two serifs together on a real screen — the mark stays
-//      Instrument Serif, the body type is Newsreader. It is the one place the
-//      two systems touch, and it is deliberate.
+//   1. THE FONT. One face, Instrument Sans, for everything (George,
+//      2026-09-16). The wordmark is a handwritten drawing rendered as inline
+//      SVG, so it needs no font; Newsreader and Instrument Serif both left
+//      when it arrived.
 //
 //   2. THE SCOPE. `.cl-root` is where every token in classifieds.css resolves.
 //      One wrapper, one scope; no token leaks into the editorial system, and
@@ -33,7 +30,7 @@
 //     nav item. Each page renders it.
 
 import "@/app/styles/classifieds.css";
-import { newsreader, instrumentSans, instrumentSerif } from "@/app/fonts";
+import { instrumentSans } from "@/app/fonts";
 import MobileTabBar from "@/app/components/cl/MobileTabBar";
 
 export default function ClassifiedsLayout({
@@ -45,7 +42,7 @@ export default function ClassifiedsLayout({
     // Flex column with the content growing: it puts the tab bar at the bottom
     // of the viewport on a short page, and lets it stick there on a long one.
     <div
-      className={`${newsreader.variable} ${instrumentSans.variable} ${instrumentSerif.variable} cl-root flex min-h-dvh flex-col`}
+      className={`${instrumentSans.variable} cl-root flex min-h-dvh flex-col`}
     >
       <div className="flex-1">{children}</div>
       <MobileTabBar />

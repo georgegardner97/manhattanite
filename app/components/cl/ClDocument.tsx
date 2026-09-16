@@ -64,7 +64,7 @@ export default function ClDocument({
                 usually wants both, and the alternative is going back to the
                 landing footer to find it. */}
             <Link href="/" style={{ color: "var(--cl-ink)" }}>
-              <Wordmark className="text-[15px] leading-none" />
+              <Wordmark className="h-[28px]" />
             </Link>
             <div className="flex gap-5">
               <Link href="/privacy">Privacy</Link>

@@ -2,12 +2,12 @@
 //
 // It owns <html>, <body>, the document metadata, the viewport, and the global
 // stylesheet. It deliberately owns NO fonts and NO navigation: since the
-// route-group split those belong to the two system layouts beside it —
+// route-group split those belong to the system layout beside it,
 //
-//   app/(cl)/layout.tsx   the Classifieds system (Newsreader + Instrument Sans)
-//   app/(ed)/layout.tsx   the editorial system (Inter), SiteNav + NavGate
+//   app/(cl)/layout.tsx   the Classifieds system (Instrument Sans, one face)
 //
-// Both are nested layouts under this one, not root layouts of their own. That
+// (app/(ed), the editorial system, was deleted in Slice 3b.) It is a nested
+// layout under this one, not a root layout of its own. That
 // matters: multiple ROOT layouts would force a full page reload on every
 // crossing between the two systems (Next 16, route-groups.md, "Caveats"), and
 // a visitor moving from the Classifieds browse to the editorial /profile would

@@ -4,7 +4,7 @@ The visual identity and brand attitude. Works alongside `voice-and-copy.md` (ver
 
 Everything here is a default. Items marked **[ASSUMPTION — confirm or revise]** are calls I made that you should specifically react to.
 
-> **Wordmark + final palette are deferred.** George's call: hard to lock these without seeing them on a real page. Treat the directions below as working defaults to design *against* once the first product screens exist. Don't commission a final wordmark or print runs off this file alone.
+> **The wordmark and the type are locked as of 2026-09-16 (see below). The final palette is still deferred.** George's call on the palette: hard to lock without seeing it on a real page. Treat the palette below as a working default, not a final spec.
 
 ---
 
@@ -44,37 +44,36 @@ When in doubt: pretend you're naming a Soho House newsletter, not selling sneake
 
 ## Wordmark
 
-**Direction:** Editorial serif wordmark with the "ite" italicized. This treats Manhattanite as a word with a stress on its ending, a small visual signature that reads as deliberate rather than decorative.
+**Locked 2026-09-16 (George).** "Manhattanite." in handwritten script, drawn in Claude Design. The letterforms were outlined from Cedarville Cursive (OFL 1.1), which allows logo and commercial use. The mark is a drawing: no font is loaded or shipped for it. It replaces the serif Concept D mark (Instrument Serif with an italic "ite", 2026-07-21, reaffirmed 2026-08-18).
 
-**Type recommendations** (preferred order):
+**Master files:** `WORK AREAS/Product/design-foundation-project/outputs/script-wordmark-v2/`. The full wordmark and the small "M." in ink, cream, white and black, plus the favicon tile. In the product, the mark is `app/components/Wordmark.tsx`, which renders the same outlines as inline SVG.
 
-1. **GT Sectra.** Modern editorial serif with sharp italics. Used by The Outline, Bloomberg, others. Paid license.
-2. **Tiempos Headline.** Klim Type Foundry. Newspaper-grade serif. Slightly more traditional. Used by The Financial Times.
-3. **Domaine Display.** Klim again. More glamorous, slightly more fashion-forward.
-4. **Söhne** (sans alternative). Used by Soho House and many editorial brands. Save this for a cleaner direction if the serif route feels too literary.
+**Colors:**
 
-**Default recommendation: GT Sectra with the "ite" set in italic.**
+- **Ink #26231F on light grounds.** On the site it takes the page's text color.
+- **Cream #FAF6F0 on dark green #13241B.** Green is the mark's own ground and appears in exactly three places: the favicon tile, the apple touch icon and the social share card. Never in the site UI.
+- **White or black** for one color use (print, embossing, a partner's page).
 
-**[ASSUMPTION — confirm or revise the serif direction. Push back if you want sans.]**
+**Rules:**
 
-**Wordmark rules:**
+- **The full stop is part of the mark.** Always included. The favicon tile is the one place it is left off, because at 16px it reads as noise.
+- **Below 20px tall, use the "M." mark** instead of the full wordmark.
+- **Clear space:** at least the height of the M on all sides.
+- **Never** stretch it, recolor it outside the four colors above, add effects (shadow, outline, gradient), or drop the full stop.
+- **Size by height, not type size.** The script capital M is much taller than its lowercase, so the mark needs more height than a typeset name would to read at the same weight. On the site: 34px in the header (28px on a phone), 32px on cards, 28px on document footers, up to 96px on the landing.
 
-- Always set in the brand serif (or sans alternate)
-- "ite" always italic when set in full Manhattanite
-- Capital M, lowercase rest
-- Spacing: slightly looser than default tracking
-- Clear space: at least the cap height of the M around all sides
-- Minimum size: 14px web, 8mm print
+The handwriting is the only expressive element in the identity. Everything around it stays quiet.
 
 ## Typography system
 
-**[ASSUMPTION — GT Sectra throughout. Paired with Inter as a clean modern sans for UI.]**
+**One font: Instrument Sans.** Locked 2026-09-16 (George). Everything on the site and in email is set in it: display, body, UI, labels, numbers. There is no serif. Newsreader and Instrument Serif were both retired when the handwritten mark arrived, because with the mark doing the expressive work a second face has nothing left to do.
 
-- **Display / hero:** GT Sectra Display, regular or medium weight. Tight tracking.
-- **Body / editorial:** GT Sectra Text, regular. Generous leading (1.5 to 1.7).
-- **UI / functional:** Inter, regular and medium. Buttons, forms, navigation, listing metadata.
-- **Caps / labels:** Inter, medium weight, all caps, +120 letterspacing. Category headers, section labels.
-- **Numbers:** Always tabular nums where alignment matters (prices, dates, member counts).
+- **Display / hero:** Instrument Sans, medium weight, slightly tight tracking.
+- **Body:** Instrument Sans, regular. Generous leading on long reads (Terms, Privacy).
+- **UI / functional:** Instrument Sans, regular and medium. Buttons, forms, navigation, listing metadata.
+- **Caps / labels:** Instrument Sans, uppercase, wide letter spacing, small. Category headers, section labels, the tagline on the share card.
+- **Numbers:** Tabular figures where alignment matters (prices, dates).
+- **Email:** asks for Instrument Sans and falls back to Helvetica and Arial, since email clients are not sent the font.
 
 ## Color palette
 
@@ -150,7 +149,7 @@ Rule of thumb at MVP: 75% Paper, 22% Lampblack, 3% Stone. Brick may appear on th
 If something looks like one of these, redo it:
 
 - Bright primary colors
-- Sans serif everywhere with no editorial typography
+- A second typeface brought in "for character". The handwritten mark is the character; the type stays one quiet sans
 - Stock photography of any kind
 - Heavy use of emoji in UI copy
 - Pop-up modals, promo banners, "Limited time" anything
@@ -176,12 +175,12 @@ Each surface should feel like the same magazine, different pages.
 This file specifies. It doesn't design. To make the brand real:
 
 1. **Build the first product screens in plain black + cream first.** Resist styling. Get the layout right before bringing wordmark and palette in. This is the trigger for unlocking the visual identity work.
-2. **Mock the wordmark once screens exist.** Three concepts in the recommended serifs, dropped into a real landing/listing page. Decide there, not in isolation.
+2. ~~**Mock the wordmark once screens exist.**~~ Done. Locked as the handwritten script mark on 2026-09-16 (see Wordmark).
 3. **Decide on accent.** Either commit to Brick (in context) or replace it. Don't decide on a swatch in Figma — decide on a screen.
-4. **Build the type system.** Once wordmark is locked, set body, display, and UI in a Figma file.
+4. ~~**Build the type system.**~~ Done. One font, Instrument Sans, 2026-09-16 (see Typography system).
 5. **Source the photography.** Either commission a photographer for a launch shoot, or build an initial mood board from licensed editorial sources.
 6. **Design the listing card.** This is the single most-seen unit. Worth designing carefully before product build hits styling.
 
 ---
 
-*Last updated: 2026-05-16.*
+*Last updated: 2026-09-16 (handwritten wordmark and one font).*

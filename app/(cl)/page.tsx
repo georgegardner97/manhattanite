@@ -97,13 +97,14 @@ export default async function ClassifiedsLandingPage() {
     <div className="flex min-h-dvh flex-col">
       {/* ---------- The hero ---------- */}
       <section className="cl-hero-settle flex flex-1 flex-col items-center justify-center px-[clamp(20px,5vw,40px)] py-[clamp(48px,10vh,120px)] text-center">
-        {/* The period is a locked brand decision (Concept D, 2026-07-21 — "the
-            period is PART of the mark: never dropped"), so this renders the
-            shared Wordmark, same as AppHeader does. With the listings gone it
-            is now the largest thing on the site's front door by some distance,
-            which is the sharpest test the mark will get. */}
+        {/* The handwritten mark (George, 2026-09-16), full stop included: the
+            full stop is PART of the mark and is never dropped, so this renders
+            the shared Wordmark, same as AppHeader does. Sized by height, not
+            font size, because it is an SVG. With the listings gone it is the
+            largest thing on the site's front door by some distance, which is
+            the sharpest test the mark will get. */}
         <Wordmark
-          className="cl-enter text-[clamp(30px,4.4vw,54px)] leading-none"
+          className="cl-enter h-[clamp(44px,8vw,96px)]"
           periodClassName="cl-period"
         />
 

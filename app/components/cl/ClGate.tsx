@@ -28,7 +28,7 @@ export default function ClGate({
 }) {
   return (
     <div className="cl-panel mx-auto flex min-h-[280px] max-w-[420px] flex-col justify-center p-[clamp(22px,2.4vw,32px)] text-center">
-      <Wordmark className="mb-5 text-[20px] leading-none" />
+      <Wordmark className="mb-5 h-[32px] self-center" />
 
       <div className="text-[18px]">{title}</div>
       <p

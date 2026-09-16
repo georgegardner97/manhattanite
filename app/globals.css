@@ -23,21 +23,6 @@
   --color-cream: #E9E2D3;
 }
 
-/* Type system — display (Instrument Serif) and body (Inter). Display does
-   the personality lifting; body stays quiet and crisp.
-
-   These live in `@theme inline` (not the plain `@theme` above) because they
-   reference `--font-inter` / `--font-instrument-serif`, which next/font sets
-   on <body>, not :root. A plain `@theme` would emit --font-sans/--font-serif
-   as :root custom properties whose var() references resolve against :root —
-   where the next/font variables don't exist — collapsing every font-family
-   that uses them. `@theme inline` inlines the var() reference into each
-   utility instead, so it resolves at the element where <body>'s vars apply. */
-@theme inline {
-  --font-serif: var(--font-instrument-serif);
-  --font-sans: var(--font-inter);
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -83,7 +68,7 @@ html {
   gap: 40px;
 }
 
-/* The small-caps label: 11px Inter 500, uppercase, +0.14em tracking. Used for
+/* The small-caps label: 11px, weight 500, uppercase, +0.14em tracking. Used for
    section labels, card kickers, nav links, and footer column heads — one
    typographic voice for every piece of structural furniture on the page. */
 .mh-label {
@@ -257,35 +242,6 @@ html {
 body {
   background-color: var(--color-bone);
   color: var(--color-ink);
-}
-
-/* .ed-root — the editorial system's scope, and the mirror of .cl-root.
-   ----------------------------------------------------------------------------
-   These declarations used to sit on <body>, because the root layout put
-   next/font's --font-inter there and var() resolved against it. Since the
-   route-group split the root layout carries no fonts at all: app/(ed)/layout.tsx
-   applies `inter.variable` to a wrapper element and adds this class to it, so
-   --font-inter now resolves HERE. Moving the rules without moving the variable
-   would have collapsed Inter to system-ui on every editorial page.
-
-   Referencing --font-inter directly (not --font-sans) still matters for the
-   original reason: --font-sans is an `@theme inline` token that exists only
-   inlined into utility classes, never as a custom property, so a raw
-   var(--font-sans) here would resolve empty. */
-.ed-root {
-  font-family: var(--font-inter), system-ui, sans-serif;
-
-  /* Tighten Inter very slightly so it stops reading as the Vercel default.
-     A negative tracking like -0.011em is imperceptible per-character but
-     gives the page a more confident, set-in-print rhythm. */
-  letter-spacing: -0.011em;
-
-  /* Stylistic alternates make Inter feel more humanist and less defaulty:
-     cv11 = single-storey 'a', ss03 = single-storey 'g', ss01 = open digits. */
-  font-feature-settings: "cv11", "ss01", "ss03";
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Slow, restrained entrance for the hero — nothing flashy, just enough to

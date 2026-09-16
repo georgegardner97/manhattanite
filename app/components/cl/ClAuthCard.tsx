@@ -41,7 +41,7 @@ export default function ClAuthCard({
           {/* Home, because on a threshold screen the mark is the only
               navigation there is. */}
           <Link href="/" style={{ color: "var(--cl-ink)" }}>
-            <Wordmark className="text-[18px] leading-none" />
+            <Wordmark className="h-[32px]" />
           </Link>
 
           <h1 className="mt-[26px] text-[clamp(21px,2.2vw,27px)] font-medium tracking-[-0.02em]">

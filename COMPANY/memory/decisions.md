@@ -7,6 +7,21 @@ Read this at the start of every Manhattanite conversation.
 ---
 
 
+## 2026-09-16 · The handwritten wordmark replaces Concept D, and the site is set in one font
+
+**George's call.** The serif "Manhattanite." (Concept D, Instrument Serif with an italic "ite", locked 2026-07-21 and reaffirmed 2026-08-18 against Newsreader body type) is replaced by a handwritten script "Manhattanite." drawn in Claude Design. **This supersedes both of those entries**, including the 2026-08-18 line "Wordmark stays Instrument Serif against Newsreader body type".
+
+- **Origin, stated precisely:** the letterforms were outlined from Cedarville Cursive (OFL 1.1), which allows logo and commercial use. Not "original lettering". The shipped files are paths; no font is loaded.
+- **The full stop stays part of the mark.** The favicon tile is the one place it is left off.
+- **One font: Instrument Sans for everything.** Newsreader and Instrument Serif are gone from the site, the share card and the emails. The handwriting is the only expressive element; everything else stays quiet.
+- **Dark green #13241B is the mark's ground, used in three places only:** the favicon tile, the apple touch icon and the social share card. Never in the site UI.
+- **The share card's line is the landing's line**, "A private marketplace for New York.", replacing "New York's trusted private marketplace".
+
+Built by Claude Code the same day from `Manhattanite_Script-Wordmark-Swap_Claude-Code-Prompt_v3.md`. Brand rules in `COMPANY/brand-guide.md` (Wordmark, Typography system).
+
+---
+
+
 ## 2026-09-15 · Nothing is visible or accessible until a member is approved (REVERSES the look-around affordance)
 
 **George, after walking the real invitation flow on production:** "I think we should get rid of the right panel that allows them to browse once they've logged in. Its confusing. They shouldn't be able to see anything until their account has been approved. It ads the mystery. I know this goes against what I've said before. Nothing should be visible or accessible until they are approved."

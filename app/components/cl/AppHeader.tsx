@@ -21,15 +21,13 @@
 // TWO DEPARTURES FROM THE DESIGN FILE, both deliberate:
 //
 //   1. The wordmark keeps its period. AppHeader.dc.html sets the mark as
-//      "Manhattanite" with no full stop, but the period is a LOCKED brand
-//      decision (Concept D, 2026-07-21 — "the period is PART of the mark:
-//      never dropped"), so this renders the shared Wordmark component rather
-//      than re-cutting the mark to match a mockup that predates the decision.
-//      That also means the mark stays Instrument Serif while the rest of the
-//      system is set in Newsreader — the one place the two faces touch. That
-//      was looked at on a real screen on 2026-08-18 and kept: re-cutting the
-//      mark would reopen a locked decision and orphan the favicon and OG card,
-//      which are already cut in Instrument Serif.
+//      "Manhattanite" with no full stop, but the full stop is PART of the mark
+//      and is never dropped, so this renders the shared Wordmark component
+//      rather than re-cutting the mark to match a mockup. Since 2026-09-16 the
+//      mark is the handwritten script, an inline SVG sized by height (34px
+//      here), and everything around it is Instrument Sans. Below 600px it
+//      drops to 28px: the script is roughly twice as wide as the serif was,
+//      and at 34px on a 375px phone it pushed "Post a listing" onto two lines.
 //
 //   2. Profile and the action pill point at /profile and /listings/new. Slice 1
 //      shipped this header with both destinations still on the EDITORIAL side —
@@ -138,7 +136,7 @@ export default function AppHeader({
               wordmark's own line, so a bare bar and a full one sit at the same
               height and the page below does not shift between them. */}
           <span style={{ color: "var(--cl-ink)" }}>
-            <Wordmark className="text-[19px] leading-none" />
+            <Wordmark className="h-[34px] max-[600px]:h-[28px]" />
           </span>
         </div>
       </header>
@@ -158,7 +156,7 @@ export default function AppHeader({
       >
         <div className="flex items-center gap-[clamp(14px,2vw,28px)]">
           <Link href="/listings" style={{ color: "var(--cl-ink)" }}>
-            <Wordmark className="text-[19px] leading-none" />
+            <Wordmark className="h-[34px] max-[600px]:h-[28px]" />
           </Link>
 
           {/* Below 600px the wordmark, the nav links and the action pill add
