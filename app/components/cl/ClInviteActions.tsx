@@ -70,7 +70,7 @@ export function ClSponsorActions({
         <div className="text-[17px]">
           {state.status === "confirmed"
             ? `You’ve vouched for ${requesterName}.`
-            : "Noted — you’ve declined."}
+            : "Noted. You’ve declined."}
         </div>
         <p
           className="mt-2.5 text-[13.5px] leading-[1.55]"

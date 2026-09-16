@@ -28,7 +28,7 @@ import AppHeader from "@/app/components/cl/AppHeader";
 import ClAuthCard from "@/app/components/cl/ClAuthCard";
 
 export const metadata = {
-  title: "Thank you — Manhattanite",
+  title: "Thank you · Manhattanite",
 };
 
 export default function ClassifiedsThankYouPage() {
@@ -37,8 +37,8 @@ export default function ClassifiedsThankYouPage() {
       <AppHeader bare />
 
       <ClAuthCard
-        title="Thank you — it’s in."
-        note="A person reads every application by hand, usually within a week. You’ll hear back either way, by email."
+        title="Thank you. It’s in."
+        note="A person reads every application, usually within a week. You’ll hear back either way, by email."
         footer={
           <>
             Applied a while ago?{" "}

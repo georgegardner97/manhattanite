@@ -86,7 +86,7 @@ export default async function AdminMembersPage() {
     <ClAdminShell
       active="members"
       title="Everyone inside"
-      intro={`${rows.length} ${rows.length === 1 ? "member" : "members"}. A view only — renaming, removing and vouching changes are not built.`}
+      intro={`${rows.length} ${rows.length === 1 ? "member" : "members"}. A view only. Renaming, removing and vouching changes are not built.`}
     >
       {rows.length === 0 ? (
         <p className="py-10 text-center text-[15px]" style={{ color: "var(--cl-muted)" }}>
@@ -120,7 +120,7 @@ export default async function AdminMembersPage() {
                 <div className="mt-1 text-[12.5px]" style={{ color: "var(--cl-muted)" }}>
                   {[member.neighborhood, approved?.occupation]
                     .filter(Boolean)
-                    .join(" · ") || "—"}
+                    .join(" · ") || "None"}
                 </div>
                 <div className="mt-1 text-[12.5px]" style={{ color: "var(--cl-muted)" }}>
                   {sponsorName

@@ -100,7 +100,7 @@ export default function ClAdminListingRow({
             name="note"
             required
             maxLength={300}
-            placeholder="Why it came down — kept on the record"
+            placeholder="Why it came down. Kept on the record"
             className="cl-input mt-2.5 w-full text-[13.5px]"
             style={{ padding: "9px 12px" }}
           />

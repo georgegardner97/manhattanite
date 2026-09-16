@@ -74,9 +74,9 @@ export default async function ClassifiedsInvitePage() {
           style={{ color: "var(--cl-muted)" }}
         >
           There is no other way in. Invite someone you&rsquo;d vouch for out
-          loud &mdash; your name stays beside theirs for as long as they&rsquo;re
-          here, and if they break the terms, your own membership is looked at
-          the same way.
+          loud. Your name stays beside theirs for as long as they&rsquo;re here, and
+          if they break the terms, your own membership is looked at the same
+          way.
         </p>
 
         <div className="mt-8">

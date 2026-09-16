@@ -137,7 +137,7 @@ export default async function MyListingsPage({
         {submitted === "1" && (
           <div className="cl-note mt-6 max-w-[62ch]">
             Your listing is in review. We&rsquo;ll email you once we&rsquo;ve
-            taken a look — it shows as <strong>In review</strong> below until
+            taken a look. It shows as <strong>In review</strong> below until
             then.
           </div>
         )}
@@ -222,7 +222,7 @@ function EmptyState() {
         className="mt-2.5 max-w-[46ch] text-[13.5px] leading-[1.55]"
         style={{ color: "var(--cl-muted)" }}
       >
-        Everything you post shows up here — in review, live, or archived — with
+        Everything you post shows up here: in review, live, or archived, with
         whatever the moderator sent back.
       </p>
       <div className="mt-6 flex flex-wrap gap-2.5">

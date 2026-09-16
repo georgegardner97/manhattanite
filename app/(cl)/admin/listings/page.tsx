@@ -148,7 +148,7 @@ export default async function AdminListingsPage({
           style={{ color: "var(--cl-muted)" }}
         >
           If this names a missing column, the migration that adds it has not
-          been applied yet — <code>corrected_at</code> is{" "}
+          been applied yet. <code>corrected_at</code> is{" "}
           <code>0028_admin_listing_edit.sql</code>, <code>outcome</code> is{" "}
           <code>0031_listing_outcome.sql</code>.
         </p>
@@ -189,7 +189,7 @@ export default async function AdminListingsPage({
     <ClAdminShell
       active="listings"
       title="All listings"
-      intro="Everything on the network, at every status — including what has been taken down. This is the directory; the review queue is In review."
+      intro="Everything on the network, at every status, including what has been taken down. This is the directory; the review queue is In review."
     >
       {/* A plain GET form, so a search has its own URL and needs no JavaScript.
           The hidden fields carry the facets the search did not touch. */}

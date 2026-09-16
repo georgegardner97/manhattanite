@@ -63,7 +63,7 @@ export default function ClassifiedsResetRequestPage() {
       setCaptchaToken("");
 
       const friendly = error.message.toLowerCase().includes("captcha")
-        ? "Couldn’t verify you’re human — please try again."
+        ? "Couldn’t verify you’re human. Please try again."
         : error.message;
       setStatus({ kind: "error", message: friendly });
       return;

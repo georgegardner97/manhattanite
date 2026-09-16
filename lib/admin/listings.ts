@@ -49,7 +49,7 @@ function readableError(message: string): string {
     return "That listing no longer exists.";
   }
   if (message.includes("a reason is required")) {
-    return "Give the reason — it stays on the record with the listing.";
+    return "Give the reason. It stays on the record with the listing.";
   }
   return "Something went wrong. Try again in a moment.";
 }
@@ -156,7 +156,7 @@ export async function adminArchiveListing(
   }
   // Checked here and again in the function, because the reason is the record.
   if (!note) {
-    return { error: "Give the reason — it stays on the record with the listing." };
+    return { error: "Give the reason. It stays on the record with the listing." };
   }
 
   const { error } = await supabase.rpc("admin_archive_listing", {

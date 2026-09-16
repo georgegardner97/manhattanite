@@ -215,8 +215,8 @@ export default async function ClassifiedsSettingsPage() {
             className="max-w-[52ch] text-[13.5px] leading-[1.6]"
             style={{ color: "var(--cl-muted)" }}
           >
-            Everything you&rsquo;ve posted &mdash; live, waiting on a moderator,
-            and archived. Edit one, or take it down, from there.
+            Everything you&rsquo;ve posted: live, waiting on a moderator, and
+            archived. Edit one, or take it down, from there.
           </p>
           <div className="mt-4">
             <Link href="/listings/mine" className="cl-ghost">
@@ -339,8 +339,8 @@ export default async function ClassifiedsSettingsPage() {
             >
               Email us
             </a>{" "}
-            and a person will remove your account and your listings &mdash;
-            usually the same day.
+            and a person will remove your account and your listings, usually the
+            same day.
           </p>
         </div>
       </main>

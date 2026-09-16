@@ -38,7 +38,7 @@ export function classifyAuthError(raw: string): ClassifiedAuthError {
 
   if (lower.includes("captcha")) {
     return {
-      message: "Couldn't verify you're human — try again.",
+      message: "Couldn't verify you're human. Try again.",
       reason: "other",
     };
   }

@@ -131,7 +131,7 @@ export default async function ClassifiedsSponsorRequestPage({
         <ClSponsorActions token={token} requesterName={requesterName} />
 
         <p className="cl-inset mt-5">
-          Confirming is a vouch, not an approval — Manhattanite still gives every
+          Confirming is a vouch, not an approval. Manhattanite still gives every
           application a final look.
         </p>
       </ClAuthCard>

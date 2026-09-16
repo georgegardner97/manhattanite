@@ -177,7 +177,7 @@ export default async function AdminApplicationsPage() {
           {needsInfo.length > 0 && (
             <div className={pending.length > 0 ? "mt-12" : ""}>
               <p className="cl-grouplabel mb-3.5">
-                Waiting on them — more info requested, they can re-apply
+                Waiting on them. More info requested, and they can apply again
               </p>
               <ul style={{ opacity: 0.65 }}>
                 {needsInfo.map((application) => (
@@ -261,12 +261,12 @@ function ApplicationCard({
           {sponsor.name ?? "a member"}
           <span style={{ color: "var(--cl-muted)" }}>
             {requestStatus === "confirmed"
-              ? " — they vouched; approve to record it"
+              ? ". They vouched; approve to record it"
               : requestStatus === "declined"
-                ? " — they declined the request"
+                ? ". They declined the request"
                 : requestStatus === "pending"
-                  ? " — asked to vouch, awaiting their reply"
-                  : " — a member; approve to record the vouch"}
+                  ? ". Asked to vouch, awaiting their reply"
+                  : ". A member; approve to record the vouch"}
           </span>
         </p>
       )}

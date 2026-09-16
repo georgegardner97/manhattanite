@@ -96,7 +96,7 @@ export async function submitApplication(
   // byline convention (decisions.md, 2026-06-04) wants a real name. They can
   // still edit or clear it later on /profile/edit.
   if (!name) {
-    return { error: "Tell us your name — first and last." };
+    return { error: "Tell us your name, first and last." };
   }
   if (name.length < 2) {
     return { error: "Add a few more letters to your name." };
@@ -125,7 +125,7 @@ export async function submitApplication(
   }
   if (about.length > MAX_ABOUT) {
     return {
-      error: `That's a little long — keep it under ${MAX_ABOUT} characters.`,
+      error: `That's a little long. Keep it under ${MAX_ABOUT} characters.`,
     };
   }
   if (sponsorReference && sponsorReference.length > MAX_SPONSOR_REF) {
@@ -216,7 +216,7 @@ export async function submitApplication(
     // Already have a pending application — defensive; the route guards this too.
     if (insertError.code === UNIQUE_VIOLATION) {
       return {
-        error: "You've already applied — we're reading it. Hang tight.",
+        error: "You've already applied. We're reading it. Hang tight.",
       };
     }
     // is_member() gate fired (somehow already a member): send them to /profile.
@@ -244,7 +244,7 @@ export async function submitApplication(
   try {
     await sendReviewerPing({
       applicantName: name,
-      email: user.email ?? "—",
+      email: user.email ?? "Not given",
       neighborhood,
       occupation,
       about,

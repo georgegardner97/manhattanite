@@ -110,7 +110,7 @@ export default async function AdminEditListingPage({
     <ClAdminShell
       active="listings"
       title="Correct a listing"
-      intro={`This listing is ${STATUS_LABEL[listing.status] ?? listing.status}, and saving a correction leaves it that way. Fix what is wrong — spelling, a factual error, a cover photo that should not be the cover. It is not the place to rewrite what a member said; they will see that it was corrected.`}
+      intro={`This listing is ${STATUS_LABEL[listing.status] ?? listing.status}, and saving a correction leaves it that way. Fix what is wrong: spelling, a factual error, a cover photo that should not be the cover. It is not the place to rewrite what a member said; they will see that it was corrected.`}
     >
       <Link href="/admin/listings" className="cl-quiet mb-5 inline-block text-[13px]">
         Back to all listings

@@ -72,7 +72,7 @@ export async function updateProfile(
   }
   if (bio !== null && bio.length > MAX_BIO) {
     return {
-      error: `Bio is a little long — keep it under ${MAX_BIO} characters.`,
+      error: `Bio is a little long. Keep it under ${MAX_BIO} characters.`,
     };
   }
   // avatar_path must sit in the user's own folder if present (defense in depth;
@@ -83,7 +83,7 @@ export async function updateProfile(
     };
   }
   if (linkedinUrl !== null && linkedinUrl.length > 200) {
-    return { error: "That link is a little long — keep it under 200 characters." };
+    return { error: "That link is a little long. Keep it under 200 characters." };
   }
 
   // ---- Update. RLS "accounts: update own row" is the gate. ----

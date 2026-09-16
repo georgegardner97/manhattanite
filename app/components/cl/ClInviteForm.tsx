@@ -81,9 +81,9 @@ export default function ClInviteForm() {
             that is the whole mechanic. */}
         <p className="mt-4 text-[12.5px]" style={{ color: "var(--cl-faint)" }}>
           You&rsquo;ll be named as the member who vouched for them, on their
-          profile and beside every listing they post &mdash; and if they break
-          the terms, your membership is assessed alongside theirs. A person
-          reads every new member by hand, so it takes a few days.
+          profile and beside every listing they post. If they break the terms,
+          your membership is assessed alongside theirs. A person reads every
+          new member, so it takes a few days.
         </p>
       </form>
     </div>

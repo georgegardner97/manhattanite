@@ -73,7 +73,7 @@ export async function sendContact(
   if (message.length > MAX_MESSAGE) {
     return {
       status: "error",
-      message: `That's a little long — keep it under ${MAX_MESSAGE} characters.`,
+      message: `That's a little long. Keep it under ${MAX_MESSAGE} characters.`,
     };
   }
 
@@ -93,7 +93,7 @@ export async function sendContact(
       return { status: "error", message: "This listing isn't available anymore." };
     }
     if (error.code === ERR_SELF_CONTACT) {
-      return { status: "error", message: "This is your own listing — you can't message yourself." };
+      return { status: "error", message: "This is your own listing. You can't message yourself." };
     }
     console.error("log_listing_contact failed:", error);
     return { status: "error", message: "Something went wrong sending your message. Try again in a moment." };

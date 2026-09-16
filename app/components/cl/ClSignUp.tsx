@@ -86,7 +86,7 @@ export default function ClSignUp() {
         friendly =
           "An account with that email already exists. Try signing in instead.";
       } else if (lower.includes("captcha")) {
-        friendly = "Couldn’t verify you’re human — please try again.";
+        friendly = "Couldn’t verify you’re human. Please try again.";
       }
       setStatus({ kind: "error", message: friendly });
       return;

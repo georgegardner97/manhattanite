@@ -32,7 +32,7 @@ export type ModerateActionState = { error: string | null };
 // Map the Postgres raise/permission errors to copy a human can act on.
 function readableError(message: string): string {
   if (/permission denied/i.test(message)) {
-    return "The moderation functions aren't enabled yet — run migration 0017 first.";
+    return "The moderation functions aren't enabled yet. Run migration 0017 first.";
   }
   if (/not authorized/i.test(message)) {
     return "Your account isn't authorized to review listings.";
@@ -157,7 +157,7 @@ export async function returnListing(
   // to fix before they resubmit.
   const note = String(formData.get("note") ?? "").trim();
   if (!note) {
-    return { error: "Tell them what needs changing — the note travels with the listing." };
+    return { error: "Tell them what needs changing. The note travels with the listing." };
   }
 
   const { error } = await supabase.rpc("return_listing", {
@@ -200,7 +200,7 @@ export async function rejectListing(
   // A reason is required here too — it's the record of why it came down.
   const note = String(formData.get("note") ?? "").trim();
   if (!note) {
-    return { error: "Give the reason — it stays on the record with the listing." };
+    return { error: "Give the reason. It stays on the record with the listing." };
   }
 
   const { error } = await supabase.rpc("reject_listing", {

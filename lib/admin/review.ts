@@ -27,13 +27,13 @@ export type ReviewActionState = { error: string | null };
 // The raw messages leak ids and SQL-speak; these don't.
 function readableError(message: string): string {
   if (/permission denied/i.test(message)) {
-    return "The review functions aren't enabled for the console yet — run migration 0015 first.";
+    return "The review functions aren't enabled for the console yet. Run migration 0015 first.";
   }
   if (/not authorized/i.test(message)) {
     return "Your account isn't authorized to review applications.";
   }
   if (/is already a member/i.test(message)) {
-    return "They're already a member — nothing to approve.";
+    return "They're already a member, so there's nothing to approve.";
   }
   if (/is not a member/i.test(message)) {
     return "That person isn't a member, so they can't vouch for anyone.";

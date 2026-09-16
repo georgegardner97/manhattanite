@@ -137,7 +137,7 @@ export default async function ClassifiedsJoinPage({
         <AppHeader bare />
         <ClAuthCard
           title={`${inviter} brought you in.`}
-          note={`Accept to be vouched for by ${inviter}. We’ll take you to finish your application, then confirm your place by hand.`}
+          note={`Accept to be vouched for by ${inviter}. We’ll take you to finish your application, then confirm your place.`}
         >
           <ClAcceptInvite token={token} />
         </ClAuthCard>
@@ -152,7 +152,7 @@ export default async function ClassifiedsJoinPage({
       <AppHeader bare />
       <ClAuthCard
         title={`${inviter} brought you in.`}
-        note={`Manhattanite is a private marketplace for New Yorkers. Set a password to claim your spot — ${inviter} vouched for you, and we’ll confirm your place by hand.`}
+        note={`Manhattanite is a private marketplace for New Yorkers. Set a password to claim your spot. ${inviter} vouched for you, and we’ll confirm your place.`}
         footer={
           <>
             Already have an account?{" "}

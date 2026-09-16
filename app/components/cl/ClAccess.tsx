@@ -154,7 +154,7 @@ export default async function ClAccess({
               // George's word for it is mystery.
               <Settled
                 title="Your membership is being reviewed"
-                note="A person reads every profile. You’ll get an email as soon as you’re confirmed — usually within a week."
+                note="A person reads every profile. You’ll get an email as soon as you’re confirmed, usually within a week."
               />
             ) : user ? (
               <>
@@ -207,7 +207,7 @@ export default async function ClAccess({
                   className="mt-7 text-[12.5px] leading-[1.55]"
                   style={{ color: "var(--cl-faint)" }}
                 >
-                  Already invited? Your invitation is in your email — open the
+                  Already invited? Your invitation is in your email. Open the
                   link in it to claim your place.
                 </p>
               </>
@@ -233,7 +233,7 @@ export default async function ClAccess({
                     className="mt-2.5 text-[13.5px] leading-[1.55]"
                     style={{ color: "var(--cl-muted)" }}
                   >
-                    Free. It lets you browse and apply — posting and messaging
+                    Free. It lets you browse and apply. Posting and messaging
                     come with membership.
                   </p>
                   <div className="mt-6">

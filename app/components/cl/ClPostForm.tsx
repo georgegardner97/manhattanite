@@ -92,7 +92,7 @@ const STEPS = [
 // product tells a member what saving will do.
 const EDIT_NOTES: Record<ListingStatus, string> = {
   draft: "Make the changes the moderator asked for, then send it back.",
-  pending: "Change anything. It’s still waiting on review — your edits go with it.",
+  pending: "Change anything. It’s still waiting on review, and your edits go with it.",
   published: "Change anything. Your edits go live as soon as you save.",
   archived:
     "Change anything. This listing is off the site, and saving won’t put it back.",
@@ -277,7 +277,7 @@ export default function ClPostForm({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 className="cl-input"
-                placeholder="$ — or leave blank"
+                placeholder="$ (or leave blank)"
               />
             </div>
             <div>
@@ -472,7 +472,7 @@ export default function ClPostForm({
             </div>
             <div className="mt-1.5 text-[17.5px] leading-[1.3]">
               {title.trim() || (
-                <span style={{ color: "var(--cl-disabled)" }}>Untitled — go back to step 1</span>
+                <span style={{ color: "var(--cl-disabled)" }}>Untitled. Go back to step 1</span>
               )}
             </div>
             <div className="mt-2 text-[14px] tabular-nums">

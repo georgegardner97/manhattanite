@@ -33,7 +33,7 @@ import Link from "next/link";
 import ClDocument from "@/app/components/cl/ClDocument";
 
 export const metadata = {
-  title: "Privacy Policy — Manhattanite",
+  title: "Privacy Policy · Manhattanite",
 };
 
 export default function ClassifiedsPrivacyPage() {
@@ -74,8 +74,8 @@ export default function ClassifiedsPrivacyPage() {
         We use your information to run the network: to create and secure your
         account, review membership applications, check listings before they go
         live, connect members who want to reach each other, and keep the place
-        trustworthy. We don&rsquo;t process payments — Manhattanite takes no
-        money through the platform during this phase.
+        trustworthy. We don&rsquo;t process payments. Manhattanite takes no money
+        through the platform during this phase.
       </p>
 
       <h2>What other members can see</h2>
@@ -84,15 +84,15 @@ export default function ClassifiedsPrivacyPage() {
         first and last name, your neighborhood, and the name of the member who
         vouched for you. Your listings show this byline too. Your email address,
         password, and application details are not shown to other members. If
-        you&rsquo;d rather not be named, Manhattanite isn&rsquo;t the right fit —
-        being vouched for, and named, is the point.
+        you&rsquo;d rather not be named, Manhattanite isn&rsquo;t the right fit.
+        Being vouched for, and named, is the point.
       </p>
       {/* The 2026-08-26 rule, on the page that has to say so: names are for
           people inside the network. It belongs here rather than only in Terms,
           because "who can see my name" is a privacy question first. */}
       <p>
-        Members are named to members. A logged-out visitor can read the most
-        recent few listings, but sees no member names at all — not the
+        Members are named to members. A visitor who is not signed in can read the
+        most recent few listings, but sees no member names at all: not the
         lister&rsquo;s, and not the name of whoever vouched for them. Listings
         are public, the people behind them are not.
       </p>
@@ -101,8 +101,8 @@ export default function ClassifiedsPrivacyPage() {
       <p>
         A small number of people who run Manhattanite can access account and
         application data to review members and moderate listings. We use a few
-        trusted service providers to operate the site — for hosting, database,
-        and sending email — and they only handle data on our behalf. We do not
+        trusted service providers to operate the site: hosting, database, and
+        sending email. They only handle data on our behalf. We do not
         sell your information, and we don&rsquo;t share it for advertising.
       </p>
 
@@ -119,16 +119,16 @@ export default function ClassifiedsPrivacyPage() {
       <p>
         We keep your information for as long as you have an account, and for a
         reasonable period afterward where we need it for safety, legal, or
-        record-keeping reasons. When you ask us to delete your account, we delete
+        record keeping reasons. When you ask us to delete your account, we delete
         or anonymize your personal data rather than simply hiding it.
       </p>
 
       <h2>Your choices</h2>
       <p>
         You can ask to see the information we hold about you, correct it, or have
-        it deleted. Depending on where you live — including under New
-        York&rsquo;s SHIELD Act, and laws such as the CCPA in California or the
-        GDPR in Europe — you may have additional rights. To make any request,
+        it deleted. Depending on where you live, you may have additional rights.
+        That includes New York&rsquo;s SHIELD Act, and laws such as the CCPA in
+        California or the GDPR in Europe. To make any request,
         write to <a href="mailto:info@manhattanite.com">info@manhattanite.com</a>{" "}
         and we&rsquo;ll take care of it.
       </p>
@@ -136,7 +136,8 @@ export default function ClassifiedsPrivacyPage() {
       <h2>Security</h2>
       <p>
         We take reasonable measures to protect your information, including
-        database-level access controls and short-lived, signed links for the
+        access controls at the database itself, and signed links that expire
+        quickly, for the
         photos you upload. No system is perfectly secure, but we treat your data
         as something to be careful with.
       </p>

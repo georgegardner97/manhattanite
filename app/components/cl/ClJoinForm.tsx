@@ -78,7 +78,7 @@ export default function ClJoinForm({
         friendly =
           "You already have an account with that email. Sign in, then open this invitation again to accept it.";
       } else if (lower.includes("captcha")) {
-        friendly = "Couldn’t verify you’re human — please try again.";
+        friendly = "Couldn’t verify you’re human. Please try again.";
       }
       setStatus({ kind: "error", message: friendly });
       return;

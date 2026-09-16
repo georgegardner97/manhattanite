@@ -88,7 +88,7 @@ export default function ClassifiedsResetPasswordPage() {
 
       <ClAuthCard
         title="Set a new one."
-        note="Then sign in with it — you’ll only have to do this once."
+        note="Then sign in with it. You’ll only have to do this once."
       >
         <form onSubmit={onSubmit}>
           <div>

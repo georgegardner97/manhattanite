@@ -160,7 +160,7 @@ const Turnstile = forwardRef<TurnstileHandle, TurnstileProps>(function Turnstile
     if (!SITE_KEY) {
       if (process.env.NODE_ENV !== "production") {
         console.warn(
-          "[Turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing — widget not rendered."
+          "[Turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing. Widget not rendered."
         );
       }
       return;

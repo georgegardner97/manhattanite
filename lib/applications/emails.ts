@@ -164,7 +164,7 @@ function textLayout({
     ...(headline ? [headline, ""] : []),
     ...lines.flatMap((line) => [line, ""]),
     ...(cta ? [`${cta.label}: ${cta.href}`, ""] : []),
-    "—",
+    "· · ·",
     "New York’s trusted private marketplace",
     "Manhattanite · New York, NY · info@manhattanite.com",
   ];
@@ -250,7 +250,7 @@ export function renderReviewerPing({
     ${p(`<strong>Neighborhood:</strong> ${esc(neighborhood)}`)}
     ${p(`<strong>Occupation:</strong> ${esc(occupation)}`)}
     ${p(`<strong>Email:</strong> ${esc(email)}`)}
-    ${p(`<strong>Brought in by:</strong> ${sponsorReference ? esc(sponsorReference) : "—"}`)}
+    ${p(`<strong>Brought in by:</strong> ${sponsorReference ? esc(sponsorReference) : "Not given"}`)}
     ${p("<strong>In their words:</strong>")}
     ${quote(aboutHtml)}
     <div style="border-top:1px solid ${HAIR};margin:24px 0;line-height:1px;font-size:1px;">&nbsp;</div>
@@ -262,7 +262,7 @@ export function renderReviewerPing({
     <p style="margin:0;${mono}">select public.decline_application('${esc(applicationId)}', 'optional note');</p>`;
 
   return {
-    subject: `New membership application — ${applicantName}`,
+    subject: `New membership application: ${applicantName}`,
     html: layout({ kicker: "Internal &middot; Application review", bodyHtml }),
     text: textLayout({
       lines: [
@@ -270,7 +270,7 @@ export function renderReviewerPing({
         `Neighborhood: ${neighborhood}`,
         `Occupation: ${occupation}`,
         `Email: ${email}`,
-        `Brought in by: ${sponsorReference ?? "—"}`,
+        `Brought in by: ${sponsorReference ?? "Not given"}`,
         `In their words: ${about}`,
         `To approve (sends the welcome email): npm run approve -- ${applicationId}`,
         `Or, no email: select public.approve_application('${applicationId}');`,
@@ -357,7 +357,7 @@ export function renderInviteEmail({
 }): RenderedEmail {
   const greeting = inviteeName ? `Hi ${esc(inviteeName)},` : "Hi,";
   const joinUrl = `https://manhattanite.com/join/${token}`;
-  const cta = { label: "Accept your invitation", href: joinUrl };
+  const cta = { label: "Accept invitation and create account", href: joinUrl };
 
   // COPY REWRITTEN 2026-09-08 (George, on reading the live email during the
   // invitation walk). Three faults in the version it replaces:
@@ -382,7 +382,7 @@ export function renderInviteEmail({
   const bodyHtml =
     p(greeting) +
     p(
-      `<strong>${esc(inviterName)}</strong> has invited you to Manhattanite, an invitation-only listings site for New Yorkers. Apartments, furniture, things worth passing on.`
+      `<strong>${esc(inviterName)}</strong> has invited you to Manhattanite, an invitation only listings site for New Yorkers. Apartments and rooms, furniture, services worth recommending, and whatever else is worth passing on.`
     ) +
     p(
       `The difference is who's on it. Nobody joins without a member vouching for them, and a vouch isn't free: if you break the rules, the member who brought you in gets looked at too.`
@@ -398,7 +398,7 @@ export function renderInviteEmail({
     text: textLayout({
       lines: [
         inviteeName ? `Hi ${inviteeName},` : "Hi,",
-        `${inviterName} has invited you to Manhattanite, an invitation-only listings site for New Yorkers. Apartments, furniture, things worth passing on.`,
+        `${inviterName} has invited you to Manhattanite, an invitation only listings site for New Yorkers. Apartments and rooms, furniture, services worth recommending, and whatever else is worth passing on.`,
         `The difference is who's on it. Nobody joins without a member vouching for them, and a vouch isn't free: if you break the rules, the member who brought you in gets looked at too.`,
         `${inviterName} has vouched for you. Their name sits beside yours for as long as you're here.`,
       ],
@@ -453,7 +453,7 @@ export function renderSponsorshipRequest({
       `<strong>${esc(requesterName)}</strong> is applying to join Manhattanite and named you as someone who would vouch for them.`
     ) +
     p(
-      "If you know them and you're happy to vouch for them, confirm it below. If not, you can decline — they won't be told who declined.",
+      "If you know them and you're happy to vouch for them, confirm it below. If not, you can decline. They won't be told who declined.",
       { last: true }
     );
 
@@ -464,7 +464,7 @@ export function renderSponsorshipRequest({
       lines: [
         sponsorName ? `Hi ${sponsorName},` : "Hi,",
         `${requesterName} is applying to join Manhattanite and named you as someone who would vouch for them.`,
-        "If you know them and you're happy to vouch for them, confirm it below. If not, you can decline — they won't be told who declined.",
+        "If you know them and you're happy to vouch for them, confirm it below. If not, you can decline. They won't be told who declined.",
       ],
       cta,
     }),
@@ -610,7 +610,7 @@ export function renderListingApproved({
     p(greeting) +
     p(`<em>${esc(listingTitle)}</em> is live. Every member can see it now.`) +
     p(
-      "Listings move quickly — when someone messages you, they're already interested. Reply through your inbox and deal plainly.",
+      "Listings move quickly. When someone messages you, they're already interested. Reply through your inbox and deal plainly.",
       { last: true }
     );
 
@@ -621,7 +621,7 @@ export function renderListingApproved({
       lines: [
         listerName ? `Hi ${listerName},` : "Hi,",
         `${listingTitle} is live. Every member can see it now.`,
-        "Listings move quickly — when someone messages you, they're already interested. Reply through your inbox and deal plainly.",
+        "Listings move quickly. When someone messages you, they're already interested. Reply through your inbox and deal plainly.",
       ],
       cta,
     }),
@@ -668,7 +668,7 @@ export function renderListingReturned({
     p(greeting) +
     p(`We've read <em>${esc(listingTitle)}</em> and it's not quite ready to go up. Specifically:`) +
     quote(noteHtml) +
-    p("Make the changes and resubmit from My Listings — it comes straight back to us.", {
+    p("Make the changes and resubmit from My Listings. It comes straight back to us.", {
       last: true,
     });
 
@@ -679,7 +679,7 @@ export function renderListingReturned({
       lines: [
         listerName ? `Hi ${listerName},` : "Hi,",
         `We've read ${listingTitle} and it's not quite ready to go up. Specifically: ${note}`,
-        "Make the changes and resubmit from My Listings — it comes straight back to us.",
+        "Make the changes and resubmit from My Listings. It comes straight back to us.",
       ],
       cta,
     }),

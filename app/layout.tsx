@@ -24,9 +24,9 @@ import "./globals.css";
 // opengraph-image.tsx) and any relative URL below to an absolute one, which is
 // what social scrapers require. Same title/description as before, now also
 // carried into the Open Graph + Twitter cards so a shared link shows the mark.
-const TITLE = "Manhattanite — A better marketplace for Manhattan residents";
+const TITLE = "Manhattanite · A better marketplace for Manhattan residents";
 const DESCRIPTION =
-  "A members-only marketplace for the people who define New York. Verified residents only. No spam, no strangers, no noise.";
+  "A members only marketplace for the people who define New York. Verified residents only. No spam, no strangers, no noise.";
 
 // viewport-fit=cover lets the page run under the iPhone notch and home
 // indicator instead of Safari letterboxing it with background-colored bars in

@@ -19,7 +19,7 @@ import Link from "next/link";
 import ClDocument from "@/app/components/cl/ClDocument";
 
 export const metadata = {
-  title: "Terms of Use — Manhattanite",
+  title: "Terms of Use · Manhattanite",
 };
 
 export default function ClassifiedsTermsPage() {
@@ -45,8 +45,8 @@ export default function ClassifiedsTermsPage() {
       }
     >
       <p>
-        Manhattanite is a private, invitation-based marketplace for New York
-        residents. By creating an account or using the site, you agree to these
+        Manhattanite is a private marketplace for New York residents, and you get
+        in by invitation. By creating an account or using the site, you agree to these
         terms. If you don&rsquo;t agree, please don&rsquo;t use Manhattanite.
       </p>
 
@@ -64,7 +64,7 @@ export default function ClassifiedsTermsPage() {
           that survives a formatter. */}
       <p>
         Once you accept an invitation you tell us who you are, and a person
-        approves it by hand. Until then there is nothing to see;{" "}
+        approves it. Until then there is nothing to see;{" "}
         <strong>membership</strong> is what lets you see listings, post them, contact
         other members, and bring people in yourself. You must be at least 18
         years old.
@@ -74,8 +74,8 @@ export default function ClassifiedsTermsPage() {
       <p>
         Members are brought in by other members who vouch for them, and a vouch
         carries weight in both directions. If a member breaks these terms, the
-        members who vouched for them are assessed in the same way &mdash; under
-        the same standard, at the same time, by the same people. Their judgment
+        members who vouched for them are assessed in the same way: under the same
+        standard, at the same time, by the same people. Their judgment
         is part of what we look at.
       </p>
       <p>
@@ -98,9 +98,9 @@ export default function ClassifiedsTermsPage() {
         reviewed by a person before it goes live.
       </p>
       <p>
-        Housing listings must comply with fair-housing law. You may not include
+        Housing listings must comply with fair housing law. You may not include
         language that discriminates against, or expresses a preference based on,
-        any protected class — including race, religion, national origin, sex,
+        any protected class, including race, religion, national origin, sex,
         gender, sexual orientation, disability, family or marital status, age,
         or lawful source of income. New York&rsquo;s protections are broad, and
         we enforce them. Listings that cross this line will be removed, and
@@ -136,8 +136,8 @@ export default function ClassifiedsTermsPage() {
         vouched for you are shown to other members.
       </p>
       <p>
-        To people outside the network, they are not. Listings are public —
-        anyone can read the most recent few — but member names, both the
+        To people outside the network, they are not. Listings are public, and
+        anyone can read the most recent few. But member names, both the
         lister&rsquo;s and the name of whoever vouched for them, are shown only
         to people who are signed in.
       </p>
@@ -151,7 +151,7 @@ export default function ClassifiedsTermsPage() {
 
       <h2>Disclaimers and liability</h2>
       <p>
-        Manhattanite is provided as-is, without warranties of any kind. To the
+        Manhattanite is provided as it is, without warranties of any kind. To the
         fullest extent the law allows, we&rsquo;re not liable for losses arising
         from your use of the site or from your dealings with other members. This
         doesn&rsquo;t limit any rights that can&rsquo;t be limited under

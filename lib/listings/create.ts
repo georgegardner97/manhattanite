@@ -67,7 +67,7 @@ export async function createListing(
   }
   if (description.length > MAX_DESCRIPTION) {
     return {
-      error: `That description is a little long — keep it under ${MAX_DESCRIPTION} characters.`,
+      error: `That description is a little long. Keep it under ${MAX_DESCRIPTION} characters.`,
     };
   }
 
@@ -84,7 +84,7 @@ export async function createListing(
     if (Number.isNaN(priceDollars) || priceDollars < 0) {
       return {
         error:
-          "That price doesn't look right — give a number in dollars, or leave it blank.",
+          "That price doesn't look right. Give a number in dollars, or leave it blank.",
       };
     }
     price_cents = Math.round(priceDollars * 100);

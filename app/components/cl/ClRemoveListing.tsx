@@ -46,7 +46,7 @@ const OUTCOMES: { value: string; label: string }[] = [
   { value: "found_here", label: "Found its person here" },
   { value: "found_elsewhere", label: "Sorted, but not through Manhattanite" },
   { value: "withdrawn", label: "Changed my mind" },
-  { value: "no_luck", label: "No luck — nobody suitable" },
+  { value: "no_luck", label: "No luck, nobody suitable" },
 ];
 
 export default function ClRemoveListing({
@@ -106,7 +106,7 @@ export default function ClRemoveListing({
             style={{ color: "var(--cl-muted)" }}
           >
             {status === "pending"
-              ? "This listing is still in review. Taking it down pulls it out of the queue — it won’t go live."
+              ? "This listing is still in review. Taking it down pulls it out of the queue. It won’t go live."
               : "The listing comes off the network. It stays in your records, under Archived."}
           </p>
           <button
@@ -132,13 +132,13 @@ export default function ClRemoveListing({
             {status === "draft" ? (
               <>
                 Take it down? It won&rsquo;t go live, and it stays in your records
-                under Archived. You can&rsquo;t resubmit it — post a new one instead.
+                under Archived. You can&rsquo;t resubmit it. Post a new one instead.
               </>
             ) : (
               <>
                 Take it down? It comes off the network
                 {status === "pending" ? " and out of review" : ""}, and stays in your
-                records under Archived. You can&rsquo;t put it back yourself — post a
+                records under Archived. You can&rsquo;t put it back yourself. Post a
                 new one instead.
               </>
             )}

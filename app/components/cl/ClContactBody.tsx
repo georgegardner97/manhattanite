@@ -193,7 +193,7 @@ function ContactBody({
         className="mt-3.5 text-[12px] leading-[1.5]"
         style={{ color: "var(--cl-faint)" }}
       >
-        {listerName} sees your name{senderName ? ` — ${senderName}` : ""}, your
+        {listerName} sees your name{senderName ? ` (${senderName})` : ""}, your
         neighborhood and {senderEmail}, and replies to you directly.
       </p>
     </form>
@@ -245,7 +245,7 @@ function GateBody({
         className="mt-4 max-w-[46ch] text-[12.5px] leading-[1.5]"
         style={{ color: "var(--cl-faint)" }}
       >
-        Have an invitation? Open the link in that email instead — it arrives with
+        Have an invitation? Open the link in that email instead. It arrives with
         the member who vouched for you already attached.
       </p>
     </>
