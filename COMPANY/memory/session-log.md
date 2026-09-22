@@ -6,6 +6,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-22 · The invitation arrives from the inviter's name (Claude Code)
+
+**Built from `Manhattanite_Invite-Sender-Name_Claude-Code-Prompt_v1.md`. Committed, pushed.**
+
+**What changed, and it is one email.** The member invitation sends as **"Alex Rivera via Manhattanite"** instead of "Manhattanite". Everything else the site sends, the application confirmation, the reviewer ping, the welcome, the contact forward and the three moderation notes, is untouched and still arrives from "Manhattanite".
+
+**The address is untouched too.** Only the display name changes. `info@manhattanite.com` is the sender in both cases, because the domain's SPF, DKIM and DMARC (p=reject) are set up for it and sending from anywhere else is how an invitation lands in spam, which is the whole reason for the change.
+
+**Two names, deliberately separate.** `create.ts` already collapsed a missing account name to "A member" before the email layer saw it. That is right for the body ("A member has invited you") and wrong for the sender line, where "A member via Manhattanite" reads like the exact spam being avoided. The raw nullable name now travels as its own argument, `senderName`, and `inviterName` is unchanged for the subject and body. A nameless inviter sends as plain "Manhattanite".
+
+**`inviteFrom()` is the whole header.** The name is member-controlled text going into an email header, so it is stripped of control characters (a raw newline would let a member append a `Bcc:` to our send), stripped of `"`, `\`, `<` and `>`, whitespace-collapsed, trimmed and capped at 64 characters. The display name is double-quoted, which is what makes a comma safe rather than a second address. Accents and non-Latin scripts pass through untouched for Resend to encode.
+
+**Checked directly, ten inputs.** A normal name quotes. `null`, empty and whitespace-only all fall back to `Manhattanite <info@manhattanite.com>`. `Rivera, Alex` stays one address. `Al"ex <Riv>era` comes out `Alex Rivera`. Both `Alex\nBcc: someone@example.com` and the CRLF version come out as one harmless single-line display name. `Zoë Łukasiewicz` is unchanged. An 80-character name truncates to 64, suffix intact.
+
+**Verified:** `tsc` clean, `next build` 0, eslint 5 errors, unmoved, none of them in either changed file.
+
+**Not done: no Reply-To pointing at the inviter.** It would hand the invitee the inviter's email address, which is a privacy decision George has not made. Worth a decision at some point; it is the obvious next question if invitees start replying to the invitation itself.
+
+**Outstanding:** the one real test send to George's own inbox, to read the Gmail sender line and see whether it lands in the inbox or spam. He was asked for the address and has not given it yet.
+
+---
+
 ## 2026-09-16 · The handwritten wordmark, and one font (Claude Code)
 
 **Built from `Manhattanite_Script-Wordmark-Swap_Claude-Code-Prompt_v3.md`. Committed, NOT pushed.**

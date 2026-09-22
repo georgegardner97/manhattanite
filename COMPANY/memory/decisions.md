@@ -6,6 +6,24 @@ Read this at the start of every Manhattanite conversation.
 
 ---
 
+## 2026-09-22 · Invitations go by email only, for now
+
+**George's call.** Asked whether members should also get a copy-link or a way to send by text. Decided to keep invitations email-only for now.
+
+- **Considered and not taken:** a copy/share link shown after sending (small; the link already exists) and an open link where the invitee types their own email (bigger; the link could be forwarded and the member's vouch would attach to whoever claims it). In-product SMS was ruled out regardless: carrier registration, cost, and storing phone numbers.
+- **The invitation stays locked to the address the member typed.** That is what stops a link being passed to a stranger.
+- **Still open, independent of channel:** no resend, no list of sent invitations, no revoke. If an email bounces or lands in spam, the invitation is dead and neither side can tell.
+
+**Same day, on spam: the invitation now arrives from the inviter's name.** The sender line reads **"Alex Rivera via Manhattanite"** instead of "Manhattanite". Two reasons, and the first is the one that decided it: if an invitation is the only way in and there is no resend, no list and no revoke, then a message that lands in spam is a member's vouch thrown away with nobody able to tell. People open email from a name they know. It also reads less like marketing, which is the right register for a stranger's first contact from us.
+
+- **One email only.** Every other email the site sends, including the application confirmation, the welcome and the moderation notes, is still from "Manhattanite".
+- **The address never changes.** Only the display name does. The domain's authentication is set up for info@manhattanite.com and DMARC is set to reject, so sending from anywhere else would cause the exact problem this is fixing.
+- **A nameless inviter sends as plain "Manhattanite".** The body copy still says "A member has invited you", but "A member via Manhattanite" on the sender line reads like spam, so the sender line falls back rather than using it.
+- **The name is a member's own text going into an email header**, so it is stripped, collapsed and quoted before it is used. A comma cannot split the header into two addresses and a newline cannot append a Bcc.
+- **Considered and not taken:** setting Reply-To to the inviter's address. It would hand the invitee the inviter's email address, which is a privacy decision George has not made.
+
+---
+
 
 ## 2026-09-16 · The handwritten wordmark replaces Concept D, and the site is set in one font
 

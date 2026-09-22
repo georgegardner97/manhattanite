@@ -11,6 +11,20 @@ If something below conflicts with what you read in the deeper files, the deeper 
 
 ---
 
+## Quick state addendum — 2026-09-22 (the invitation arrives from the inviter's name: pushed)
+
+**The member invitation is the one email that does not come from "Manhattanite".** It arrives as **"Alex Rivera via Manhattanite"**, from the same address as always, `info@manhattanite.com`. Reason: spam. There is no resend, no list of sent invitations and no revoke, so an invitation in a spam folder is a member's vouch thrown away with nobody able to tell. People open email from a name they know.
+
+**Every other email is unchanged** and still arrives from "Manhattanite".
+
+**The address must never change** to match the display name. The domain's authentication is set up for `info@manhattanite.com` and DMARC is set to reject; sending from anywhere else causes the exact problem this fixes.
+
+**Outstanding:** one real test send to George's inbox, to read the Gmail sender line and see whether it lands in the inbox or spam. Waiting on which address to use.
+
+**Parked, not decided:** whether replies to an invitation should go to the inviter. Doing it would show the invitee the inviter's email address.
+
+---
+
 ## Quick state addendum — 2026-09-15, last (nothing until approved: committed, not pushed; 0032 AND 0033 NOT applied)
 
 **A signed-in account that is not a member sees nothing of the product.** Every product page sends it to `/apply`, which shows only the profile form or the review card and a quiet Sign out. Members are untouched. This overturns the June "an account sees everything, acts on nothing" model.

@@ -4,6 +4,22 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-22 · The invitation arrives from the inviter's name — pushed
+
+**Built:** `inviteFrom()` in `lib/applications/emails.ts` builds the invitation's From header as `"<name> via Manhattanite" <info@manhattanite.com>`; `sendInviteEmail` takes a new nullable `senderName` alongside the existing `inviterName`, and `lib/invites/create.ts` passes the raw account name for the sender line while keeping the "A member" fallback for the body. One email only. The address never changes.
+
+**Why:** spam. An invitation is the only way in and there is no resend, no list and no revoke, so one that lands in spam is a member's vouch thrown away with nobody able to tell. People open email from a name they know.
+
+**Safety:** the name is member-controlled header text, so it is stripped of control characters, `"`, `\`, `<` and `>`, collapsed, trimmed, capped at 64 and double-quoted. A comma cannot split the header; a newline cannot append a `Bcc:`. Accents pass through.
+
+**Verified:** tsc clean, build 0, eslint 5 (unmoved, none in the changed files), and the helper checked directly against ten inputs including both header-injection cases.
+
+**Outstanding:** one real test send to George's inbox to read the Gmail sender line and check inbox vs spam. Waiting on the address.
+
+**Parked:** Reply-To pointing at the inviter. It exposes the inviter's email address to the invitee, which is George's call to make.
+
+---
+
 ## 2026-09-15, last · Nothing until approved — committed, not pushed
 
 **Built:** `keepNonMembersOut()` in `lib/cl/member-gate.ts`, first line of eleven product pages; `/apply` signed in is one card with a bare header, no look-around, and a quiet Sign out; no tab bar on `/apply`, `/login`, `/thank-you`; `/thank-you` and `/terms` copy corrected; migration `0033` makes `get_member_profile` members-only.
