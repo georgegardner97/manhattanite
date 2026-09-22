@@ -32,6 +32,41 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APPLICATIONS_FROM = "Manhattanite <info@manhattanite.com>";
 const REVIEWER_TO = "info@manhattanite.com";
+const FROM_ADDRESS = "info@manhattanite.com";
+
+// The ONE email that does not arrive from "Manhattanite" is the invitation
+// (George, 2026-09-22). It arrives as "Alex Rivera via Manhattanite": people
+// open mail from a name they know, and a stranger's first contact reads less
+// like marketing. Everything else the site sends stays APPLICATIONS_FROM.
+//
+// THE ADDRESS NEVER CHANGES. Only the display name does. The domain's SPF,
+// DKIM and DMARC (p=reject) are set up for info@manhattanite.com; sending an
+// invitation from anywhere else is how it lands in spam, which is the exact
+// thing this change exists to avoid.
+//
+// The name is member-controlled text going into an email header, so it is
+// sanitised before it is quoted: a raw CR or LF would let a member append
+// their own headers (Bcc:, Reply-To:) to our send, and a bare comma would
+// split the header into two addresses. Quoting handles the comma; stripping
+// handles the rest. Non-ASCII is left alone on purpose (accents, non-Latin
+// scripts) — Resend encodes it.
+const FROM_NAME_MAX = 64;
+
+export function inviteFrom(senderName: string | null): string {
+  const cleaned = (senderName ?? "")
+    // Control characters, including CR and LF. Header injection dies here.
+    .replace(/[\u0000-\u001F\u007F]+/g, " ")
+    // Characters that would break out of a quoted display name.
+    .replace(/["\\<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, FROM_NAME_MAX)
+    .trim();
+
+  if (!cleaned) return APPLICATIONS_FROM;
+
+  return `"${cleaned} via Manhattanite" <${FROM_ADDRESS}>`;
+}
 
 // ---------------------------------------------------------------------------
 // Shared v12 layout. One set of bones for every send: wordmark header,
@@ -407,20 +442,28 @@ export function renderInviteEmail({
   };
 }
 
+// senderName is the inviter's RAW name from their account, nullable, and it is
+// deliberately separate from inviterName. inviterName has already collapsed a
+// missing name to "A member", which is right in the body ("A member has
+// invited you") and wrong on the sender line: "A member via Manhattanite"
+// reads like exactly the spam this is trying not to be. A nameless inviter
+// sends as plain "Manhattanite" instead.
 export async function sendInviteEmail({
   to,
   inviterName,
+  senderName,
   inviteeName,
   token,
 }: {
   to: string;
   inviterName: string;
+  senderName: string | null;
   inviteeName: string | null;
   token: string;
 }): Promise<void> {
   const email = renderInviteEmail({ inviterName, inviteeName, token });
   await resend.emails.send({
-    from: APPLICATIONS_FROM,
+    from: inviteFrom(senderName),
     to,
     subject: email.subject,
     html: email.html,

@@ -91,7 +91,12 @@ export async function createInvite(
   try {
     await sendInviteEmail({
       to: email,
+      // Two names, on purpose. inviterName is the body copy and keeps its
+      // fallback; senderName is the raw account name and builds the sender
+      // line ("Alex Rivera via Manhattanite"), which falls back to plain
+      // "Manhattanite" rather than to "A member". See inviteFrom().
       inviterName: account.name ?? "A member",
+      senderName: account.name,
       inviteeName: name,
       token,
     });
