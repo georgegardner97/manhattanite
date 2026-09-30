@@ -6,6 +6,12 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-30 · Propose a Manhattanite (Cowork)
+
+**Built on branch `propose-a-manhattanite`, committed, NOT pushed.** Nav item, vouch tick box, and a required note the admin reads at approval. Migration `0034_invite_note.sql` written, NOT applied; the code degrades until it is (invite saves without the note, review screen shows none). Type check clean. Not visually checked: the Cowork VM cannot run `next build` or the dev server (wrong SWC binary for linux/arm64), so check the header at 600 to 900px on the Vercel preview.
+
+---
+
 ## 2026-09-22 · The invitation arrives from the inviter's name (Claude Code)
 
 **Built from `Manhattanite_Invite-Sender-Name_Claude-Code-Prompt_v1.md`. Committed, pushed.**

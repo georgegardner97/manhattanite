@@ -26,6 +26,7 @@ type ApplicationRow = {
   about: string | null;
   sponsor_reference: string | null;
   sponsor_id: string | null;
+  account_id: string;
   neighborhood: string | null;
   reviewer_note: string | null;
   created_at: string;
@@ -55,7 +56,7 @@ export default async function AdminApplicationsPage() {
       // Disambiguate the embed: applications has TWO FKs to accounts
       // (account_id = applicant, sponsor_id = inviter), so a bare accounts(...)
       // is ambiguous and PostgREST errors. Name the applicant FK explicitly.
-      "id, status, occupation, about, sponsor_reference, sponsor_id, neighborhood, reviewer_note, created_at, accounts!applications_account_id_fkey(name, email)"
+      "id, account_id, status, occupation, about, sponsor_reference, sponsor_id, neighborhood, reviewer_note, created_at, accounts!applications_account_id_fkey(name, email)"
     )
     .in("status", ["pending", "needs_info"])
     .order("created_at", { ascending: true })
@@ -111,6 +112,24 @@ export default async function AdminApplicationsPage() {
     return m ? { id: m.id, name: m.name } : null;
   }
 
+  // Why the proposer vouched (Propose a Manhattanite, migration 0034). Read
+  // through invites_read_admin; while 0034 is unapplied the column is missing,
+  // the query errors, and the map stays empty, so the screen shows no note
+  // rather than breaking.
+  const applicantIds = rows.map((a) => a.account_id);
+  const proposalNoteByAccount = new Map<string, string>();
+  if (applicantIds.length > 0) {
+    const { data: invites } = await supabase
+      .from("invites")
+      .select("accepted_account_id, note")
+      .in("accepted_account_id", applicantIds)
+      .eq("status", "accepted")
+      .returns<{ accepted_account_id: string | null; note: string | null }[]>();
+    for (const i of invites ?? []) {
+      if (i.accepted_account_id && i.note) proposalNoteByAccount.set(i.accepted_account_id, i.note);
+    }
+  }
+
   // An invite's sponsor_id (the verified inviter) wins; else a matched
   // referral; else none, which means the founder default on approval.
   function effectiveSponsor(a: ApplicationRow): EffectiveSponsor | null {
@@ -161,6 +180,7 @@ export default async function AdminApplicationsPage() {
                     <ApplicationCard
                       application={application}
                       sponsor={sp}
+                      proposalNote={proposalNoteByAccount.get(application.account_id) ?? null}
                       requestStatus={requestStatusByApp.get(application.id) ?? null}
                     />
                     <ClApplicationActions
@@ -189,6 +209,7 @@ export default async function AdminApplicationsPage() {
                     <ApplicationCard
                       application={application}
                       sponsor={effectiveSponsor(application)}
+                      proposalNote={proposalNoteByAccount.get(application.account_id) ?? null}
                       requestStatus={requestStatusByApp.get(application.id) ?? null}
                     />
                     {application.reviewer_note && (
@@ -211,10 +232,12 @@ export default async function AdminApplicationsPage() {
 function ApplicationCard({
   application,
   sponsor,
+  proposalNote,
   requestStatus,
 }: {
   application: ApplicationRow;
   sponsor: { name: string | null; source: "invite" | "referral" } | null;
+  proposalNote: string | null;
   requestStatus: "pending" | "confirmed" | "declined" | null;
 }) {
   return (
@@ -247,6 +270,20 @@ function ApplicationCard({
           <span className="cl-grouplabel">Invited by:</span>{" "}
           {sponsor.name ?? "a member"}
         </p>
+      )}
+
+      {proposalNote && (
+        <div className="mt-2 max-w-[62ch]">
+          <p className="cl-grouplabel">
+            Why {sponsor?.name ?? "the proposer"} vouched:
+          </p>
+          <p
+            className="mt-1 text-[13.5px] leading-[1.6] whitespace-pre-wrap"
+            style={{ color: "var(--cl-muted)" }}
+          >
+            {proposalNote}
+          </p>
+        </div>
       )}
 
       {sponsor && sponsor.source === "referral" && (

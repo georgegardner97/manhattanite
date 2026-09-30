@@ -67,7 +67,7 @@
 import Link from "next/link";
 import Wordmark from "@/app/components/Wordmark";
 
-export type ClNavKey = "browse" | "profile" | "none";
+export type ClNavKey = "browse" | "propose" | "profile" | "none";
 
 /**
  * WHICH CONTENT WIDTH THE BAR SHOULD MATCH.
@@ -98,8 +98,13 @@ const MAX_WIDTH: Record<ClHeaderWidth, string> = {
   wide: "max-w-[1400px]",
 };
 
-const LINKS: { key: ClNavKey; label: string; href: string }[] = [
+const LINKS: { key: ClNavKey; label: string; short?: string; href: string }[] = [
   { key: "browse", label: "Browse", href: "/listings" },
+  // George, 2026-09-30, lifted from the Radio H-P nav: proposing someone is
+  // how this network grows, so it sits in the nav rather than behind Profile.
+  // Below 900px the full label pushes "Post a listing" out of the bar (the
+  // nav itself hides at 600px), so it shortens to one word there.
+  { key: "propose", label: "Propose a Manhattanite", short: "Propose", href: "/invite" },
   // Profile means the account screen, which is how the design file itself
   // reads it: screen 10 ("Account settings") is drawn with active="profile".
   // It is also the way into Saved now, and the way into /admin.
@@ -174,7 +179,7 @@ export default function AppHeader({
                   key={l.key}
                   href={l.href}
                   aria-current={on ? "page" : undefined}
-                  className="rounded-full px-3 py-[7px]"
+                  className="whitespace-nowrap rounded-full px-3 py-[7px]"
                   style={
                     on
                       ? {
@@ -185,7 +190,14 @@ export default function AppHeader({
                       : { color: "var(--cl-muted)" }
                   }
                 >
-                  {l.label}
+                  {l.short ? (
+                    <>
+                      <span className="max-[900px]:hidden">{l.label}</span>
+                      <span className="hidden max-[900px]:inline">{l.short}</span>
+                    </>
+                  ) : (
+                    l.label
+                  )}
                 </Link>
               );
             })}

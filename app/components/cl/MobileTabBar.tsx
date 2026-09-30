@@ -7,7 +7,11 @@
 // Saved, Post, Inbox. AppHeader hides its nav below 600px; this is the other
 // half of that arrangement.
 //
-// THREE TABS, NOT THE DESIGN'S FOUR:
+// FOUR TABS as of 2026-09-30: Browse · Post · Propose · Profile. Propose
+// (Propose a Manhattanite, /invite) joined with the header item of the same
+// name. The history below explains why these four and not the design's four.
+//
+// THREE TABS, NOT THE DESIGN'S FOUR (history):
 //
 //   Inbox is not here. In-app messaging is not built — the design file labels
 //   its own Messages screen "not built yet, kept for reference" — and a tab
@@ -41,6 +45,8 @@ const TABS: { label: string; href: string; match: (p: string) => boolean }[] = [
     match: (p) => p.startsWith("/listings"),
   },
   { label: "Post", href: "/listings/new", match: (p) => p === "/listings/new" },
+  // "Propose a Manhattanite" in the header; one word is what a tab holds.
+  { label: "Propose", href: "/invite", match: (p) => p === "/invite" },
   {
     label: "Profile",
     href: "/profile",
