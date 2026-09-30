@@ -78,8 +78,8 @@ export default async function ClassifiedsInvitePage() {
           className="mt-3 max-w-[52ch] text-[13.5px] leading-[1.6]"
           style={{ color: "var(--cl-muted)" }}
         >
-          There is no other way in. Propose someone you would vouch for out
-          loud: someone generous, reliable and good company. Your name stays
+          Propose someone you would personally vouch for: someone reliable,
+          respectful and good company. Your name stays
           beside theirs for as long as they&rsquo;re here, and if they break the
           terms, your own membership is looked at the same way.
         </p>
