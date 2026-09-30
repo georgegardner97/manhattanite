@@ -135,14 +135,14 @@ export default function ClApplyForm({
 
         <div>
           <label htmlFor="cl-linkedin" className="cl-fieldlabel">
-            LinkedIn
+            Link to your page
           </label>
           <input
             id="cl-linkedin"
             name="linkedin_url"
             // text, NOT url: type="url" makes the browser refuse anything
             // without a scheme — including the placeholder's own
-            // "linkedin.com/in/…" — with a native tooltip, before the action
+            // "instagram.com/you" — with a native tooltip, before the action
             // can add the https:// or say what is wrong in our own words.
             type="text"
             inputMode="url"
@@ -150,7 +150,7 @@ export default function ClApplyForm({
             spellCheck={false}
             disabled={isPending}
             className="cl-input"
-            placeholder="linkedin.com/in/… (optional)"
+            placeholder="Instagram, LinkedIn, your website (optional)"
           />
         </div>
 

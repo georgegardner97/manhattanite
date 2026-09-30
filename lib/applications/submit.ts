@@ -24,6 +24,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkProfileLink } from "@/lib/profile/link";
 import {
   sendApplicantConfirmation,
   sendReviewerPing,
@@ -41,9 +42,6 @@ const MAX_NEIGHBORHOOD = 60;
 const MAX_OCCUPATION = 120;
 const MAX_ABOUT = 1500;
 const MAX_SPONSOR_REF = 200;
-// Matches lib/profile/update.ts. A longer cap here would accept a link at the
-// door that /profile/edit then refuses to save back.
-const MAX_LINKEDIN = 200;
 
 // Pull a string from FormData, trim, and treat empty as null.
 function pluck(formData: FormData, key: string): string | null {
@@ -134,31 +132,12 @@ export async function submitApplication(
     };
   }
 
-  // LinkedIn is optional, and it is checked HERE rather than only at render
-  // time. /members/[id] already refuses to link anything that is not a
-  // linkedin.com host — a profile field is not a place to hand another member
-  // an arbitrary outbound link on our say-so — but a value that silently never
-  // renders is worse than one refused at the door, because the person who
-  // typed it believes it is on their profile. Same rule, said out loud.
-  let linkedinUrl: string | null = null;
-  if (linkedinRaw) {
-    if (linkedinRaw.length > MAX_LINKEDIN) {
-      return { error: `Keep the LinkedIn link to ${MAX_LINKEDIN} characters or fewer.` };
-    }
-    const withScheme = /^https?:\/\//i.test(linkedinRaw)
-      ? linkedinRaw
-      : `https://${linkedinRaw}`;
-    let host = "";
-    try {
-      host = new URL(withScheme).hostname.toLowerCase();
-    } catch {
-      return { error: "That LinkedIn link doesn't look right. Paste the whole address." };
-    }
-    if (host !== "linkedin.com" && !host.endsWith(".linkedin.com")) {
-      return { error: "That needs to be a linkedin.com address, or leave it blank." };
-    }
-    linkedinUrl = withScheme;
-  }
+  // The member's link is optional, and it is checked HERE rather than only
+  // at render time: a value that silently never renders is worse than one
+  // refused at the door. Any web address since 2026-09-30 (lib/profile/link.ts).
+  const link = checkProfileLink(linkedinRaw);
+  if (link.error) return { error: link.error };
+  const linkedinUrl = link.value;
 
   // ---- 1. Write name + neighborhood back to the accounts row. ----
   // RLS "accounts: update own row" allows this; the protect_account_columns

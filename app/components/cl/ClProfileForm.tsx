@@ -133,7 +133,7 @@ export default function ClProfileForm({
 
         <Row
           fieldKey="linkedin_url"
-          label="LinkedIn"
+          label="Link to your page"
           value={linkedinUrl}
           isOpen={open.has("linkedin_url")}
           onToggle={toggle}
@@ -142,7 +142,7 @@ export default function ClProfileForm({
             name="linkedin_url"
             defaultValue={linkedinUrl ?? ""}
             maxLength={200}
-            placeholder="linkedin.com/in/you"
+            placeholder="Instagram, LinkedIn, your website"
             className="cl-input"
             onChange={() => setDirty(true)}
           />

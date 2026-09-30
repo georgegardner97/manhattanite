@@ -16,6 +16,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkProfileLink } from "@/lib/profile/link";
 
 export type UpdateProfileState = { error: string | null };
 
@@ -82,9 +83,10 @@ export async function updateProfile(
       error: "Something went wrong with that photo. Try uploading it again.",
     };
   }
-  if (linkedinUrl !== null && linkedinUrl.length > 200) {
-    return { error: "That link is a little long. Keep it under 200 characters." };
-  }
+  // Any web address (lib/profile/link.ts), checked by the same rule as the
+  // joining profile, so what saves here is what the member page can show.
+  const link = checkProfileLink(linkedinUrl);
+  if (link.error) return { error: link.error };
 
   // ---- Update. RLS "accounts: update own row" is the gate. ----
   // The protect_account_columns trigger (0001) backstops the sensitive
@@ -97,7 +99,7 @@ export async function updateProfile(
       neighborhood,
       bio,
       avatar_path: avatarPath,
-      linkedin_url: linkedinUrl,
+      linkedin_url: link.value,
     })
     .eq("id", user.id);
 

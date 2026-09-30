@@ -70,6 +70,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { profileLinkDisplay } from "@/lib/profile/link";
 import { signImagePaths } from "@/lib/storage/sign-image-urls";
 import { formatPrice, placeOf } from "@/lib/listings/card";
 import AppHeader from "@/app/components/cl/AppHeader";
@@ -96,31 +97,6 @@ type MemberProfile = {
   /** 0030. Absent until it is run, which is why every read of it is optional. */
   sponsor_ids?: string[] | null;
 };
-
-/**
- * A LinkedIn field is free text a member typed, and this page shows it to other
- * members, so it is only ever rendered as a link when it really points at
- * LinkedIn. Anything else stays inert text: a profile field is not a place to
- * hand someone an arbitrary outbound link on our say-so. The stored value has
- * no scheme normalization (the placeholder is "linkedin.com/in/you"), so the
- * scheme is added here rather than assumed.
- */
-function linkedinHref(raw: string | null): string | null {
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (trimmed === "") return null;
-  const withScheme = /^https?:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-  try {
-    const url = new URL(withScheme);
-    const host = url.hostname.toLowerCase().replace(/^www\./, "");
-    if (host !== "linkedin.com" && !host.endsWith(".linkedin.com")) return null;
-    return url.toString();
-  } catch {
-    return null;
-  }
-}
 
 export default async function ClassifiedsMemberPage({
   params,
@@ -199,7 +175,9 @@ export default async function ClassifiedsMemberPage({
         .publicUrl
     : null;
 
-  const linkedin = linkedinHref(profile?.linkedin_url ?? null);
+  // Any web address since 2026-09-30, labelled with its site so a member sees
+  // where it goes before clicking (lib/profile/link.ts).
+  const link = profileLinkDisplay(profile?.linkedin_url ?? null);
   const memberSince = profile?.member_since
     ? String(new Date(profile.member_since).getFullYear())
     : null;
@@ -291,15 +269,15 @@ export default async function ClassifiedsMemberPage({
                 </>
               )}
             </p>
-            {linkedin && (
+            {link && (
               <a
-                href={linkedin}
+                href={link.href}
                 target="_blank"
-                rel="noopener noreferrer nofollow"
+                rel="noopener noreferrer nofollow ugc"
                 className="mt-[6px] inline-block text-[13.5px] underline underline-offset-2"
                 style={{ color: "var(--cl-muted)" }}
               >
-                LinkedIn
+                {link.site}
               </a>
             )}
           </div>
