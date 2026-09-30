@@ -36,6 +36,7 @@ import {
   gateIds,
   guestReachable,
   memberNames,
+  notedInvite,
   sessionCookie,
   setTier1Application,
   TIER1_NAME,
@@ -357,6 +358,33 @@ async function main() {
     contains: "been invited · Manhattanite</title>",
   });
   await check("guest", JOIN, null, { status: 200, contains: "noindex" });
+
+  // PROPOSE A MANHATTANITE (2026-09-30). /invite is in the nav now, so it is
+  // the most visible member-only form on the site. A guest is sent to sign in;
+  // the Tier 1 case is held below with the other product routes.
+  await check("guest", "/invite", null, { redirect: "/login" });
+
+  // THE PROPOSER'S NOTE NEVER REACHES THE PERSON IT IS ABOUT (0034). The note
+  // is written for the admin, and the form promises the proposer "They never
+  // see it." get_invite (0021) selects named columns and leaves it out; this
+  // holds that from the outside, on the real claim screen, so widening
+  // get_invite or rendering the invite row wholesale fails here. The first
+  // check proves we reached the claim branch (it names the inviter) rather
+  // than the "not available" one, which would pass the second vacuously.
+  const NOTE = "Fixture proposal note, audit gates only, qx7";
+  const invite = await notedInvite(NOTE);
+  try {
+    await check("guest", `/join/${invite.token}`, null, {
+      status: 200,
+      contains: "Wren Calloway",
+    });
+    await check("guest", `/join/${invite.token}`, null, {
+      status: 200,
+      notContains: NOTE,
+    });
+  } finally {
+    await invite.remove();
+  }
 
   if (otherUnpublished) {
     // A guest on a listing outside the teaser gets the WALL, not a 404 — Slice

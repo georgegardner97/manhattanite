@@ -6,6 +6,12 @@ Read this at the start of every Manhattanite conversation.
 
 ---
 
+## 2026-09-30 · Rate limits live in the database, like the member wall
+
+**George's call ("start doing them all") after a security review.** Contact messages, invitations and listings are capped per member by BEFORE INSERT triggers (migration 0035), not by the server actions alone, because a limit in the app is skipped by anyone calling the API directly with their own session. Admins and the service role are exempt. The site also now sends a Content Security Policy and related browser headers, and Next.js was patched past a critical advisory.
+
+---
+
 ## 2026-09-22 · Invitations go by email only, for now
 
 **George's call.** Asked whether members should also get a copy-link or a way to send by text. Decided to keep invitations email-only for now.
@@ -359,3 +365,13 @@ After completing the Phase 0 migration of strategy docs into `~/Developer/manhat
 **Quiet to open, plain to confirm.** On a draft the screen's job is to fix what the moderator asked for and send it back, so the take-down is one muted text link below the save, with no heading and no red. Once opened it is the same destructive confirm as everywhere else. **No "why" question on a draft**: it never went live, so it cannot have found anyone, and `outcome` stays null — the same rule as a pending listing. Only a published listing is asked.
 
 **The invitation screen carries no product navigation for a non-member** (same day). Every link in the header and the phone tab bar was a locked door for someone who had never signed in. Its browser tab is a fixed "You've been invited · Manhattanite", noindex, and never names the inviter: the one-time token lets the page body name them, but not the tab, the share card or a crawler.
+
+## 2026-09-30 · Propose a Manhattanite
+
+**George, after the Radio H-P "Propose a Listener" page: "I think we should lift the idea of this."** Three things lifted, all on the existing `/invite` flow, no new route.
+
+1. **It is in the nav.** "Propose a Manhattanite" is the header's third item (shortens to "Propose" below 900px), and "Propose" is a fourth phone tab. Name chosen by George.
+2. **The vouch is a tick box.** "I vouch for this person's character, reliability and place here. My name goes beside theirs, and I stand by it." (George picked this wording the same day, over the first draft.) Required by the form and the server action; not stored, because a saved invite already means it was ticked. Worded to match the Terms (assessed, not expelled).
+3. **"A little about them."** A required note (up to 1000 characters) on why they belong here. It is read on `/admin/applications` beside the application, labelled "Why <proposer> vouched". The invitee never sees it. Migration `0034` adds `invites.note` and an admin read policy.
+
+Name is now required on the form too. Not lifted: Radio H-P's second nominator, and its sterner "need not apply" tone.

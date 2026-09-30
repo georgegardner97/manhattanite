@@ -1,4 +1,9 @@
-// /invite — a member brings someone in, in the Classifieds system.
+// /invite: Propose a Manhattanite. A member brings someone in.
+//
+// IN THE NAV AS OF 2026-09-30 (George, after the Radio H-P propose page):
+// "Propose a Manhattanite" is the header's third item and "Propose" the phone
+// tab. The paragraph below about having no entry point is history now; /profile
+// also links here.
 //
 // Server Component: re-checks session and membership the way every member-only
 // page here does, then renders the client form. RLS (invites_insert_own, 0020)
@@ -51,11 +56,11 @@ export default async function ClassifiedsInvitePage() {
 
   return (
     <>
-      <AppHeader active="none" />
+      <AppHeader active="propose" />
 
       <main className="mx-auto w-full max-w-[560px] px-[clamp(16px,2.4vw,28px)] pt-[clamp(26px,3vw,44px)] pb-[clamp(32px,4vw,56px)]">
         <h1 className="text-[clamp(22px,2.4vw,30px)] font-medium tracking-[-0.02em]">
-          Bring someone in.
+          Propose a Manhattanite.
         </h1>
         {/* REWRITTEN 2026-09-04 for the invitation-only direction, then again
             the same day once the rule behind it existed. George settled the
@@ -73,10 +78,10 @@ export default async function ClassifiedsInvitePage() {
           className="mt-3 max-w-[52ch] text-[13.5px] leading-[1.6]"
           style={{ color: "var(--cl-muted)" }}
         >
-          There is no other way in. Invite someone you&rsquo;d vouch for out
-          loud. Your name stays beside theirs for as long as they&rsquo;re here, and
-          if they break the terms, your own membership is looked at the same
-          way.
+          There is no other way in. Propose someone you would vouch for out
+          loud: someone generous, reliable and good company. Your name stays
+          beside theirs for as long as they&rsquo;re here, and if they break the
+          terms, your own membership is looked at the same way.
         </p>
 
         <div className="mt-8">

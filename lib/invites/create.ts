@@ -19,6 +19,9 @@ import { sendInviteEmail } from "@/lib/applications/emails";
 export type CreateInviteState = { error: string | null; sentTo: string | null };
 
 const MAX_NAME = 80;
+// Propose a Manhattanite (George, 2026-09-30): the proposer says why. Mirrors
+// the invites_note_length check in migration 0034.
+const MAX_NOTE = 1000;
 
 // Light email shape check — the real validation is whether the invitee ever
 // clicks through, so this only catches obvious typos.
@@ -54,6 +57,9 @@ export async function createInvite(
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const name = String(formData.get("name") ?? "").trim() || null;
+  const note = String(formData.get("note") ?? "").trim();
+  // The tick box. Not stored: a saved invite already means it was ticked.
+  const vouched = formData.get("vouch") === "on";
 
   if (!email || !looksLikeEmail(email)) {
     return {
@@ -61,9 +67,31 @@ export async function createInvite(
       sentTo: null,
     };
   }
-  if (name && name.length > MAX_NAME) {
+  if (!name) {
+    return { error: "Add their name.", sentTo: null };
+  }
+  if (name.length > MAX_NAME) {
     return {
       error: `Keep the name to ${MAX_NAME} characters or fewer.`,
+      sentTo: null,
+    };
+  }
+
+  if (!note) {
+    return {
+      error: "Say a little about them. It is read before they are let in.",
+      sentTo: null,
+    };
+  }
+  if (note.length > MAX_NOTE) {
+    return {
+      error: `Keep it to ${MAX_NOTE} characters or fewer.`,
+      sentTo: null,
+    };
+  }
+  if (!vouched) {
+    return {
+      error: "Tick the box to vouch for them. Nobody comes in without it.",
       sentTo: null,
     };
   }
@@ -71,12 +99,23 @@ export async function createInvite(
   // 122 bits of entropy is plenty for an unguessable invite link.
   const token = crypto.randomUUID();
 
-  const { error } = await supabase.from("invites").insert({
+  const row = {
     inviter_id: user.id,
     invitee_email: email,
     invitee_name: name,
     token,
-  });
+  };
+
+  let { error } = await supabase.from("invites").insert({ ...row, note });
+
+  // DEGRADE, DO NOT BREAK, while 0034 is unapplied (migrations here are hand
+  // run, so the code can ship first). A missing column answers 42703 from
+  // Postgres or PGRST204 from PostgREST; save the invite without its note
+  // rather than refuse to send it. Remove once 0034 is confirmed in prod.
+  if (error && (error.code === "42703" || error.code === "PGRST204")) {
+    console.warn("invites.note missing (0034 unapplied); saving without the note.");
+    ({ error } = await supabase.from("invites").insert(row));
+  }
 
   if (error) {
     console.error("Failed to create invite:", error);

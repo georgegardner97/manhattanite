@@ -67,7 +67,7 @@
 import Link from "next/link";
 import Wordmark from "@/app/components/Wordmark";
 
-export type ClNavKey = "browse" | "profile" | "none";
+export type ClNavKey = "browse" | "propose" | "profile" | "none";
 
 /**
  * WHICH CONTENT WIDTH THE BAR SHOULD MATCH.
@@ -98,8 +98,15 @@ const MAX_WIDTH: Record<ClHeaderWidth, string> = {
   wide: "max-w-[1400px]",
 };
 
-const LINKS: { key: ClNavKey; label: string; href: string }[] = [
+const LINKS: { key: ClNavKey; label: string; short?: string; href: string }[] = [
   { key: "browse", label: "Browse", href: "/listings" },
+  // George, 2026-09-30, lifted from the Radio H-P nav: proposing someone is
+  // how this network grows, so it sits in the nav rather than behind Profile.
+  // Below 900px the full label pushes "Post a listing" out of the bar, so it
+  // shortens to one word there. Even one word left the bar 19px short at
+  // 601px, so the nav now hands over to the phone tab bar at 640px, not 600px
+  // (measured 2026-09-30; MobileTabBar moves with it).
+  { key: "propose", label: "Propose a Manhattanite", short: "Propose", href: "/invite" },
   // Profile means the account screen, which is how the design file itself
   // reads it: screen 10 ("Account settings") is drawn with active="profile".
   // It is also the way into Saved now, and the way into /admin.
@@ -159,14 +166,14 @@ export default function AppHeader({
             <Wordmark className="h-[34px] max-[600px]:h-[28px]" />
           </Link>
 
-          {/* Below 600px the wordmark, the nav links and the action pill add
+          {/* Below 640px the wordmark, the nav links and the action pill add
               up to more content than a 375px bar holds — the pill ends up outside
               the gutter, hard against the screen edge. The design's own answer
               for a phone (screen 12) is a top bar carrying only the wordmark
               and one control, with navigation moved to a bottom tab bar. Both
               halves are built now: this nav hides, and MobileTabBar takes over
               from the layout. */}
-          <nav className="flex items-center gap-0.5 text-[13px] max-[600px]:hidden">
+          <nav className="flex items-center gap-0.5 text-[13px] max-[640px]:hidden">
             {LINKS.map((l) => {
               const on = l.key === active;
               return (
@@ -174,7 +181,7 @@ export default function AppHeader({
                   key={l.key}
                   href={l.href}
                   aria-current={on ? "page" : undefined}
-                  className="rounded-full px-3 py-[7px]"
+                  className="whitespace-nowrap rounded-full px-3 py-[7px]"
                   style={
                     on
                       ? {
@@ -185,7 +192,14 @@ export default function AppHeader({
                       : { color: "var(--cl-muted)" }
                   }
                 >
-                  {l.label}
+                  {l.short ? (
+                    <>
+                      <span className="max-[900px]:hidden">{l.label}</span>
+                      <span className="hidden max-[900px]:inline">{l.short}</span>
+                    </>
+                  ) : (
+                    l.label
+                  )}
                 </Link>
               );
             })}
@@ -196,10 +210,14 @@ export default function AppHeader({
           {/* A tool, not a nav item: no pill, no active state, faint. It sits
               outside LINKS on purpose — those three are the product, this is
               the back office, and only one account ever sees it. */}
+          {/* Hidden from 640px to 700px, where it sits beside the nav and
+              pushed "Post a listing" past the edge (measured 2026-09-30, once
+              Propose joined the nav). Not hidden wider than that band: this
+              link is the only way into /admin. */}
           {admin && (
             <Link
               href="/admin"
-              className="text-[13px] max-[440px]:hidden"
+              className="text-[13px] max-[440px]:hidden min-[640px]:max-[700px]:hidden"
               style={{ color: "var(--cl-faint)" }}
             >
               Admin

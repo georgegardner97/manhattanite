@@ -375,6 +375,40 @@ export async function guestReachable(): Promise<GuestReachable> {
   };
 }
 
+/**
+ * A pending invitation from the member fixture that carries a note (0034), so
+ * audit-gates can prove /join never shows the invitee what was written about
+ * them. Returns the token and a remover; the row also cascades away with the
+ * member in `down`. The invitee address is inside the +slice2 prefix and the
+ * row is inserted by the service role, so no email is ever sent.
+ */
+export async function notedInvite(
+  note: string
+): Promise<{ token: string; remove: () => Promise<void> }> {
+  const member = await findUser(MEMBER_EMAIL);
+  if (!member) throw new Error("no member fixture — run `up` first");
+  const token = crypto.randomUUID();
+  const { data, error } = await admin
+    .from("invites")
+    .insert({
+      inviter_id: member.id,
+      invitee_email: `${SYNTH_PREFIX}-invitee@googlemail.com`,
+      invitee_name: "Fixture Invitee",
+      token,
+      note,
+    })
+    .select("id")
+    .single<{ id: string }>();
+  // Loud on purpose: a missing note column means 0034 is not in this database.
+  if (error) throw new Error(`notedInvite: ${error.message}`);
+  return {
+    token,
+    remove: async () => {
+      await admin.from("invites").delete().eq("id", data.id);
+    },
+  };
+}
+
 export async function down(): Promise<void> {
   for (const addr of [MEMBER_EMAIL, TIER1_EMAIL]) {
     const user = await findUser(addr);
