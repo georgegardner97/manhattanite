@@ -6,6 +6,19 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-30 · Propose a Manhattanite shipped (Claude Code)
+
+**Live on manhattanite.com, merged `9fafe60` with `--no-ff`** (revert with `git revert -m 1 9fafe60`). Checked, fixed, merged, deployed, and checked on the live site.
+
+- **Migration `0034` applied by George** (second attempt; the first did not reach the database) and verified from the live schema: column present, length check refuses 1001 characters, admin reads others' invites and a member does not.
+- **One fix before merge:** the header did not fit. "Post a listing" wrapped between 601 and 619px, and with the admin's link it overflowed until 680px. The phone tab bar now takes over at 640px, and the Admin link hides only between 640 and 700px. Every width from 1280 down to 375 measured afterwards with no wrap and no overflow.
+- **Driven for real:** every missing field and the unticked box refused; a real send stored the note; the invitee accepted, finished the joining profile, and the admin screen showed "Why Wren Calloway vouched:" with the note. Test rows removed.
+- **Audits:** `audit:rls` 67 checks, 0 failures. `audit:gates` 0 failures, with two new assertions: a guest cannot reach `/invite`, and `/join` never contains the note.
+- **The security session's work was NOT shipped.** It had committed onto the Propose branch mid-session; George said park it, so that commit now sits on its own branch `security-pass` (pushed, unmerged; `0035` unapplied). It must go out as its own merge after `0035` is run. The two small copy edits on `/privacy` and `/profile` are still uncommitted in the working tree.
+- **Follow-up:** the "save without the note" fallback in `createInvite` can now be removed.
+
+---
+
 ## 2026-09-30 · Propose a Manhattanite (Cowork)
 
 **Built on branch `propose-a-manhattanite`, committed, NOT pushed.** Nav item, vouch tick box, and a required note the admin reads at approval. Migration `0034_invite_note.sql` written, NOT applied; the code degrades until it is (invite saves without the note, review screen shows none). Type check clean. Not visually checked: the Cowork VM cannot run `next build` or the dev server (wrong SWC binary for linux/arm64), so check the header at 600 to 900px on the Vercel preview.

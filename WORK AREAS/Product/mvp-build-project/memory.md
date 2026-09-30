@@ -4,6 +4,18 @@ Chronological log. Newest entries at the top.
 
 ---
 
+## 2026-09-30 · Propose a Manhattanite — live
+
+**Shipped:** merged `9fafe60` (`--no-ff`), deployed, checked on manhattanite.com. Nav item, required note and vouch tick box on `/invite`, the note on `/admin/applications`. Migration `0034` applied and verified from the live schema.
+
+**Changed on the way:** the header did not fit with a third nav item (wrap at 601 to 619px, admin overflow to 680px). Phone tab bar now takes over at 640px; Admin link hides only between 640 and 700px.
+
+**Verified:** build, real form refusals, real send, invitee accept and joining profile, admin sees the note, `audit:rls` 0, `audit:gates` 0 with two new assertions.
+
+**Outstanding:** remove the "save without the note" fallback in `createInvite` (0034 is in). The security pass sits on branch `security-pass`, unmerged, waiting on `0035`.
+
+---
+
 ## 2026-09-22 · The invitation arrives from the inviter's name — pushed
 
 **Built:** `inviteFrom()` in `lib/applications/emails.ts` builds the invitation's From header as `"<name> via Manhattanite" <info@manhattanite.com>`; `sendInviteEmail` takes a new nullable `senderName` alongside the existing `inviterName`, and `lib/invites/create.ts` passes the raw account name for the sender line while keeping the "A member" fallback for the body. One email only. The address never changes.
