@@ -31,6 +31,8 @@ export type ContactState =
 const ERR_NOT_MEMBER = "MH001";
 const ERR_NOT_PUBLISHED = "MH002";
 const ERR_SELF_CONTACT = "MH003";
+// Raised by the rate limit trigger on listing_contacts (0035).
+const ERR_RATE_LIMIT = "MH004";
 
 const MAX_MESSAGE = 2000;
 
@@ -94,6 +96,9 @@ export async function sendContact(
     }
     if (error.code === ERR_SELF_CONTACT) {
       return { status: "error", message: "This is your own listing. You can't message yourself." };
+    }
+    if (error.code === ERR_RATE_LIMIT) {
+      return { status: "error", message: "You've sent a lot of messages today. Try again a little later." };
     }
     console.error("log_listing_contact failed:", error);
     return { status: "error", message: "Something went wrong sending your message. Try again in a moment." };

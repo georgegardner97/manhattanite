@@ -26,6 +26,8 @@ export type CreateListingState = { error: string | null };
 // Postgres raises 42501 ("insufficient_privilege") when a row violates an RLS
 // policy — that's the member gate firing for a non-member.
 const RLS_VIOLATION = "42501";
+// Raised by the rate limit trigger on listings (0035).
+const RATE_LIMIT = "MH004";
 
 const MAX_TITLE = 80;
 const MAX_DESCRIPTION = 2000;
@@ -183,6 +185,9 @@ export async function createListing(
     // place that explains membership, rather than a dead-end error.
     if (error.code === RLS_VIOLATION) {
       redirect("/profile");
+    }
+    if (error.code === RATE_LIMIT) {
+      return { error: "You've posted a lot today. Try again tomorrow." };
     }
     console.error("Failed to insert listing:", error);
     return {

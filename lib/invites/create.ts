@@ -117,6 +117,14 @@ export async function createInvite(
     ({ error } = await supabase.from("invites").insert(row));
   }
 
+  // The rate limit trigger on invites (0035).
+  if (error?.code === "MH004") {
+    return {
+      error: "You've sent a lot of invitations today. Try again tomorrow.",
+      sentTo: null,
+    };
+  }
+
   if (error) {
     console.error("Failed to create invite:", error);
     return {

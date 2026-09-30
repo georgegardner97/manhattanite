@@ -6,6 +6,17 @@ Newest entries at the top.
 
 ---
 
+## 2026-09-30 · Security pass (Claude Code)
+
+**Committed on branch `propose-a-manhattanite` as its own commit, NOT pushed, NOT deployed.** Migration 0035: George was about to run it (hit the SQL editor "destructive operations" warning, which the `drop trigger if exists` lines trigger and is harmless); confirm with the verify query in the file. George asked how secure the site is and to fix everything found.
+
+- **Next.js 16.2.4 to 16.3.8.** 16.2.4 had a critical advisory (a proxy bypass plus a denial of service). Our gates live in pages and RLS, not in `proxy.ts`, so the real exposure was small, but it is patched. `npm audit` now reports 0 vulnerabilities (was 1 critical, 3 high, 4 moderate).
+- **Browser security headers in `next.config.ts`.** A Content Security Policy allowing only this site, Supabase and Cloudflare Turnstile; no framing by other sites; nosniff; a referrer policy; camera, microphone, location and payment switched off; `X-Powered-By` removed. **Any new outside service (analytics, maps, a font CDN) must be added to the CSP or the browser will block it.**
+- **Rate limits, migration `0035_rate_limits.sql`.** Database triggers: contact messages 10 an hour and 40 a day, invitations 20 a day, listings 10 a day. Admins and the service role are exempt. They raise `MH004`, which the three server actions turn into a plain "try again later". The code maps the error; the database enforces it.
+- **Verified:** type check, production build, local site with the new headers (landing, sign in with Turnstile rendering, browse), `npm run audit:gates` 0 failures. Not verified: listing photos under the new CSP (no published listings to test with), so check a photo loads on the Vercel preview.
+
+---
+
 ## 2026-09-30 · Propose a Manhattanite (Cowork)
 
 **Built on branch `propose-a-manhattanite`, committed, NOT pushed.** Nav item, vouch tick box, and a required note the admin reads at approval. Migration `0034_invite_note.sql` written, NOT applied; the code degrades until it is (invite saves without the note, review screen shows none). Type check clean. Not visually checked: the Cowork VM cannot run `next build` or the dev server (wrong SWC binary for linux/arm64), so check the header at 600 to 900px on the Vercel preview.
