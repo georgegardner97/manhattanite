@@ -107,8 +107,8 @@ export default function ClInviteForm() {
             style={{ accentColor: "var(--cl-ink)" }}
           />
           <span>
-            I vouch for this person, personally and with confidence, and I will
-            stand by it.
+            I vouch for this person&rsquo;s character, reliability and place
+            here. My name goes beside theirs, and I stand by it.
           </span>
         </label>
 
