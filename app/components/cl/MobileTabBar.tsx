@@ -4,7 +4,7 @@
 //
 // The design's answer for a small screen is a top bar carrying only the
 // wordmark and one control, with navigation moved to a bottom tab bar: Browse,
-// Saved, Post, Inbox. AppHeader hides its nav below 600px; this is the other
+// Saved, Post, Inbox. AppHeader hides its nav below 640px; this is the other
 // half of that arrangement.
 //
 // FOUR TABS as of 2026-09-30: Browse · Post · Propose · Profile. Propose
@@ -95,7 +95,7 @@ export default function MobileTabBar() {
   return (
     <nav
       aria-label="Sections"
-      className="cl-tabbar hidden max-[600px]:flex"
+      className="cl-tabbar hidden max-[640px]:flex"
     >
       {TABS.map((tab) => {
         const on = tab.match(pathname);

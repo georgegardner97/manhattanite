@@ -729,7 +729,7 @@ details[open] > .cl-summary .cl-caret {
    -------------------------------------------------------------------------- */
 
 /* No `display` here, deliberately. The component carries Tailwind's
-   `hidden max-[600px]:flex`, and both that and a `display:flex` in this file
+   `hidden max-[640px]:flex`, and both that and a `display:flex` in this file
    are single-class selectors — so whichever stylesheet loses the source-order
    race wins the property, and the bar renders on a 1400px desktop. Visibility
    belongs to the one place that decides it. */

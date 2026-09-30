@@ -16,7 +16,7 @@
 //      One wrapper, one scope; no token leaks into the editorial system, and
 //      an editorial page never mounts this class.
 //
-//   3. THE MOBILE NAV. MobileTabBar, which takes over below 600px where
+//   3. THE MOBILE NAV. MobileTabBar, which takes over below 640px where
 //      AppHeader's own nav hides. The two are one arrangement, not two.
 //
 // WHAT IS DELIBERATELY NOT HERE:
