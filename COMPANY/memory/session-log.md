@@ -8,11 +8,11 @@ Newest entries at the top.
 
 ## 2026-09-30 · Security pass (Claude Code)
 
-**Committed on branch `propose-a-manhattanite` as its own commit, NOT pushed, NOT deployed.** Migration 0035: George was about to run it (hit the SQL editor "destructive operations" warning, which the `drop trigger if exists` lines trigger and is harmless); confirm with the verify query in the file. George asked how secure the site is and to fix everything found.
+**On its own branch, `security-pass`, pushed for a Vercel preview, NOT merged to main.** George parked it to ship separately from Propose. Migration 0035 IS applied to prod (verified 2026-09-30: all three triggers present in `pg_trigger`). George asked how secure the site is and to fix everything found.
 
 - **Next.js 16.2.4 to 16.3.8.** 16.2.4 had a critical advisory (a proxy bypass plus a denial of service). Our gates live in pages and RLS, not in `proxy.ts`, so the real exposure was small, but it is patched. `npm audit` now reports 0 vulnerabilities (was 1 critical, 3 high, 4 moderate).
 - **Browser security headers in `next.config.ts`.** A Content Security Policy allowing only this site, Supabase and Cloudflare Turnstile; no framing by other sites; nosniff; a referrer policy; camera, microphone, location and payment switched off; `X-Powered-By` removed. **Any new outside service (analytics, maps, a font CDN) must be added to the CSP or the browser will block it.**
-- **Rate limits, migration `0035_rate_limits.sql`.** Database triggers: contact messages 10 an hour and 40 a day, invitations 20 a day, listings 10 a day. Admins and the service role are exempt. They raise `MH004`, which the three server actions turn into a plain "try again later". The code maps the error; the database enforces it.
+- **Rate limits, migration `0035_rate_limits.sql`, applied to prod.** Database triggers: contact messages 10 an hour and 40 a day, invitations 20 a day, listings 10 a day. Admins and the service role are exempt. They raise `MH004`, which the three server actions turn into a plain "try again later". They are live now even though the code is not: until security-pass ships, a tripped limit shows the generic "something went wrong" message instead of the plain one.
 - **Verified:** type check, production build, local site with the new headers (landing, sign in with Turnstile rendering, browse), `npm run audit:gates` 0 failures. Not verified: listing photos under the new CSP (no published listings to test with), so check a photo loads on the Vercel preview.
 
 ---
