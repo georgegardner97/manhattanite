@@ -159,7 +159,7 @@ export default function ClJoinForm({
         disabled={blocked}
         className={blocked ? "cl-pill-disabled mt-4 w-full" : "cl-pill mt-4 w-full"}
       >
-        {submitting ? "Claiming your spot…" : "Claim your spot"}
+        {submitting ? "Confirming…" : "Confirm"}
       </button>
     </form>
   );
